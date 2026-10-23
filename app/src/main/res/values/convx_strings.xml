@@ -1159,7 +1159,7 @@
     <string name="show_history_button_description">Show the history icon in the top app bar and side bar</string>
     <string name="show_stats_button">Show stats button</string>
     <string name="show_stats_button_description">Show the stats icon in the top app bar and side bar</string>
-    <string name="build_stable">STABLE</string>
+    <string name="build_stable">BETA</string>
     <string name="build_nightly">NIGHTLY</string>
     <string name="jiosaavn_settings">JioSaavn Settings</string>
     <string name="jiosaavn_streaming_disabled">Disabled</string>
