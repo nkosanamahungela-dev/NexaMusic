@@ -94,6 +94,12 @@ fun CrashLogsSettingsScreen(navController: NavController) {
                         title = { Text("Share report") },
                         onClick = { shareReport(context, report) },
                     ),
+                    IosSettingsItem(
+                        icon = painterResource(R.drawable.bug_report),
+                        title = { Text("Report on GitHub") },
+                        description = { Text("Open NexaMusic issues") },
+                        onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/nkosanamahungela-dev/NexaMusic/issues/new"))) },
+                    ),
                 ),
             )
             Spacer(Modifier.height(16.dp))
