@@ -33,7 +33,7 @@ android {
     ndkVersion = "27.0.12077973"
 
     defaultConfig {
-        applicationId = "com.convx.music"
+        applicationId = "com.nexamusic.music"
         minSdk = 26
         targetSdk = 36
         versionCode = appVersionCode
