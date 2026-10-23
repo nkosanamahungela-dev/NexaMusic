@@ -63,6 +63,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.widget.Toast
 import androidx.navigation.NavController
 import com.convx.music.BuildConfig
 import com.convx.music.LocalPlayerAwareWindowInsets
@@ -115,7 +116,7 @@ fun AboutScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = stringResource(R.string.convx_title),
+                text = "NexaMusic",
                 style = AppTheme.typography.displaySmall.copy(
                     fontWeight = FontWeight.Bold,
                     fontSize = 48.sp,
@@ -158,11 +159,11 @@ fun AboutScreen(
             items = listOf(
                 IosSettingsItem(
                     icon = rememberVectorPainter(SfSymbols.Monochrome.SFPersonCropCircleBadgeExclamationmark),
-                    title = { Text(stringResource(R.string.developer_name)) },
-                    description = { Text(stringResource(R.string.app_developer), color = AppTheme.colorScheme.primary) },
+                    title = { Text("Smelokuhle (Mahungela)") },
+                    description = { Text("NexaMusic developer", color = AppTheme.colorScheme.primary) },
                     tintIcon = false,
                     iconShape = cookieShape,
-                    onClick = { uriHandler.safeOpenUri(context, "https://github.com/cosmictaserdev-creator") }
+                    onClick = { uriHandler.safeOpenUri(context, "https://github.com/nkosanamahungela-dev") }
                 )
             )
         )
@@ -176,13 +177,13 @@ fun AboutScreen(
                     icon = rememberVectorPainter(SfSymbols.Monochrome.SFChevronLeftForwardslashChevronRight),
                     title = { Text(stringResource(R.string.github_repository)) },
                     description = { Text(stringResource(R.string.view_source_code)) },
-                    onClick = { uriHandler.safeOpenUri(context, "https://github.com/cosmictaserdev-creator/Convx") }
+                    onClick = { uriHandler.safeOpenUri(context, "https://github.com/nkosanamahungela-dev/NexaMusic") }
                 ),
                 IosSettingsItem(
                     icon = rememberVectorPainter(SfSymbols.Monochrome.SFEllipsisBubble),
                     title = { Text(stringResource(R.string.discord_channel)) },
                     description = { Text(stringResource(R.string.join_discord)) },
-                    onClick = { uriHandler.safeOpenUri(context, "https://discord.gg/Ejeb4cmzfd") }
+                    onClick = { uriHandler.safeOpenUri(context, "https://discord.gg/D8fYQKUEzw") }
                 )
             )
         )
@@ -196,14 +197,14 @@ fun AboutScreen(
                 IosSettingsItem(
                     icon = rememberVectorPainter(SfSymbols.Monochrome.SFHeart),
                     title = { Text(stringResource(R.string.support_upi)) },
-                    description = { Text(DonationUpiId) },
-                    onClick = { uriHandler.safeOpenUri(context, DonationUpiUri) }
+                    description = { Text("Not available") },
+                    onClick = { Toast.makeText(context, "Not available", Toast.LENGTH_SHORT).show() }
                 ),
                 IosSettingsItem(
                     icon = rememberVectorPainter(SfSymbols.Monochrome.SFHeart),
                     title = { Text(stringResource(R.string.support_kofi)) },
-                    description = { Text(stringResource(R.string.support_kofi_desc)) },
-                    onClick = { uriHandler.safeOpenUri(context, DonationKofiUrl) }
+                    description = { Text("Not available") },
+                    onClick = { Toast.makeText(context, "Not available", Toast.LENGTH_SHORT).show() }
                 ),
             )
         )
@@ -227,7 +228,7 @@ fun AboutScreen(
                     icon = rememberVectorPainter(SfSymbols.Monochrome.SFTextDocument),
                     title = { Text(stringResource(R.string.license)) },
                     description = { Text("GPL-3.0 • Free Open Source Software") },
-                    onClick = { uriHandler.safeOpenUri(context, "https://github.com/cosmictaserdev-creator/Convx/blob/main/LICENSE") }
+                    onClick = { uriHandler.safeOpenUri(context, "https://github.com/nkosanamahungela-dev/NexaMusic/blob/main/LICENSE") }
                 ),
             )
         )
