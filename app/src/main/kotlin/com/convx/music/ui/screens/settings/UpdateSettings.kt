@@ -58,7 +58,7 @@ import com.convx.music.ui.ios.compat.AppTheme
 import com.convx.music.BuildConfig
 
 /**
- * Convx Project (C) 2026
+ * NexaMusic Project (C) 2026
  * Licensed under GPL-3.0 | See git history for contributors
  */
 
