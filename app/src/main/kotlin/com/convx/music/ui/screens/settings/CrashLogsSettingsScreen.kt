@@ -9,6 +9,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -24,6 +25,7 @@ import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -54,7 +56,7 @@ fun CrashLogsSettingsScreen(navController: NavController) {
         horizontalPadding = 16.dp,
     ) {
         Text(
-            text = "If Convx closes unexpectedly, its latest crash report appears here. You can copy or share it when asking for help.",
+            text = "If NexaMusic closes unexpectedly, its latest crash report appears here. You can copy it or report the problem to the NexaMusic issue tracker.",
             style = IosTheme.typography.body,
             color = IosTheme.colors.secondaryLabel,
             modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp),
@@ -115,13 +117,13 @@ fun CrashLogsSettingsScreen(navController: NavController) {
 
 private fun copyReport(context: Context, report: String) {
     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-    clipboard.setPrimaryClip(ClipData.newPlainText("Convx crash report", report))
+    clipboard.setPrimaryClip(ClipData.newPlainText("NexaMusic crash report", report))
 }
 
 private fun shareReport(context: Context, report: String) {
     val send = Intent(Intent.ACTION_SEND).apply {
         type = "text/plain"
-        putExtra(Intent.EXTRA_SUBJECT, "Convx crash report")
+        putExtra(Intent.EXTRA_SUBJECT, "NexaMusic crash report")
         putExtra(Intent.EXTRA_TEXT, report)
     }
     context.startActivity(Intent.createChooser(send, "Share crash report"))
