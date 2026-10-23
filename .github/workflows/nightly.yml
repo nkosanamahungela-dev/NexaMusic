@@ -1,16 +1,8 @@
 name: NexaMusic Beta Release Build
 
 on:
-  push:
-    branches: [ 'main' ]
-    paths-ignore:
-      - 'README.md'
-      - 'fastlane/**'
-      - 'assets/**'
-      - '.github/**/*.md'
-  schedule:
-    - cron: '0 0 * * *' # Every night at 00:00 UTC
-  workflow_dispatch: # Allows manual triggering
+  # Run beta releases manually when we're ready to publish a beta.
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -43,19 +35,20 @@ jobs:
       - name: Generate debug.keystore
         run: |
           mkdir -p ~/.android
-          keytool -genkey -v \\
-            -keystore ~/.android/debug.keystore \\
-            -storepass android \\
-            -alias androiddebugkey \\
-            -keypass android \\
-            -keyalg RSA \\
-            -keysize 2048 \\
-            -validity 10000 \\
+          keytool -genkey -v \\\\
+            -keystore ~/.android/debug.keystore \\\\
+            -storepass android \\\\
+            -alias androiddebugkey \\\\
+            -keypass android \\\\
+            -keyalg RSA \\\\
+            -keysize 2048 \\\\
+            -validity 10000 \\\\
             -dname "CN=Android Debug,O=Android,C=US"
 
       - name: Decode release keystore
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE }}
+          STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
         shell: bash
         run: |
           set -euo pipefail
@@ -70,7 +63,7 @@ jobs:
             echo "::error::KEYSTORE secret decoded to an empty file. Recreate the Base64 value from the .keystore file and update the secret."
             exit 1
           fi
-          keytool -list -keystore app/keystore/release.keystore -storepass "${{ secrets.KEYSTORE_PASSWORD }}" >/dev/null
+          keytool -list -keystore app/keystore/release.keystore -storepass "$STORE_PASSWORD" >/dev/null
           echo "Release keystore decoded and validated."
 
       - name: Build Universal GMS Release APK
