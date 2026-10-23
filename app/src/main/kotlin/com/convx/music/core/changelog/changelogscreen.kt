@@ -143,9 +143,9 @@ fun ChangelogScreen(
                         showingCached = true
                     }
                 } else {
-                    val changelogUrl = URL("https://github.com/cosmictaserdev-creator/Convx/releases/download/$tag/changelog.json")
+                    val changelogUrl = URL("https://github.com/nkosanamahungela-dev/NexaMusic/releases/download/$tag/changelog.json")
                     val connection = changelogUrl.openConnection() as HttpURLConnection
-                    connection.setRequestProperty("User-Agent", "Convx-Changelog-App")
+                    connection.setRequestProperty("User-Agent", "NexaMusic-Changelog-App")
                     connection.setRequestProperty("Accept", "application/json")
                     
                     if (connection.responseCode == 200) {
