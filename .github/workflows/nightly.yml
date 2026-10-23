@@ -43,22 +43,35 @@ jobs:
       - name: Generate debug.keystore
         run: |
           mkdir -p ~/.android
-          keytool -genkey -v \
-            -keystore ~/.android/debug.keystore \
-            -storepass android \
-            -alias androiddebugkey \
-            -keypass android \
-            -keyalg RSA \
-            -keysize 2048 \
-            -validity 10000 \
+          keytool -genkey -v \\
+            -keystore ~/.android/debug.keystore \\
+            -storepass android \\
+            -alias androiddebugkey \\
+            -keypass android \\
+            -keyalg RSA \\
+            -keysize 2048 \\
+            -validity 10000 \\
             -dname "CN=Android Debug,O=Android,C=US"
 
       - name: Decode release keystore
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE }}
+        shell: bash
         run: |
+          set -euo pipefail
           mkdir -p app/keystore
-          echo "$KEYSTORE_BASE64" | base64 -d > app/keystore/release.keystore
+          if [[ -z "${KEYSTORE_BASE64:-}" ]]; then
+            echo "::error::KEYSTORE secret is empty. Set it to the Base64 output of your release keystore file."
+            exit 1
+          fi
+          # Remove line breaks/spaces in case the Base64 value was wrapped when copied.
+          printf '%s' "$KEYSTORE_BASE64" | tr -d '[:space:]' | base64 --decode > app/keystore/release.keystore
+          if [[ ! -s app/keystore/release.keystore ]]; then
+            echo "::error::KEYSTORE secret decoded to an empty file. Recreate the Base64 value from the .keystore file and update the secret."
+            exit 1
+          fi
+          keytool -list -keystore app/keystore/release.keystore -storepass "${{ secrets.KEYSTORE_PASSWORD }}" >/dev/null
+          echo "Release keystore decoded and validated."
 
       - name: Build Universal GMS Release APK
         env:
@@ -96,5 +109,5 @@ jobs:
             gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --title "$TITLE" --notes-file "$NOTES" --prerelease
             gh release upload "$TAG" "nexamusic-${TAG}.apk" "nexamusic-arm32-${TAG}.apk" --repo "$GITHUB_REPOSITORY" --clobber
           else
-            gh release create "$TAG" "nexamusic-${TAG}.apk" "convx-arm32-${TAG}.apk" --repo "$GITHUB_REPOSITORY" --title "$TITLE" --notes-file "$NOTES" --prerelease --latest=false
+            gh release create "$TAG" "nexamusic-${TAG}.apk" "nexamusic-arm32-${TAG}.apk" --repo "$GITHUB_REPOSITORY" --title "$TITLE" --notes-file "$NOTES" --prerelease --latest=false
           fi
