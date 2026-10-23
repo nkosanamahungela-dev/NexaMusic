@@ -216,9 +216,9 @@ fun ChangelogScreen(
         isFetchingOldReleases = true
         coroutineScope.launch(Dispatchers.IO) {
             try {
-                val releasesUrl = URL("https://api.github.com/repos/cosmictaserdev-creator/Convx/releases")
+                val releasesUrl = URL("https://api.github.com/repos/nkosanamahungela-dev/NexaMusic/releases")
                 val connection = releasesUrl.openConnection() as HttpURLConnection
-                connection.setRequestProperty("User-Agent", "Convx-Changelog-App")
+                connection.setRequestProperty("User-Agent", "NexaMusic-Changelog-App")
                 connection.setRequestProperty("Accept", "application/vnd.github+json")
                 
                 if (connection.responseCode == 200) {

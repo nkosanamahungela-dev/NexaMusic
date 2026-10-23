@@ -80,7 +80,7 @@ The Android app uses Jetpack Compose for UI, Media3 for playback, Room for the l
 - Android Studio with Android SDK 37 installed
 - Android NDK for native components
 
-Clone the repository, open it in Android Studio, and let Gradle sync. To build a debug APK or run unit tests from a terminal, use the tasks supported by the current checkout. For a Convx-derived checkout, these may be:
+Clone the repository, open it in Android Studio, and let Gradle sync. To build a debug APK or run unit tests from a terminal, use the tasks supported by the current checkout. For a NexaMusic checkout, these may be:
 
 ```bash
 ./gradlew :app:assembleUniversalFossDebug
