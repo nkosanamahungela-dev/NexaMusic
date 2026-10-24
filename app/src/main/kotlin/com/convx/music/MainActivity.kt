@@ -194,7 +194,7 @@ class MainActivity : ComponentActivity() {
                     syncUtils = syncUtils,
                     historyDataSource = historyDataSource,
                 )
-                if (showIntro) com.convx.music.ui.component.ConvxIntro(onFinished = { showIntro = false })
+                if (showIntro) com.convx.music.ui.component.NexaMusicIntro(onFinished = { showIntro = false })
             }
         }
     }
