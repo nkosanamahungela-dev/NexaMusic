@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" role="img" aria-labelledby="title desc">
+  <title id="title">NexaMusic logo</title>
+  <desc id="desc">A white circular badge with a black N and music note.</desc>
+  <rect width="1200" height="1200" fill="#000000"/>
+  <circle cx="600" cy="600" r="430" fill="#ffffff"/>
+
+  <g fill="#000000">
+    <path d="M485 234 L485 785 L528 785 L528 402 L672 785 L720 785 L720 234 L677 234 L677 617 L534 234 Z"/>
+
+    <path d="M415 699 L415 357 C415 326 440 300 470 300 H495 C525 300 550 326 550 357 V699 H415 Z" opacity="0.95"/>
+    <rect x="481" y="523" width="41" height="242" rx="23"/>
+    <ellipse cx="505" cy="433" rx="84" ry="74"/>
+    <rect x="469" y="448" width="151" height="44" rx="22" transform="rotate(-20 469 448)"/>
+  </g>
+</svg>
