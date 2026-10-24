@@ -34,6 +34,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -914,7 +915,7 @@ fun RotatingShapeContainer(modifier: Modifier = Modifier) {
                 .graphicsLayer { rotationZ = rotation }
         )
 
-        Icon(
+        Image(
             painter = painterResource(com.convx.music.R.drawable.convx_logo),
             contentDescription = null,
             modifier = Modifier.size(150.dp)
