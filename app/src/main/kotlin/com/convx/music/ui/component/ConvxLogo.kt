@@ -1,5 +1,5 @@
 /**
- * Convx Project (C) 2026
+ * NexaMusic Project (C) 2026
  * Licensed under GPL-3.0 | See git history for contributors
  */
 
@@ -18,9 +18,9 @@ import com.convx.music.R
  * The NexaMusic brand mark. Keep the source artwork's green gradient intact.
  */
 @Composable
-fun ConvxLogo(modifier: Modifier = Modifier, size: Dp = 20.dp) {
+fun NexaMusicLogo(modifier: Modifier = Modifier, size: Dp = 20.dp) {
     Image(
-        painter = painterResource(R.drawable.ic_nexamusic_foreground),
+        painter = painterResource(R.drawable.ic_nexamusic_mark),
         contentDescription = null,
         modifier = modifier.size(size),
     )
