@@ -19,6 +19,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -136,7 +137,14 @@ fun ConvxIntro(onFinished: () -> Unit) {
             if (glyph > 0f) {
                 rotate(spin, pivot = c) {
                     translate(c.x - glyph / 2f, c.y - glyph / 2f) {
-                        scale(glyph / logoViewport, pivot = Offset.Zero) { drawPath(logo, Color.Black) }
+                        scale(glyph / logoViewport, pivot = Offset.Zero) { drawPath(
+                            logo,
+                            Brush.linearGradient(
+                                colors = listOf(Color(0xFF43FF35), Color(0xFF00ED69), Color(0xFF007D70)),
+                                start = Offset(28f, 26f),
+                                end = Offset(80f, 81f),
+                            ),
+                        ) }
                     }
                 }
             }
