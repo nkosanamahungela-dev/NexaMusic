@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="assets/nexamusic-banner.svg" width="1000" alt="NexaMusic neon green and emerald logo banner on a black background">
+  <img src="assets/nexamusic-old-logo.svg" width="300" alt="NexaMusic classic black-and-white music note logo">
   <h1>NexaMusic</h1>
   <p><strong>An open-source Android music player with a calm, glass-inspired interface.</strong></p>
   <p>
