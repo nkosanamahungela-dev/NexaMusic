@@ -158,7 +158,7 @@ private fun AppIconTile(
     )
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.clickable(onClick = onClick),
+        modifier = Modifier.clickable(enabled = false, onClick = onClick),
     ) {
         Box(
             modifier = Modifier
@@ -177,6 +177,12 @@ private fun AppIconTile(
                 modifier = Modifier
                     .fillMaxSize()
                     .graphicsLayer(scaleX = ADAPTIVE_OVERSCAN, scaleY = ADAPTIVE_OVERSCAN),
+            )
+            // Temporarily dim the icon previews while the new NexaMusic logo is being designed.
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.48f)),
             )
         }
         Text(
