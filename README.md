@@ -1,5 +1,4 @@
-<div align="center">
-  <img src="assets/nexamusic-old-logo.png" width="300" alt="NexaMusic logo photo">
+
   <h1>NexaMusic</h1>
   <p><strong>An open-source Android music player with a calm, glass-inspired interface.</strong></p>
   <p>
