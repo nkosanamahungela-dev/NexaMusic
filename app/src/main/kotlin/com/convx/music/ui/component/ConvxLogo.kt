@@ -15,18 +15,19 @@ import androidx.compose.ui.unit.dp
 import com.convx.music.R
 
 /**
- * The NexaMusic brand mark. Keep the source artwork's green gradient intact.
+ * The NexaMusic brand mark. Uses the restored vector drawable so the logo
+ * resource stays compatible with the restored Convx artwork.
  */
 @Composable
 fun NexaMusicLogo(modifier: Modifier = Modifier, size: Dp = 20.dp) {
     Image(
-        painter = painterResource(R.drawable.ic_nexamusic_mark),
+        painter = painterResource(R.drawable.convx_logo),
         contentDescription = null,
         modifier = modifier.size(size),
     )
 }
 
-/** Backwards-compatible entry point for existing screens; renders the enlarged NexaMusic mark. */
+/** Backwards-compatible entry point for existing screens; renders the NexaMusic mark. */
 @Deprecated("Use NexaMusicLogo")
 @Composable
 fun ConvxLogo(modifier: Modifier = Modifier, size: Dp = 20.dp) = NexaMusicLogo(modifier, size)
