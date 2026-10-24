@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title">
-<title id="title">NexaMusic old logo</title>
-<rect width="512" height="512" fill="#000"/>
-<circle cx="256" cy="256" r="132" fill="#fff"/>
-<path fill="#000" d="M218 191c0-8 9-13 16-8l79 67V185c0-8 5-14 12-17l18-8c7-3 13 1 13 9v152c0 10-10 15-18 8l-92-77v75c0 31-24 53-54 53-28 0-49-19-49-45 0-25 21-45 49-45 9 0 18 2 26 6z"/>
-</svg>
