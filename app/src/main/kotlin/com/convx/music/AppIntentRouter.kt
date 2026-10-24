@@ -76,9 +76,9 @@ internal class AppIntentRouter(
         }
     }
 
-    /** `convx://party/CODE?server=...` opens the Party screen, which joins the code on arrival. */
+    /** `nexamusic://party/CODE?server=...` opens Party; legacy `convx://` invites remain supported. */
     private fun openPartyInvite(uri: Uri, navController: NavHostController): Boolean {
-        if (!uri.scheme.equals("convx", ignoreCase = true) || !uri.host.equals("party", ignoreCase = true)) return false
+        if (uri.scheme?.lowercase() !in setOf("nexamusic", "convx") || !uri.host.equals("party", ignoreCase = true)) return false
         val code = cleanId(uri.pathSegments.firstOrNull(), min = 4, max = 16) ?: return true
         partyManagerProvider.get().offerInvite(code, uri.getQueryParameter("server"))
         navController.navigate("listen_together/party") { launchSingleTop = true }
