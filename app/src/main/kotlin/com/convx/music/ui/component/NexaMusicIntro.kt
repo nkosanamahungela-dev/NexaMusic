@@ -15,7 +15,6 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Color
@@ -77,7 +76,7 @@ fun NexaMusicIntro(onFinished: () -> Unit) {
 
     // Use the transparent PNG mark so the intro and onboarding show the exact supplied logo.
     // Drawing a bitmap is also safe here: ic_nexamusic_foreground is a PNG, not a vector XML.
-    val logo = remember { ImageBitmap.imageResource(R.drawable.convx_logo) }
+    val logo = ImageBitmap.imageResource(R.drawable.convx_logo)
     val hole = remember { Path() }
     Canvas(
         Modifier
