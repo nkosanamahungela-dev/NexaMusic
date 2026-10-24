@@ -20,7 +20,7 @@ import com.convx.music.R
 @Composable
 fun ConvxLogo(modifier: Modifier = Modifier, size: Dp = 20.dp) {
     Image(
-        painter = painterResource(R.drawable.convx_logo),
+        painter = painterResource(R.drawable.ic_nexamusic_foreground),
         contentDescription = null,
         modifier = modifier.size(size),
     )
