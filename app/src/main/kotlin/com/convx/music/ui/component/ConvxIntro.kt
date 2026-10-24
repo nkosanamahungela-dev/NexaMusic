@@ -1,5 +1,5 @@
 /**
- * NexaMusic Project (C) 2026
+ * Convx Project (C) 2026
  * Licensed under GPL-3.0 | See git history for contributors
  */
 
@@ -15,26 +15,30 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.VectorPath
+import androidx.compose.ui.graphics.vector.toPath
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.res.imageResource
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import com.convx.music.R
 import kotlin.math.PI
 import kotlin.math.hypot
 import kotlin.math.pow
-import kotlin.math.roundToInt
 import kotlin.math.sin
 
 /**
@@ -49,7 +53,7 @@ import kotlin.math.sin
  * it instead. Skipped outright when the system animator scale is 0 (reduced motion).
  */
 @Composable
-fun NexaMusicIntro(onFinished: () -> Unit) {
+fun ConvxIntro(onFinished: () -> Unit) {
     val context = LocalContext.current
     val view = LocalView.current
     val reducedMotion = remember {
@@ -74,9 +78,18 @@ fun NexaMusicIntro(onFinished: () -> Unit) {
     }
     if (reducedMotion) return
 
-    // Use the transparent PNG mark so the intro and onboarding show the exact supplied logo.
-    // Drawing a bitmap is also safe here: ic_nexamusic_foreground is a PNG, not a vector XML.
-    val logo = ImageBitmap.imageResource(R.drawable.convx_logo)
+    // The monogram as a raw path in its 24x24 viewport, drawn under a canvas scale. A
+    // VectorPainter caches a bitmap at its draw size, and this glyph changes size every
+    // frame (up to ~17x in the zoom) -- that re-rasterised into a fresh, eventually
+    // multi-megapixel bitmap per frame, which is what made the intro stutter.
+    val logoVector = ImageVector.vectorResource(R.drawable.convx_logo)
+    val logo = remember(logoVector) {
+        Path().apply {
+            fillType = PathFillType.EvenOdd
+            logoVector.root.filterIsInstance<VectorPath>().forEach { addPath(it.pathData.toPath()) }
+        }
+    }
+    val logoViewport = logoVector.viewportWidth
     val hole = remember { Path() }
     Canvas(
         Modifier
@@ -122,16 +135,17 @@ fun NexaMusicIntro(onFinished: () -> Unit) {
                 (1f + 16f * zoom.pow(1.6f))
             val spin = -140f * (1f - outCubic(glyphIn)) + 35f * zoom
             if (glyph > 0f) {
-                val glyphSize = glyph.roundToInt().coerceAtLeast(1)
                 rotate(spin, pivot = c) {
-                    drawImage(
-                        image = logo,
-                        dstOffset = IntOffset(
-                            (c.x - glyphSize / 2f).roundToInt(),
-                            (c.y - glyphSize / 2f).roundToInt(),
-                        ),
-                        dstSize = IntSize(glyphSize, glyphSize),
-                    )
+                    translate(c.x - glyph / 2f, c.y - glyph / 2f) {
+                        scale(glyph / logoViewport, pivot = Offset.Zero) { drawPath(
+                            logo,
+                            Brush.linearGradient(
+                                colors = listOf(Color(0xFF43FF35), Color(0xFF00ED69), Color(0xFF007D70)),
+                                start = Offset(28f, 26f),
+                                end = Offset(80f, 81f),
+                            ),
+                        ) }
+                    }
                 }
             }
         }
