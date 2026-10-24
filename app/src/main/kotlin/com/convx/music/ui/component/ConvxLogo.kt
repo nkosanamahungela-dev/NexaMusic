@@ -25,3 +25,8 @@ fun NexaMusicLogo(modifier: Modifier = Modifier, size: Dp = 20.dp) {
         modifier = modifier.size(size),
     )
 }
+
+/** Backwards-compatible entry point for existing screens; renders the enlarged NexaMusic mark. */
+@Deprecated("Use NexaMusicLogo")
+@Composable
+fun ConvxLogo(modifier: Modifier = Modifier, size: Dp = 20.dp) = NexaMusicLogo(modifier, size)
