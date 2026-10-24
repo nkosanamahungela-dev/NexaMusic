@@ -77,6 +77,18 @@ data class AppleArtist(
     val motionVideoUrl: String?,
 )
 
+/** Catalog metadata from Apple Music. This is descriptive only; playback keeps the existing YouTube video ID. */
+@Serializable
+data class AppleSongMetadata(
+    val id: String,
+    val title: String,
+    val artistName: String,
+    val albumName: String,
+    val artworkUrl: String?,
+    val durationMillis: Long?,
+    val appleMusicUrl: String?,
+)
+
 /** Looks up Apple artwork and colors by title and artist, with cached results and bounded concurrency. */
 object AppleMusicCatalog {
     private const val AMP = "https://amp-api.music.apple.com"
@@ -125,6 +137,47 @@ object AppleMusicCatalog {
     }
 
     // Public lookups
+
+    /**
+     * Search Apple Music catalog metadata without requesting a user's Apple Music login.
+     * The existing catalog transport supplies its app-level web catalog token.
+     */
+    suspend fun searchSongs(term: String, limit: Int = 25): List<AppleSongMetadata> {
+        if (term.isBlank()) return emptyList()
+        val safeLimit = limit.coerceIn(1, 50)
+        val key = "search-songs|$storefront|${normalize(term)}|$safeLimit"
+        val encoded = cached(key) {
+            val root = request(
+                "/v1/catalog/$storefront/search",
+                "term" to term,
+                "types" to "songs",
+                "limit" to safeLimit.toString(),
+            ) ?: return@cached null
+            val data = root.path("results", "songs", "data") as? JsonArray
+                ?: return@cached json.encodeToString(emptyList<AppleSongMetadata>())
+            val songs = data.mapNotNull { element ->
+                val resource = element as? JsonObject ?: return@mapNotNull null
+                val attributes = resource["attributes"] as? JsonObject ?: return@mapNotNull null
+                val title = attributes.str("name")
+                val artist = attributes.str("artistName")
+                if (title.isBlank() || artist.isBlank()) return@mapNotNull null
+                AppleSongMetadata(
+                    id = resource.str("id"),
+                    title = title,
+                    artistName = artist,
+                    albumName = attributes.str("albumName"),
+                    artworkUrl = attributes["artwork"]?.let(::artwork)?.sized(600),
+                    durationMillis = attributes["durationInMillis"]
+                        ?.let { runCatching { it.jsonPrimitive.contentOrNull?.toLongOrNull() }.getOrNull() },
+                    appleMusicUrl = attributes.str("url").takeIf { it.isNotBlank() },
+                )
+            }
+            json.encodeToString(songs)
+        }
+        return encoded?.let {
+            runCatching { json.decodeFromString<List<AppleSongMetadata>>(it) }.getOrDefault(emptyList())
+        }.orEmpty()
+    }
 
     /** [priority]: an album page waiting on this, not a list row; uses the page lane. */
     suspend fun album(title: String, artist: String?, priority: Boolean = false): AppleArtwork? =
