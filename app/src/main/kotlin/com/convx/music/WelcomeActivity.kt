@@ -917,8 +917,7 @@ fun RotatingShapeContainer(modifier: Modifier = Modifier) {
         Icon(
             painter = painterResource(com.convx.music.R.drawable.convx_logo),
             contentDescription = null,
-            modifier = Modifier.size(150.dp),
-            tint = backgroundColor
+            modifier = Modifier.size(150.dp)
         )
     }
 }
