@@ -33,8 +33,9 @@ internal suspend fun List<YTItem>.withAppleMusicMetadata(query: String): List<YT
         }
         val apple = matches.minByOrNull { candidate ->
             val duration = item.duration
-            if (duration == null || candidate.durationMillis == null) Long.MAX_VALUE / 2
-            else kotlin.math.abs(candidate.durationMillis - duration.toLong() * 1000L)
+            val appleDuration = candidate.durationMillis
+            if (duration == null || appleDuration == null) Long.MAX_VALUE / 2
+            else kotlin.math.abs(appleDuration - duration.toLong() * 1000L)
         } ?: return@map item
 
         item.copy(
