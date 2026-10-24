@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="560" viewBox="0 0 1600 560" role="img" aria-labelledby="title desc">
+<title id="title">NexaMusic</title><desc id="desc">NexaMusic logo in neon green and emerald on a black background.</desc>
+<defs>
+  <linearGradient id="green" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#43ff35"/><stop offset=".48" stop-color="#00ed69"/><stop offset="1" stop-color="#007d70"/></linearGradient>
+  <radialGradient id="glow"><stop stop-color="#00f56b" stop-opacity=".19"/><stop offset="1" stop-color="#00f56b" stop-opacity="0"/></radialGradient>
+  <filter id="blur"><feGaussianBlur stdDeviation="30"/></filter>
+</defs>
+<rect width="1600" height="560" rx="28" fill="#050807"/>
+<ellipse cx="355" cy="280" rx="300" ry="260" fill="url(#glow)" filter="url(#blur)"/>
+<g transform="translate(90 38) scale(.86)">
+  <path d="M 700 120 A 300 300 0 0 0 70 365" fill="none" stroke="url(#green)" stroke-width="28" stroke-linecap="round"/>
+  <path d="M 105 470 A 300 300 0 0 0 770 270" fill="none" stroke="url(#green)" stroke-width="28" stroke-linecap="round"/>
+  <path d="M190 235 Q190 165 260 165 Q300 165 342 202 L520 354 L520 250 Q520 230 538 218 L640 165 Q705 133 705 207 L705 490 Q705 560 638 560 Q603 560 570 529 L375 357 L375 490 Q375 520 350 539 L290 580 Q190 625 190 530 Z" fill="url(#green)"/>
+  <path d="M558 270 L632 315 Q662 334 650 369 L630 407 L630 360 L574 327 L574 425 Q574 457 548 474 Q516 493 490 471 Q468 450 486 423 Q500 404 527 405 L527 293 Z" fill="#050807"/>
+</g>
+<g font-family="Inter,Segoe UI,Arial,sans-serif">
+  <text x="850" y="255" fill="#f4fff8" font-size="104" font-weight="750" letter-spacing="-4">Nexa<tspan fill="url(#green)">Music</tspan></text>
+  <rect x="858" y="292" width="112" height="6" rx="3" fill="url(#green)"/>
+  <text x="850" y="355" fill="#a9b8af" font-size="30" letter-spacing="3.5">YOUR MUSIC. YOUR FLOW.</text>
+  <text x="850" y="420" fill="#64746b" font-size="23">An open-source Android music player</text>
+  <circle cx="850" cy="474" r="5" fill="#00ed69"/><text x="870" y="482" fill="#8f9d94" font-size="19">Kotlin</text>
+  <circle cx="970" cy="474" r="5" fill="#00ed69"/><text x="990" y="482" fill="#8f9d94" font-size="19">Jetpack Compose</text>
+  <circle cx="1210" cy="474" r="5" fill="#00ed69"/><text x="1230" y="482" fill="#8f9d94" font-size="19">Android</text>
+</g>
+</svg>
