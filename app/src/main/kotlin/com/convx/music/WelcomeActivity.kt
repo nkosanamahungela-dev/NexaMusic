@@ -507,7 +507,7 @@ fun WelcomePagerScreen(onFinished: () -> Unit) {
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Text(
-                        text = "Convx is open-source and depends on community support to grow. Your help makes a difference!",
+                        text = "NexaMusic is an open-source music app built with community support. Your help makes a difference!",
                         style = AppTheme.typography.bodyLarge.copy(
                             fontFamily = GoogleSansFlex
                         ),
@@ -532,7 +532,7 @@ fun WelcomePagerScreen(onFinished: () -> Unit) {
                                 SymbolIcon(symbol = sf("chevron.right"), contentDescription = null, tint = AppTheme.colorScheme.onSurfaceVariant)
                             },
                             onClick = {
-                                uriHandler.safeOpenUri(context, "https://github.com/cosmictaserdev-creator/Convx")
+                                uriHandler.safeOpenUri(context, "https://github.com/nkosanamahungela-dev/NexaMusic")
                             }
                         )
 
@@ -549,7 +549,7 @@ fun WelcomePagerScreen(onFinished: () -> Unit) {
                                 SymbolIcon(symbol = sf("chevron.right"), contentDescription = null, tint = AppTheme.colorScheme.onSurfaceVariant)
                             },
                             onClick = {
-                                uriHandler.safeOpenUri(context, "https://discord.gg/Ejeb4cmzfd")
+                                uriHandler.safeOpenUri(context, "https://discord.gg/D8fYQKUEzw")
                             }
                         )
 

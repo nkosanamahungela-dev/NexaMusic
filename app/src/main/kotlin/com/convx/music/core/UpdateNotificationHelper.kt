@@ -38,11 +38,11 @@ object UpdateNotificationHelper {
             nm.createNotificationChannel(channel)
         }
 
-        // Direct download URL format from convxupdater - use the full tag (vX.X.X or bX.X.X) or nightly link
+        // Download links for NexaMusic releases and nightly debug artifacts.
         val apkUrl = if (versionName.contains("nightly", ignoreCase = true)) {
-            "https://nightly.link/cosmictaserdev-creator/Convx/workflows/nightly.yml/main/convx-gms-nightly.zip"
+            "https://nightly.link/nkosanamahungela-dev/NexaMusic/workflows/nightly.yml/main/nexamusic-gms-beta.zip"
         } else {
-            "https://github.com/cosmictaserdev-creator/Convx/releases/download/$versionName/convx-$versionName.apk"
+            "https://github.com/nkosanamahungela-dev/NexaMusic/releases/download/$versionName/nexamusic-$versionName.apk"
         }
         val intent = Intent(Intent.ACTION_VIEW, apkUrl.toUri())
 
