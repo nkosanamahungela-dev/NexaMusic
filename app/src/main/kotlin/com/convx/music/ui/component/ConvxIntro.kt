@@ -78,11 +78,11 @@ fun ConvxIntro(onFinished: () -> Unit) {
     }
     if (reducedMotion) return
 
-    // The monogram as a raw path in its 24x24 viewport, drawn under a canvas scale. A
+    // The NexaMusic mark as a raw path in its vector viewport, drawn under a canvas scale. A
     // VectorPainter caches a bitmap at its draw size, and this glyph changes size every
     // frame (up to ~17x in the zoom) -- that re-rasterised into a fresh, eventually
     // multi-megapixel bitmap per frame, which is what made the intro stutter.
-    val logoVector = ImageVector.vectorResource(R.drawable.convx_logo)
+    val logoVector = ImageVector.vectorResource(R.drawable.ic_nexamusic_foreground)
     val logo = remember(logoVector) {
         Path().apply {
             fillType = PathFillType.EvenOdd
