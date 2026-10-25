@@ -92,7 +92,7 @@ fun CollectionDetailHeader(
                         .background(artworkPageColor)
                         .sharedArtworkTarget(),
                 ) {
-                    val seededArtwork = SharedArtworkSeedImage(Modifier.fillMaxSize(), ContentScale.Crop)
+                    val seededArtwork = !immersiveArtwork && SharedArtworkSeedImage(Modifier.fillMaxSize(), ContentScale.Crop)
                     if (!seededArtwork && !artwork.isNullOrBlank() && !artworkFailed) {
                         AsyncImage(
                             model = artwork,
