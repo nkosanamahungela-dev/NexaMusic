@@ -50,8 +50,12 @@ fun rememberAlbumCanvas(
         if (albumTitle != null && artistName != null) "album|$albumTitle|$artistName" else null
     }
 
+    // Start instantly with the last known-good Canvas, but still refresh providers.
+    // Previously a cached URL short-circuited lookup entirely; when that URL died,
+    // the player exhausted the only candidate and the album silently stayed static.
+    val cachedCanvas = remember(cacheKey) { cacheKey?.let { CanvasArtworkPlaybackCache.get(it) } }
     var candidates by remember(cacheKey) {
-        mutableStateOf(cacheKey?.let { CanvasArtworkPlaybackCache.get(it) }?.let { listOf(it) } ?: emptyList())
+        mutableStateOf(cachedCanvas?.let { listOf(it) } ?: emptyList())
     }
     var candidateIndex by remember(cacheKey) { mutableIntStateOf(0) }
 
@@ -62,7 +66,7 @@ fun rememberAlbumCanvas(
     }
 
     LaunchedEffect(albumTitle, artistName, firstSongTitle) {
-        if (candidates.isNotEmpty() || cacheKey == null) return@LaunchedEffect
+        if (cacheKey == null) return@LaunchedEffect
         if (albumTitle.isNullOrBlank() || artistName.isNullOrBlank()) return@LaunchedEffect
 
         val fetched = withContext(Dispatchers.IO) {
@@ -91,8 +95,20 @@ fun rememberAlbumCanvas(
             listOfNotNull(spotify, apple, convx, tidal)
         }
 
-        candidates = fetched
-        candidateIndex = 0
+        // Keep the cached candidate first for instant playback, followed by fresh
+        // provider matches as recovery options if the cached animation is unavailable.
+        val cachedFirst = cachedCanvas?.let(::listOf).orEmpty()
+        val freshAlternates = fetched.filterNot { fresh ->
+            cachedCanvas != null &&
+                fresh.preferredAnimationUrl == cachedCanvas.preferredAnimationUrl &&
+                fresh.videoUrl == cachedCanvas.videoUrl
+        }
+        val refreshed = cachedFirst + freshAlternates
+        if (refreshed.isNotEmpty()) {
+            candidates = refreshed
+            // Don't reset an index that already advanced after the cached URL failed.
+            if (cachedFirst.isEmpty()) candidateIndex = 0
+        }
     }
 
     return AlbumCanvasState(
