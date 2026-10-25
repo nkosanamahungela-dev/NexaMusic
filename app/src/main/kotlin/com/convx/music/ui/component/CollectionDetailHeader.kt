@@ -72,6 +72,8 @@ fun CollectionDetailHeader(
     artworkPageColor: Color = Color.Black,
     /** 0..1 list scroll progress for a subtle image parallax. TopFadeBlur handles glass blur. */
     heroScrollProgress: Float = 0f,
+    /** Start the sharp artwork behind the status bar while header content keeps its safe-area spacing. */
+    artworkTopOffset: androidx.compose.ui.unit.Dp = (-24).dp,
 ) {
     CompositionLocalProvider(LocalContentColor provides foreground) {
         BoxWithConstraints(modifier.fillMaxWidth()) {
@@ -85,7 +87,7 @@ fun CollectionDetailHeader(
                     Modifier
                         .fillMaxWidth()
                         .height(520.dp)
-                        .offset(y = (-64).dp)
+                        .offset(y = artworkTopOffset)
                         .graphicsLayer { translationY = heroScrollProgress.coerceIn(0f, 1f) * 48.dp.toPx() }
                         .background(artworkPageColor)
                         .sharedArtworkTarget(),
