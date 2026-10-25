@@ -321,6 +321,7 @@ fun OnlinePlaylistScreen(
     val appearance = com.convx.music.ui.component.rememberPlaylistAppearance(
         playlistBackdropArtwork,
         0xFFFF375F.toInt(),
+        adaptiveContrast = true,
     )
     val tint = appearance.background
     com.convx.music.PublishAmbientBackgroundColor(tint)
@@ -822,7 +823,7 @@ private fun OnlinePlaylistHeader(
     val menuState = LocalMenuState.current
     val downloads by LocalDownloadUtil.current.get().downloads.collectAsStateWithLifecycle()
     val artwork = songs.firstOrNull()?.thumbnail ?: com.convx.music.ui.utils.pendingSharedArtworkThumbFor(playlist.id) ?: playlist.thumbnail
-    val appearance = com.convx.music.ui.component.rememberPlaylistAppearance(artwork)
+    val appearance = com.convx.music.ui.component.rememberPlaylistAppearance(artwork, adaptiveContrast = true)
     val duration = remember(songs) { songs.sumOf { it.duration ?: 0 } }
     com.convx.music.ui.component.CollectionDetailHeader(
         title = playlist.title,
