@@ -329,6 +329,15 @@ fun CollectionDetailHeader(
                             description,
                             runs = descriptionRuns,
                             collapsedMaxLines = if (immersiveArtwork && onSearch != null) 1 else 2,
+                            inlineMore = immersiveArtwork,
+                            style = if (immersiveArtwork && onSearch != null) {
+                                com.convx.music.ui.ios.compat.AppTheme.typography.bodySmall.copy(
+                                    fontSize = 13.sp,
+                                    lineHeight = 17.sp,
+                                )
+                            } else {
+                                com.convx.music.ui.ios.compat.AppTheme.typography.bodyMedium
+                            },
                             modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
                         )
                     }
