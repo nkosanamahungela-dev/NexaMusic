@@ -186,7 +186,9 @@ fun CanvasArtworkPlayer(
         factory = { viewContext ->
             AspectRatioFrameLayout(viewContext).apply {
                 layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-                resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
+                // Canvas should fill the full-page album hero, cropping excess edges
+                // rather than letterboxing the animation inside the still artwork.
+                resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
                 
                 val textureView = TextureView(viewContext).apply {
                     layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
