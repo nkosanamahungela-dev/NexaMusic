@@ -825,12 +825,22 @@ private fun OnlinePlaylistHeader(
     val artwork = songs.firstOrNull()?.thumbnail ?: com.convx.music.ui.utils.pendingSharedArtworkThumbFor(playlist.id) ?: playlist.thumbnail
     val appearance = com.convx.music.ui.component.rememberPlaylistAppearance(artwork, adaptiveContrast = true)
     val duration = remember(songs) { songs.sumOf { it.duration ?: 0 } }
+    val creatorOrUpdated = remember(playlist.author?.name, dbPlaylist?.playlist?.lastUpdateTime) {
+        playlist.author?.name?.takeIf { it.isNotBlank() }
+            ?: dbPlaylist?.playlist?.lastUpdateTime?.let { updatedAt ->
+                val days = java.time.Duration.between(updatedAt, java.time.LocalDateTime.now()).toDays().coerceAtLeast(0)
+                if (days == 0L) "Updated today" else "Updated ${days}d ago"
+            }
+    }
+    val playlistMetadata = buildString {
+        append(pluralStringResource(R.plurals.n_song, songs.size, songs.size))
+        if (duration > 0) append(" · ").append(makeTimeString(duration * 1000L))
+        creatorOrUpdated?.let { append(" · ").append(it) }
+    }
     com.convx.music.ui.component.CollectionDetailHeader(
         title = playlist.title,
-        subtitle = playlist.author?.name,
         artwork = artwork,
-        metadata = pluralStringResource(R.plurals.n_song, songs.size, songs.size) +
-            if (duration > 0) " \u00b7 " + makeTimeString(duration * 1000L) else "",
+        metadata = playlistMetadata,
         foreground = appearance.foreground,
         playing = isPlaying && songs.any { it.id == mediaMetadata?.id },
         enabled = songs.isNotEmpty(),
@@ -849,6 +859,7 @@ private fun OnlinePlaylistHeader(
         searchFocusRequester = searchFocusRequester,
         immersiveArtwork = true,
         artworkPageColor = appearance.background,
+        rightSymbol = "plus",
         heroScrollProgress = scrollBlurProgress.value,
         artworkTopOffset = -com.convx.music.ui.component.topBarContentPadding(),
         onRightAction = {
