@@ -62,16 +62,27 @@ fun rememberPlaylistAppearance(
     val palette = if (seeded != null && sampled === ArtworkMeshPalette.Fallback) seeded else sampled
     return remember(palette, adaptiveContrast) {
         val average = palette.sourceAverage
-        val dark = average.red * .2126f + average.green * .7152f + average.blue * .0722f < .52f
+        val sourceLuminance = average.luminance()
+        val dark = sourceLuminance < .52f
         val neutral = if (dark) .055f else .94f
         val weight = if (dark) .38f else .30f
-        val background = Color(
-            average.red * weight + neutral * (1f - weight),
-            average.green * weight + neutral * (1f - weight),
-            average.blue * weight + neutral * (1f - weight),
-        )
+        val channelSpread = maxOf(average.red, average.green, average.blue) -
+            minOf(average.red, average.green, average.blue)
+        // Neutral mid-grey/black-and-white art uses the familiar near-black Apple
+        // Music page, while white covers, creams and coloured pastels stay light.
+        val monochromeArt = adaptiveContrast && channelSpread < .045f &&
+            sourceLuminance in .18f.. .90f
+        val background = if (monochromeArt) {
+            Color(0xFF1C1C1E)
+        } else {
+            Color(
+                average.red * weight + neutral * (1f - weight),
+                average.green * weight + neutral * (1f - weight),
+                average.blue * weight + neutral * (1f - weight),
+            )
+        }
         // Choose foreground from the actual rendered page colour, not the source average.
-        // This protects white text on mid-toned pages and black text on creams/pastels.
+        // This protects white text on dark pages and black text on creams/pastels.
         val foreground = if (adaptiveContrast) {
             if (background.luminance() <= 0.179f) Color.White else Color.Black
         } else {
