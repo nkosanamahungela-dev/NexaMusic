@@ -60,7 +60,7 @@ fun rememberPlaylistAppearance(
     val sampled = rememberMeshPalette(imageUrl)
     val seeded = remember(seed) { seed?.let(ArtworkMeshPalette::fromSeed) }
     val palette = if (seeded != null && sampled === ArtworkMeshPalette.Fallback) seeded else sampled
-    return remember(palette) {
+    return remember(palette, adaptiveContrast) {
         val average = palette.sourceAverage
         val dark = average.red * .2126f + average.green * .7152f + average.blue * .0722f < .52f
         val neutral = if (dark) .055f else .94f
