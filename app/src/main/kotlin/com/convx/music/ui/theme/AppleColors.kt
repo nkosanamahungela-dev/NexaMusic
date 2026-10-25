@@ -71,11 +71,22 @@ object AppleColors {
         // Saturated reds/oranges use a deeper page so white foreground text has
         // strong contrast. Bright yellow, cream, and non-warm pastels remain light.
         val warmRedOrOrange = saturation >= 0.28f && (hue <= 45f || hue >= 350f)
-        return if (y >= 0.35 && !warmRedOrOrange) {
-            artworkBg and 0xFFFFFF
-        } else {
-            pageBackground(artworkBg)
+        if (y >= 0.35 && !warmRedOrOrange) return artworkBg and 0xFFFFFF
+
+        var page = pageBackground(artworkBg)
+        if (warmRedOrOrange) {
+            // Guarantee that white foreground remains readable on warm red/orange pages.
+            // Stop at the WCAG white-text boundary rather than relying on a fixed factor.
+            var steps = 0
+            while (luminance(page) > 0.179 && steps++ < 12) {
+                page = rgb(
+                    (red(page) * 0.88).roundToInt(),
+                    (green(page) * 0.88).roundToInt(),
+                    (blue(page) * 0.88).roundToInt(),
+                )
+            }
         }
+        return page
     }
 
     /** Linear blend; Apple's textColor3/4 = mix(bgColor, textColor1/2, 0.8). */
