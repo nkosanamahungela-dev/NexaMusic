@@ -1104,7 +1104,7 @@ fun LocalPlaylistHeader(
         searchFocusRequester = searchFocusRequester,
         immersiveArtwork = true,
         artworkPageColor = appearance.background,
-        artworkBlurProgress = scrollBlurProgress.value,
+        heroScrollProgress = scrollBlurProgress.value,
         onRightAction = {
                         menuState.show {
                             LocalPlaylistMenu(
