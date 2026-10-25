@@ -205,7 +205,7 @@ object DownloadNotificationManager {
 
     private fun showDownloadStartingLegacy(version: String, fileSize: String) {
         val notification = NotificationCompat.Builder(appContext, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.convx_notification)
             .setContentTitle(appContext.getString(R.string.downloading_update))
             .setContentText(appContext.getString(R.string.version_file_size, version, fileSize))
             .setProgress(100, 0, false)
