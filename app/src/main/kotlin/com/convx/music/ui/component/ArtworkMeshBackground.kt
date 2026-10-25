@@ -51,7 +51,12 @@ data class PlaylistAppearance(val mesh: ArtworkMeshPalette, val background: Colo
  * from it until artwork arrives, so the background still moves through colour.
  */
 @Composable
-fun rememberPlaylistAppearance(imageUrl: String?, seed: Int? = null): PlaylistAppearance {
+fun rememberPlaylistAppearance(
+    imageUrl: String?,
+    seed: Int? = null,
+    /** Use WCAG text contrast for the refreshed Album/Playlist detail screens only. */
+    adaptiveContrast: Boolean = false,
+): PlaylistAppearance {
     val sampled = rememberMeshPalette(imageUrl)
     val seeded = remember(seed) { seed?.let(ArtworkMeshPalette::fromSeed) }
     val palette = if (seeded != null && sampled === ArtworkMeshPalette.Fallback) seeded else sampled
@@ -67,11 +72,12 @@ fun rememberPlaylistAppearance(imageUrl: String?, seed: Int? = null): PlaylistAp
         )
         // Choose foreground from the actual rendered page colour, not the source average.
         // This protects white text on mid-toned pages and black text on creams/pastels.
-        PlaylistAppearance(
-            palette,
-            background,
-            if (background.luminance() <= 0.179f) Color.White else Color.Black,
-        )
+        val foreground = if (adaptiveContrast) {
+            if (background.luminance() <= 0.179f) Color.White else Color.Black
+        } else {
+            if (dark) Color.White else Color.Black
+        }
+        PlaylistAppearance(palette, background, foreground)
     }
 }
 
