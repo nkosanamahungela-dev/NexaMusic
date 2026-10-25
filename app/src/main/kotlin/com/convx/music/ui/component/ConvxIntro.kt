@@ -17,6 +17,7 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
@@ -127,7 +128,13 @@ fun ConvxIntro(onFinished: () -> Unit) {
             val zoom = inCubic(phase(t, ZOOM_START, ZOOM_END))
             val discIn = outBack(phase(t, 0f, 450f))
             val discR = r0 * discIn * (1f + 0.09f * beat) + (cover - r0) * zoom
-            drawCircle(Color.White, radius = discR.coerceAtLeast(0f), center = c)
+            val tileSize = discR.coerceAtLeast(0f) * 1.72f
+            drawRoundRect(
+                color = Color(0xFFC9E4C8),
+                topLeft = Offset(c.x - tileSize / 2f, c.y - tileSize / 2f),
+                size = androidx.compose.ui.geometry.Size(tileSize, tileSize),
+                cornerRadius = CornerRadius(tileSize * 0.16f),
+            )
 
             val glyphIn = phase(t, 100f, 550f)
             // Grows faster than the disc while zooming, so black strokes sweep past the camera.

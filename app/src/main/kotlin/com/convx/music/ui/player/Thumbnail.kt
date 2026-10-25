@@ -1094,7 +1094,7 @@ internal fun ThumbnailImage(
         // transition window below, so the steady state pays nothing extra.
         if (currentUrl.isNullOrBlank()) {
             Image(
-                painter = painterResource(R.drawable.thumbnail_fallback),
+                painter = painterResource(R.drawable.convx_logo),
                 contentDescription = null,
                 contentScale = if (cropArtwork) ContentScale.Crop else ContentScale.Fit,
                 modifier = Modifier.fillMaxSize(),
@@ -1113,9 +1113,9 @@ internal fun ThumbnailImage(
                     currentUrl = fallback
                 },
                 contentDescription = null,
-                placeholder = painterResource(R.drawable.thumbnail_fallback),
-                error = painterResource(R.drawable.thumbnail_fallback),
-                fallback = painterResource(R.drawable.thumbnail_fallback),
+                placeholder = painterResource(R.drawable.convx_logo),
+                error = painterResource(R.drawable.convx_logo),
+                fallback = painterResource(R.drawable.convx_logo),
                 contentScale = if (cropArtwork) ContentScale.Crop else ContentScale.Fit,
                 modifier = Modifier.fillMaxSize(),
             )

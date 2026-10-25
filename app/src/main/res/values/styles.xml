@@ -15,7 +15,7 @@
     <!-- Launch theme: show the NexaMusic mark on black before the animated intro. -->
     <style name="Theme.Convx.Starting" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">#000000</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_nexamusic_foreground</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/convx_logo</item>
         <item name="postSplashScreenTheme">@style/Theme.Convx</item>
     </style>
 

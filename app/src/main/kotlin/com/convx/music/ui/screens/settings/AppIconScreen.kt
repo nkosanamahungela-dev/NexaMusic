@@ -29,7 +29,8 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import com.convx.music.ui.ios.compat.AlertDialog
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import com.convx.music.ui.ios.compat.Icon
 import com.convx.music.ui.ios.compat.AppTheme
@@ -72,6 +73,8 @@ fun AppIconScreen(
     navController: NavController,
     @Suppress("UNUSED_PARAMETER") scrollBehavior: TopAppBarScrollBehavior,
 ) {
+    var showAvailableSoon by remember { mutableStateOf(false) }
+
     SettingsPage(
         navController = navController,
         title = stringResource(R.string.app_icon),
@@ -85,7 +88,7 @@ fun AppIconScreen(
             Image(
                 painter = painterResource(R.drawable.convx_logo),
                 contentDescription = stringResource(R.string.app_icon),
-                modifier = Modifier.size(112.dp),
+                modifier = Modifier.size(112.dp).clip(RoundedCornerShape(24.dp)).clickable { showAvailableSoon = true },
             )
             Spacer(Modifier.height(24.dp))
             Text(
@@ -101,5 +104,18 @@ fun AppIconScreen(
                 textAlign = TextAlign.Center,
             )
         }
+    }
+
+    if (showAvailableSoon) {
+        AlertDialog(
+            onDismissRequest = { showAvailableSoon = false },
+            title = { Text(stringResource(R.string.app_icon)) },
+            text = { Text(stringResource(R.string.app_icon_available_soon_message)) },
+            confirmButton = {
+                TextButton(onClick = { showAvailableSoon = false }) {
+                    Text(stringResource(android.R.string.ok))
+                }
+            },
+        )
     }
 }
