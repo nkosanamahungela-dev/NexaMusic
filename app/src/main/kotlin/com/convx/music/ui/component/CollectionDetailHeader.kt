@@ -146,7 +146,7 @@ fun CollectionDetailHeader(
                     Row(
                         Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 20.dp)
+                            .padding(horizontal = if (immersiveArtwork) 20.dp else 18.dp)
                             .height(40.dp)
                             .clip(RoundedCornerShape(20.dp))
                             .background(foreground.copy(alpha = 0.12f))
@@ -157,13 +157,13 @@ fun CollectionDetailHeader(
                             .padding(horizontal = 14.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        SymbolIcon(sf("magnifyingglass"), null, size = 18.dp, tint = foreground.copy(alpha = .72f))
+                        SymbolIcon(sf("magnifyingglass"), null, size = 18.dp, tint = foreground.copy(alpha = if (immersiveArtwork) .72f else .48f))
                         Spacer(Modifier.width(8.dp))
                         if (searchValue == null || onSearchValueChange == null) {
                             Text(
                                 stringResource(R.string.search),
                                 style = SfStyle(17.sp, 22.sp),
-                                color = foreground.copy(alpha = .72f),
+                                color = foreground.copy(alpha = if (immersiveArtwork) .72f else .48f),
                             )
                         } else {
                             BasicTextField(
