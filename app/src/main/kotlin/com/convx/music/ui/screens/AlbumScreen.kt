@@ -430,7 +430,7 @@ fun AlbumScreen(
                     metadata = albumInfo,
                     immersiveArtwork = true,
                     artworkPageColor = tint,
-                    artworkBlurProgress = heroTopBlurProgress.value,
+                    heroScrollProgress = heroTopBlurProgress.value,
                     description = description,
                     descriptionRuns = descriptionRuns?.map { LinkSegment(it.text, it.navigationEndpoint?.urlEndpoint?.url) },
                     foreground = onTint,
@@ -650,7 +650,7 @@ fun AlbumScreen(
                     onShuffle = {},
                     immersiveArtwork = true,
                     artworkPageColor = tint,
-                    artworkBlurProgress = heroTopBlurProgress.value,
+                    heroScrollProgress = heroTopBlurProgress.value,
                     titleContent = { Box(Modifier.fillMaxWidth().height(75.dp), contentAlignment = Alignment.Center) { ShimmerLine(.55f, 34.dp) } },
                 )
             }
