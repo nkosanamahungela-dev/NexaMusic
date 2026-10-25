@@ -1080,7 +1080,7 @@ fun LocalPlaylistHeader(
         playlist = playlist,
         onError = { message -> scope.launch { snackbarHostState.showSnackbar(message) } },
     )
-    val artwork = playlist.playlist.thumbnailUrl ?: com.convx.music.ui.utils.pendingSharedArtworkThumbFor(playlist.id) ?: playlist.thumbnails.firstOrNull() ?: songs.firstOrNull()?.song?.song?.thumbnailUrl
+    val artwork = playlist.playlist.thumbnailUrl ?: playlist.thumbnails.firstOrNull() ?: songs.firstOrNull()?.song?.song?.thumbnailUrl ?: com.convx.music.ui.utils.pendingSharedArtworkThumbFor(playlist.id)
     val appearance = com.convx.music.ui.component.rememberPlaylistAppearance(artwork, adaptiveContrast = true)
     val duration = remember(songs) { songs.fastSumBy { it.song.song.duration } }
     val count = if (playlist.songCount == 0) playlist.playlist.remoteSongCount ?: 0 else playlist.songCount
