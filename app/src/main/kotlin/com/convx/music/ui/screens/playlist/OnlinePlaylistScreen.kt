@@ -315,8 +315,11 @@ fun OnlinePlaylistScreen(
     )
     val onlineChrome = com.convx.music.ui.component.rememberDetailChromeEntrance(iconCount = 3)
 
+    // Community playlists use the first track's artwork as the immersive cover.
+    // Keep the route thumbnail as a loading fallback until tracks are available.
+    val playlistBackdropArtwork = songs.firstOrNull()?.thumbnail ?: instantPlaylistThumb ?: playlist?.thumbnail
     val appearance = com.convx.music.ui.component.rememberPlaylistAppearance(
-        instantPlaylistThumb ?: playlist?.thumbnail,
+        playlistBackdropArtwork,
         0xFFFF375F.toInt(),
     )
     val tint = appearance.background
@@ -355,7 +358,7 @@ fun OnlinePlaylistScreen(
             .layerBackdrop(listBackdrop, frozen = backdropFreeze.frozen)
             .graphicsLayer()
             .hazeSource(hazeState)) {
-                com.convx.music.ui.component.PlaylistFullBleedArtworkBackground(artwork = songs.firstOrNull()?.thumbnail ?: instantPlaylistThumb ?: playlist?.thumbnail, pageColor = tint, modifier = Modifier.fillMaxSize())
+                com.convx.music.ui.component.PlaylistFullBleedArtworkBackground(artwork = playlistBackdropArtwork, pageColor = tint, modifier = Modifier.fillMaxSize())
         LazyColumn(
             state = lazyListState,
             overscrollEffect = heroZoom.listOverscroll(),
@@ -815,7 +818,7 @@ private fun OnlinePlaylistHeader(
     val database = LocalDatabase.current.get()
     val menuState = LocalMenuState.current
     val downloads by LocalDownloadUtil.current.get().downloads.collectAsStateWithLifecycle()
-    val artwork = com.convx.music.ui.utils.pendingSharedArtworkThumbFor(playlist.id) ?: playlist.thumbnail
+    val artwork = songs.firstOrNull()?.thumbnail ?: com.convx.music.ui.utils.pendingSharedArtworkThumbFor(playlist.id) ?: playlist.thumbnail
     val appearance = com.convx.music.ui.component.rememberPlaylistAppearance(artwork)
     val duration = remember(songs) { songs.sumOf { it.duration ?: 0 } }
     com.convx.music.ui.component.CollectionDetailHeader(
