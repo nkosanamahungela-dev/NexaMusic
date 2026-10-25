@@ -651,7 +651,7 @@ fun LocalPlaylistScreen(
             .layerBackdrop(listBackdrop, frozen = backdropFreeze.frozen)
             .graphicsLayer()
             .hazeSource(hazeState)) {
-                com.convx.music.ui.component.ArtworkMeshBackground(bgHeroUrl, paused = { lazyListState.isScrollInProgress }, appearance = appearance)
+                com.convx.music.ui.component.PlaylistFullBleedArtworkBackground(artwork = bgHeroUrl, pageColor = tint, modifier = Modifier.fillMaxSize())
         LazyColumn(
             state = lazyListState,
             overscrollEffect = heroZoom.listOverscroll(),
@@ -1102,6 +1102,7 @@ fun LocalPlaylistHeader(
         onSearchValueChange = onSearchValueChange,
         onSearchImeAction = onSearchImeAction,
         searchFocusRequester = searchFocusRequester,
+        immersivePlaylistArtwork = true,
         onRightAction = {
                         menuState.show {
                             LocalPlaylistMenu(
