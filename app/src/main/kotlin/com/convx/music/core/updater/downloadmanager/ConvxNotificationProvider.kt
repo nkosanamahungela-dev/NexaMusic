@@ -85,7 +85,7 @@ class ConvxNotificationProvider(
             builder.setColorized(false)
 
             // Ensure we have a small icon (required for chip)
-            builder.setSmallIcon(R.drawable.convx_notification)
+            builder.setSmallIcon(R.drawable.nexamusic_notification)
 
             // Promote to Live Update
             setRequestPromotedOngoingSafely(builder, true)
