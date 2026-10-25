@@ -123,18 +123,6 @@ fun CollectionDetailHeader(
                             ),
                     )
 
-                    // Preserve the existing custom-cover entry point without changing
-                    // the cover picker flow; keep it in the open artwork area.
-                    if (onEditCover != null) {
-                        ContrastCircleButton(
-                            foreground,
-                            onEditCover,
-                            modifier = Modifier.align(Alignment.CenterEnd).padding(end = 20.dp).offset(y = 34.dp),
-                            size = 36.dp,
-                        ) {
-                            SymbolIcon(sf("square.and.pencil"), stringResource(R.string.edit_playlist_cover), size = 18.dp)
-                        }
-                    }
                 }
             }
 
