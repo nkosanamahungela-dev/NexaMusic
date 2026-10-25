@@ -224,8 +224,6 @@ fun AlbumScreen(
 
     val playlistId by viewModel.playlistId.collectAsState()
     val albumWithSongs by viewModel.albumWithSongs.collectAsState()
-    val artistSignatureUrl by viewModel.artistSignatureUrl.collectAsState()
-    val artistBundledLogo by viewModel.artistBundledLogo.collectAsState()
     val otherVersions by viewModel.otherVersions.collectAsState()
     val releasesForYou by viewModel.releasesForYou.collectAsState()
     val description by viewModel.description.collectAsState()
@@ -352,9 +350,6 @@ fun AlbumScreen(
     )
     val appleAlbumLoading = appleAlbumState.loading
     val appleAlbum = appleAlbumState.art
-    val albumArtistState = com.convx.music.utils.rememberAppleArtist(
-        albumWithSongs?.artists?.firstOrNull()?.name.orEmpty(),
-    )
     // Only estimate from YouTube's art once Apple has settled without a match.
     val estimatedArtworkBg = com.convx.music.utils.rememberEstimatedArtworkBg(
         bgUrl.takeIf { !appleAlbumLoading && appleAlbum == null },
