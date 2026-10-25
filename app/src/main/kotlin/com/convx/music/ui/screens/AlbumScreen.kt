@@ -361,19 +361,19 @@ fun AlbumScreen(
     )
     val tint by androidx.compose.animation.animateColorAsState(
         com.convx.music.ui.theme.AppleColors.color(
-            com.convx.music.ui.theme.AppleColors.pageBackground(
+            com.convx.music.ui.theme.AppleColors.heroPageBackground(
                 appleAlbum?.bgColor ?: estimatedArtworkBg ?: 0x1C1C1E,
             ),
         ),
         label = "albumPage",
     )
     com.convx.music.PublishAmbientBackgroundColor(tint)
-    val onTint = androidx.compose.ui.graphics.Color.White
+    val onTint = if (AppleTokens.prefersLightContent(tint)) Color.White else Color.Black
 
     val glassConfig = LocalGlassEffectConfig.current
     val useGlass = glassConfig.isEnabledFor(GlassComponent.NAV_BAR) && isGlassAllowed()
     val chromeShape = ContinuousRoundedRectangle(percent = 50)
-    val chromeContentColor = if (useGlass) glassConfig.resolvedTextColor() else AppTheme.colorScheme.onSurface
+    val chromeContentColor = if (useGlass) glassConfig.resolvedTextColor() else onTint
 
     // The unattached backdrop avoids a RenderNode cycle in the floating chrome.
     val heroBackdrop = rememberLayerBackdrop()
@@ -425,9 +425,12 @@ fun AlbumScreen(
                 }
                 com.convx.music.ui.component.CollectionDetailHeader(
                     title = title,
-                    subtitle = title,
+                    subtitle = artistName,
                     artwork = appleAlbum?.sized(1200) ?: instantThumbUrl ?: albumWithSongs.album.thumbnailUrl,
                     metadata = albumInfo,
+                    immersiveArtwork = true,
+                    artworkPageColor = tint,
+                    artworkBlurProgress = heroTopBlurProgress.value,
                     description = description,
                     descriptionRuns = descriptionRuns?.map { LinkSegment(it.text, it.navigationEndpoint?.urlEndpoint?.url) },
                     foreground = onTint,
@@ -451,18 +454,6 @@ fun AlbumScreen(
                             Download.STATE_DOWNLOADING -> com.convx.music.playback.cancelDownloads(context, filteredSongs.map { it.id }, downloadUtil.downloads.value)
                             else -> com.convx.music.playback.downloadSongs(context,
                                 filteredSongs.map { com.convx.music.playback.DownloadTarget(it.id, it.song.title, it.artists.firstOrNull()?.name, it.song.duration) }, downloadUtil.downloads.value)
-                        }
-                    },
-                    titleContent = {
-                        Box(Modifier.fillMaxWidth().height(75.dp).padding(horizontal = 20.dp), contentAlignment = Alignment.Center) {
-                            if (!albumArtistState.loading || artistBundledLogo != null || artistSignatureUrl != null) {
-                                com.convx.music.ui.screens.artist.ArtistWordmark(
-                                    logo = albumArtistState.artist?.logo,
-                                    name = artistName,
-                                    signatureUrl = artistSignatureUrl,
-                                    bundledLogo = artistBundledLogo,
-                                )
-                            }
                         }
                     },
                     artworkOverlay = {
@@ -502,6 +493,7 @@ fun AlbumScreen(
                         isActive = song.id == mediaMetadata?.id,
                         isPlaying = isPlaying,
                         showInLibraryIcon = true,
+                        showSubtitle = false,
                         shape = listItemShape(index, filteredSongs.size),
                         flat = true,
                         trailingContent = {
@@ -656,6 +648,9 @@ fun AlbumScreen(
                     enabled = false,
                     onPlay = {},
                     onShuffle = {},
+                    immersiveArtwork = true,
+                    artworkPageColor = tint,
+                    artworkBlurProgress = heroTopBlurProgress.value,
                     titleContent = { Box(Modifier.fillMaxWidth().height(75.dp), contentAlignment = Alignment.Center) { ShimmerLine(.55f, 34.dp) } },
                 )
             }
