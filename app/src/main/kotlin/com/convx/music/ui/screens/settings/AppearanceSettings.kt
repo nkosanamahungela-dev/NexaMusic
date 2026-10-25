@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.material3.ExperimentalMaterial3Api
+import com.convx.music.ui.ios.compat.AlertDialog
 import com.convx.music.ui.ios.compat.ModalBottomSheet
 import com.convx.music.ui.ios.compat.rememberIosModalSheetState
 import com.convx.music.ui.ios.foundation.IosTheme
@@ -147,6 +148,20 @@ fun AppearanceSettings(
     activity: Activity,
     snackbarHostState: SnackbarHostState,
 ) {
+    var showAppIconAvailableSoon by rememberSaveable { mutableStateOf(false) }
+    if (showAppIconAvailableSoon) {
+        AlertDialog(
+            onDismissRequest = { showAppIconAvailableSoon = false },
+            title = { Text(stringResource(R.string.app_icon)) },
+            text = { Text(stringResource(R.string.app_icon_available_soon_message)) },
+            confirmButton = {
+                TextButton(onClick = { showAppIconAvailableSoon = false }) {
+                    Text(stringResource(android.R.string.ok))
+                }
+            },
+        )
+    }
+
     val (_, _) = rememberPreference(UseNewMiniPlayerDesignKey, defaultValue = true)
     val (_, _) = rememberPreference(DynamicThemeKey, defaultValue = true)
     val (useNewPlayerDesign, _) = rememberPreference(UseNewPlayerDesignKey, defaultValue = false)
@@ -390,7 +405,7 @@ fun AppearanceSettings(
                     icon = painterResource(R.drawable.convx_logo),
                     title = { Text(stringResource(R.string.app_icon)) },
                     description = { Text(stringResource(R.string.app_icon_desc)) },
-                    onClick = { navController.navigate("settings/appearance/appicon") }
+                    onClick = { showAppIconAvailableSoon = true }
                 )
             )
         )

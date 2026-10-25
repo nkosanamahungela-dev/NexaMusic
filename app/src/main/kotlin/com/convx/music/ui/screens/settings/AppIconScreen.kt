@@ -64,134 +64,39 @@ import com.convx.music.ui.utils.backToMain
 import com.convx.music.utils.AppIcon
 import com.convx.music.utils.rememberPreference
 
-/** Adaptive icons draw a 108dp canvas but launchers only reveal about 72dp of it. */
-private const val ADAPTIVE_OVERSCAN = 108f / 72f
-
-/**
- * Picker for the launcher icon. Each tile reproduces what the launcher will draw: the variant's
- * adaptive foreground composited over the shared tile colour, clipped to a squircle.
- */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppIconScreen(
     navController: NavController,
-    scrollBehavior: TopAppBarScrollBehavior,
+    @Suppress("UNUSED_PARAMETER") scrollBehavior: TopAppBarScrollBehavior,
 ) {
-    val context = LocalContext.current
-    val (selectedId, onSelectedIdChange) = rememberPreference(
-        AppIconKey,
-        defaultValue = AppIcon.DEFAULT.id,
-    )
-    val selected = remember(selectedId) { AppIcon.fromId(selectedId) }
-    var pending by remember { mutableStateOf<AppIcon?>(null) }
-
-    pending?.let { icon ->
-        AlertDialog(
-            onDismissRequest = { pending = null },
-            title = { Text(stringResource(R.string.app_icon)) },
-            text = { Text(stringResource(R.string.app_icon_change_warning)) },
-            confirmButton = {
-                TextButton(onClick = {
-                    AppIcon.apply(context, icon)
-                    onSelectedIdChange(icon.id)
-                    pending = null
-                }) { Text(stringResource(android.R.string.ok)) }
-            },
-            dismissButton = {
-                TextButton(onClick = { pending = null }) {
-                    Text(stringResource(android.R.string.cancel))
-                }
-            },
-        )
-    }
-
-    val gridState = rememberLazyGridState()
-    val appIconTitleProgress = rememberTitleCollapseProgressState(gridState)
-
-    SettingsScaffold(
+    SettingsPage(
         navController = navController,
         title = stringResource(R.string.app_icon),
-        titleAlpha = 0f,
-        titleAlphaProvider = { appIconTitleProgress.value },
-        pageColor = AppTheme.colorScheme.background,
-    ) { chrome ->
-        LazyVerticalGrid(
-            state = gridState,
-            columns = GridCells.Adaptive(96.dp),
-            modifier = chrome.contentModifier()
-                .windowInsetsPadding(
-                    LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Horizontal)
-                )
-                .fillMaxSize(),
-            // Top padding, not a top inset on the grid itself: the tiles have to
-            // travel under the bar for the blur to have anything to frost.
-            contentPadding = PaddingValues(
-                start = 16.dp,
-                end = 16.dp,
-                top = topBarContentPadding(),
-                bottom = 16.dp,
-            ),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            items(AppIcon.entries, key = { it.id }) { icon ->
-                AppIconTile(
-                    icon = icon,
-                    selected = icon == selected,
-                    onClick = { if (icon != selected) pending = icon },
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun AppIconTile(
-    icon: AppIcon,
-    selected: Boolean,
-    onClick: () -> Unit,
-) {
-    val borderWidth by animateDpAsState(if (selected) 3.dp else 0.dp, label = "appIconBorder")
-    val borderColor by animateColorAsState(
-        if (selected) AppTheme.colorScheme.primary else Color.Transparent,
-        label = "appIconBorderColor",
-    )
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.clickable(enabled = false, onClick = onClick),
     ) {
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(1f)
-                .clip(RoundedCornerShape(28))
-                .background(colorResource(R.color.ic_launcher_tile))
-                .border(borderWidth, borderColor, RoundedCornerShape(28)),
+                .padding(horizontal = 24.dp, vertical = 40.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Image(
-                painter = painterResource(icon.previewRes),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                // The foreground is a 108dp canvas whose outer ring is mask overscan; scaling by
-                // 108/72 leaves exactly the part a launcher mask actually reveals.
-                modifier = Modifier
-                    .fillMaxSize()
-                    .graphicsLayer(scaleX = ADAPTIVE_OVERSCAN, scaleY = ADAPTIVE_OVERSCAN),
+                painter = painterResource(R.drawable.convx_logo),
+                contentDescription = stringResource(R.string.app_icon),
+                modifier = Modifier.size(112.dp),
             )
-            // Temporarily dim the icon previews while the new NexaMusic logo is being designed.
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.48f)),
+            Spacer(Modifier.height(24.dp))
+            Text(
+                text = stringResource(R.string.app_icon_desc),
+                style = AppTheme.typography.titleMedium,
+                color = AppTheme.colorScheme.onSurface,
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = stringResource(R.string.app_icon_available_soon_message),
+                style = AppTheme.typography.bodyLarge,
+                color = AppTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
             )
         }
-        Text(
-            text = stringResource(icon.labelRes),
-            style = AppTheme.typography.labelMedium,
-            textAlign = TextAlign.Center,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(top = 6.dp),
-        )
     }
 }
