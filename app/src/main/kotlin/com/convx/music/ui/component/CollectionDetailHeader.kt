@@ -87,9 +87,11 @@ fun CollectionDetailHeader(
                         .height(520.dp)
                         .offset(y = (-64).dp)
                         .graphicsLayer { translationY = heroScrollProgress.coerceIn(0f, 1f) * 48.dp.toPx() }
-                        .background(artworkPageColor),
+                        .background(artworkPageColor)
+                        .sharedArtworkTarget(),
                 ) {
-                    if (!artwork.isNullOrBlank() && !artworkFailed) {
+                    val seededArtwork = SharedArtworkSeedImage(Modifier.fillMaxSize(), ContentScale.Crop)
+                    if (!seededArtwork && !artwork.isNullOrBlank() && !artworkFailed) {
                         AsyncImage(
                             model = artwork,
                             contentDescription = null,
