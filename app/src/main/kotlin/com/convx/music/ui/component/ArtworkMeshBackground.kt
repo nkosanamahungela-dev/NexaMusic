@@ -16,6 +16,7 @@ import androidx.compose.ui.MotionDurationScale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntSize
@@ -59,12 +60,17 @@ fun rememberPlaylistAppearance(imageUrl: String?, seed: Int? = null): PlaylistAp
         val dark = average.red * .2126f + average.green * .7152f + average.blue * .0722f < .52f
         val neutral = if (dark) .055f else .94f
         val weight = if (dark) .38f else .30f
+        val background = Color(
+            average.red * weight + neutral * (1f - weight),
+            average.green * weight + neutral * (1f - weight),
+            average.blue * weight + neutral * (1f - weight),
+        )
+        // Choose foreground from the actual rendered page colour, not the source average.
+        // This protects white text on mid-toned pages and black text on creams/pastels.
         PlaylistAppearance(
             palette,
-            Color(average.red * weight + neutral * (1f - weight),
-                average.green * weight + neutral * (1f - weight),
-                average.blue * weight + neutral * (1f - weight)),
-            if (dark) Color.White else Color.Black,
+            background,
+            if (background.luminance() <= 0.179f) Color.White else Color.Black,
         )
     }
 }
