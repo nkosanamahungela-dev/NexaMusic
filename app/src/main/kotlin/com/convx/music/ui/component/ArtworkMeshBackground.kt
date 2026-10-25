@@ -71,7 +71,7 @@ fun rememberPlaylistAppearance(
         // Neutral mid-grey/black-and-white art uses the familiar near-black Apple
         // Music page, while white covers, creams and coloured pastels stay light.
         val monochromeArt = adaptiveContrast && channelSpread < .045f &&
-            sourceLuminance in .18f.. .90f
+            sourceLuminance in 0.18f..0.90f
         val background = if (monochromeArt) {
             Color(0xFF1C1C1E)
         } else {
