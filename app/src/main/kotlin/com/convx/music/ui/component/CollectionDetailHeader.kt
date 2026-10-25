@@ -16,8 +16,8 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
@@ -66,30 +66,95 @@ fun CollectionDetailHeader(
     searchFocusRequester: FocusRequester? = null,
     titleContent: (@Composable () -> Unit)? = null,
     artworkOverlay: (@Composable BoxScope.() -> Unit)? = null,
-    immersivePlaylistArtwork: Boolean = false,
+    /** Enables the Apple Music iOS 26.4 full-bleed treatment for Album/Playlist only. */
+    immersiveArtwork: Boolean = false,
+    /** Flat artwork-derived colour that fills the page below the image. */
+    artworkPageColor: Color = Color.Black,
+    /** 0..1 list scroll progress for a subtle image parallax. TopFadeBlur handles glass blur. */
+    heroScrollProgress: Float = 0f,
+    /** Start the sharp artwork behind the status bar while header content keeps its safe-area spacing. */
+    artworkTopOffset: androidx.compose.ui.unit.Dp = (-24).dp,
 ) {
     CompositionLocalProvider(LocalContentColor provides foreground) {
         BoxWithConstraints(modifier.fillMaxWidth()) {
             val artworkSize = minOf(maxWidth * .68f, 300.dp)
             var artworkFailed by remember(artwork) { mutableStateOf(false) }
+
+            // The artwork belongs to the scrollable header, not a fixed screen overlay.
+            // It starts above the safe-area content and fades into the flat page colour.
+            if (immersiveArtwork) {
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .height(520.dp)
+                        .offset(y = artworkTopOffset)
+                        .graphicsLayer { translationY = heroScrollProgress.coerceIn(0f, 1f) * 48.dp.toPx() }
+                        .background(artworkPageColor)
+                        .sharedArtworkTarget(),
+                ) {
+                    val seededArtwork = !immersiveArtwork && SharedArtworkSeedImage(Modifier.fillMaxSize(), ContentScale.Crop)
+                    if (!seededArtwork && !artwork.isNullOrBlank() && !artworkFailed) {
+                        AsyncImage(
+                            model = artwork,
+                            contentDescription = null,
+                            onError = { artworkFailed = true },
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                    }
+
+                    artworkOverlay?.invoke(this)
+
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.verticalGradient(
+                                    colorStops = arrayOf(
+                                        0.00f to Color.Black.copy(alpha = 0.02f),
+                                        0.35f to artworkPageColor.copy(alpha = 0.02f),
+                                        0.48f to artworkPageColor.copy(alpha = 0.24f),
+                                        0.62f to artworkPageColor.copy(alpha = 0.68f),
+                                        0.76f to artworkPageColor.copy(alpha = 0.94f),
+                                        0.90f to artworkPageColor,
+                                        1.00f to artworkPageColor,
+                                    ),
+                                ),
+                            ),
+                    )
+
+                }
+            }
+
             Column(
-                Modifier.fillMaxWidth().padding(top = 26.dp, bottom = 22.dp),
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = 26.dp, bottom = 22.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 if (onSearch != null) {
                     Row(
-                        Modifier.fillMaxWidth().padding(horizontal = 18.dp).height(40.dp)
-                            .clip(RoundedCornerShape(20.dp)).background(foreground.copy(alpha = .12f))
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = if (immersiveArtwork) 20.dp else 18.dp)
+                            .height(40.dp)
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(foreground.copy(alpha = 0.12f))
                             .clickable(role = Role.Button) {
-                                if (searchValue == null) onSearch() else searchFocusRequester?.requestFocus()
+                                if (searchValue == null) onSearch()
+                                else searchFocusRequester?.requestFocus()
                             }
                             .padding(horizontal = 14.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        SymbolIcon(sf("magnifyingglass"), null, size = 18.dp, tint = foreground.copy(alpha = .48f))
+                        SymbolIcon(sf("magnifyingglass"), null, size = 18.dp, tint = foreground.copy(alpha = if (immersiveArtwork) .72f else .48f))
                         Spacer(Modifier.width(8.dp))
                         if (searchValue == null || onSearchValueChange == null) {
-                            Text(stringResource(R.string.search), style = SfStyle(17.sp, 22.sp), color = foreground.copy(alpha = .48f))
+                            Text(
+                                stringResource(R.string.search),
+                                style = SfStyle(17.sp, 22.sp),
+                                color = foreground.copy(alpha = if (immersiveArtwork) .72f else .48f),
+                            )
                         } else {
                             BasicTextField(
                                 value = searchValue,
@@ -105,7 +170,11 @@ fun CollectionDetailHeader(
                                 decorationBox = { innerTextField ->
                                     Box(contentAlignment = Alignment.CenterStart) {
                                         if (searchValue.text.isEmpty()) {
-                                            Text(stringResource(R.string.search), style = SfStyle(17.sp, 22.sp), color = foreground.copy(alpha = .48f))
+                                            Text(
+                                                stringResource(R.string.search),
+                                                style = SfStyle(17.sp, 22.sp),
+                                                color = foreground.copy(alpha = .72f),
+                                            )
                                         }
                                         innerTextField()
                                     }
@@ -113,15 +182,26 @@ fun CollectionDetailHeader(
                             )
                         }
                     }
-                    Spacer(Modifier.height(26.dp))
+                    Spacer(Modifier.height(if (immersiveArtwork) 230.dp else 26.dp))
                 }
-                if (!immersivePlaylistArtwork) {
+
+                if (!immersiveArtwork) {
                     Box(
-                        Modifier.size(artworkSize).shadow(18.dp, RoundedCornerShape(12.dp), clip = false,
-                            ambientColor = Color.Black.copy(alpha = .18f), spotColor = Color.Black.copy(alpha = .18f)),
+                        Modifier
+                            .size(artworkSize)
+                            .shadow(
+                                18.dp,
+                                RoundedCornerShape(12.dp),
+                                clip = false,
+                                ambientColor = Color.Black.copy(alpha = .18f),
+                                spotColor = Color.Black.copy(alpha = .18f),
+                            ),
                     ) {
                         Box(
-                            Modifier.sharedArtworkTarget().fillMaxSize().clip(RoundedCornerShape(12.dp))
+                            Modifier
+                                .sharedArtworkTarget()
+                                .fillMaxSize()
+                                .clip(RoundedCornerShape(12.dp))
                                 .background(foreground.copy(alpha = .12f)),
                             contentAlignment = Alignment.Center,
                         ) {
@@ -129,53 +209,104 @@ fun CollectionDetailHeader(
                             if (artwork.isNullOrBlank() || artworkFailed) {
                                 SymbolIcon(sf("music.note.list"), null, tint = foreground.copy(alpha = .5f), size = 72.dp)
                             } else if (!seeded) {
-                                // Keep the tapped tile's decoded image as the hero for the
-                                // whole screen lifetime. Starting another request after the
-                                // morph causes a visible swap and defeats the seeded handoff.
-                                AsyncImage(artwork, null, onError = { if (!seeded) artworkFailed = true },
-                                    contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+                                AsyncImage(
+                                    artwork,
+                                    null,
+                                    onError = { if (!seeded) artworkFailed = true },
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxSize(),
+                                )
                             }
                             artworkOverlay?.invoke(this)
                         }
                         if (onEditCover != null) {
-                            ContrastCircleButton(foreground, onEditCover,
-                                modifier = Modifier.align(Alignment.BottomEnd).padding(8.dp), size = 36.dp) {
+                            ContrastCircleButton(
+                                foreground,
+                                onEditCover,
+                                modifier = Modifier.align(Alignment.BottomEnd).padding(8.dp),
+                                size = 36.dp,
+                            ) {
                                 SymbolIcon(sf("square.and.pencil"), stringResource(R.string.edit_playlist_cover), size = 18.dp)
                             }
                         }
                     }
-    
+                    Spacer(Modifier.height(24.dp))
+                } else if (onSearch == null) {
+                    // Albums do not have an in-page search field; keep the title low in the hero.
+                    Spacer(Modifier.height(285.dp))
+                }
+
+                if (titleContent != null) {
+                    titleContent()
                 } else {
-                    // Playlist artwork is rendered as a full-page background by the
-                    // playlist screen; do not render a square/collage hero here.
-                    Spacer(Modifier.height(10.dp))
+                    Text(
+                        title,
+                        style = SfStyle(
+                            if (immersiveArtwork) 27.sp else 22.sp,
+                            if (immersiveArtwork) 33.sp else 27.sp,
+                            FontWeight.Bold,
+                        ),
+                        color = foreground,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.sharedTitleTarget().padding(horizontal = 24.dp),
+                    )
                 }
-                Spacer(Modifier.height(24.dp))
-                if (titleContent != null) titleContent() else Text(
-                    title, style = SfStyle(22.sp, 27.sp, FontWeight.Bold), color = foreground,
-                    maxLines = 2, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center,
-                    modifier = Modifier.sharedTitleTarget().padding(horizontal = 24.dp),
-                )
+
                 if (!subtitle.isNullOrBlank()) {
-                    Spacer(Modifier.height(8.dp))
-                    Text(subtitle, style = SfStyle(20.sp, 24.sp), color = foreground,
-                        maxLines = 2, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center,
-                        modifier = Modifier.then(if (titleContent != null) Modifier.sharedTitleTarget() else Modifier).padding(horizontal = 24.dp))
+                    Spacer(Modifier.height(if (immersiveArtwork) 3.dp else 8.dp))
+                    Text(
+                        subtitle,
+                        style = SfStyle(
+                            if (immersiveArtwork) 18.sp else 20.sp,
+                            if (immersiveArtwork) 23.sp else 24.sp,
+                        ),
+                        color = foreground,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .then(if (titleContent != null) Modifier.sharedTitleTarget() else Modifier)
+                            .padding(horizontal = 24.dp),
+                    )
                 }
+
                 if (metadata.isNotBlank()) {
                     Spacer(Modifier.height(7.dp))
-                    Text(metadata, style = SfStyle(15.sp, 19.sp, FontWeight.Medium),
-                        color = foreground.copy(alpha = .48f), textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(horizontal = 24.dp))
+                    Text(
+                        metadata,
+                        style = SfStyle(
+                            if (immersiveArtwork) 13.sp else 15.sp,
+                            if (immersiveArtwork) 17.sp else 19.sp,
+                            FontWeight.Medium,
+                        ),
+                        color = foreground.copy(alpha = if (immersiveArtwork) .88f else .48f),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(horizontal = 24.dp),
+                    )
                 }
-                Row(Modifier.padding(top = 17.dp), verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+
+                Row(
+                    Modifier.padding(top = if (immersiveArtwork) 14.dp else 17.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(14.dp),
+                ) {
                     ContrastCircleButton(foreground, onShuffle, size = 54.dp, enabled = enabled) {
                         SymbolIcon(sf("shuffle"), stringResource(R.string.shuffle), size = 26.dp)
                     }
                     Row(
-                        Modifier.width(140.dp).height(50.dp).clip(RoundedCornerShape(25.dp))
-                            .background(foreground.copy(alpha = if (enabled) .82f else .4f))
+                        Modifier
+                            .width(if (immersiveArtwork) 150.dp else 140.dp)
+                            .height(50.dp)
+                            .clip(RoundedCornerShape(25.dp))
+                            .background(
+                                if (immersiveArtwork && enabled) {
+                                    if (foreground == Color.White) Color.White else Color.Black
+                                } else {
+                                    foreground.copy(alpha = if (enabled) .82f else .4f)
+                                },
+                            )
                             .clickable(enabled = enabled, role = Role.Button, onClick = onPlay),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center,
@@ -183,8 +314,11 @@ fun CollectionDetailHeader(
                         val inverse = if (foreground == Color.White) Color.Black else Color.White
                         SymbolIcon(sf(if (playing) "pause.fill" else "play.fill"), null, tint = inverse, size = 19.dp)
                         Spacer(Modifier.width(7.dp))
-                        Text(stringResource(if (playing) R.string.pause else R.string.play),
-                            style = SfStyle(19.sp, 23.sp, FontWeight.Bold), color = inverse)
+                        Text(
+                            stringResource(if (playing) R.string.pause else R.string.play),
+                            style = SfStyle(19.sp, 23.sp, FontWeight.Bold),
+                            color = inverse,
+                        )
                     }
                     if (onRightAction != null) {
                         ContrastCircleButton(foreground, onRightAction, size = 54.dp) {
@@ -192,50 +326,28 @@ fun CollectionDetailHeader(
                         }
                     }
                 }
+
                 if (!description.isNullOrBlank()) {
-                    Spacer(Modifier.height(20.dp))
-                    CompositionLocalProvider(LocalContentColor provides foreground.copy(alpha = .48f)) {
-                        ExpandableText(description, runs = descriptionRuns, collapsedMaxLines = 2,
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp))
+                    Spacer(Modifier.height(if (immersiveArtwork) 12.dp else 20.dp))
+                    CompositionLocalProvider(LocalContentColor provides foreground.copy(alpha = if (immersiveArtwork) .84f else .48f)) {
+                        ExpandableText(
+                            description,
+                            runs = descriptionRuns,
+                            collapsedMaxLines = if (immersiveArtwork && onSearch != null) 1 else 2,
+                            inlineMore = immersiveArtwork,
+                            style = if (immersiveArtwork && onSearch != null) {
+                                com.convx.music.ui.ios.compat.AppTheme.typography.bodySmall.copy(
+                                    fontSize = 13.sp,
+                                    lineHeight = 17.sp,
+                                )
+                            } else {
+                                com.convx.music.ui.ios.compat.AppTheme.typography.bodyMedium
+                            },
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+                        )
                     }
                 }
             }
         }
-    }
-}
-
-
-/**
- * Playlist-only immersive cover backdrop. The screen supplies the already-selected
- * artwork URL and its cover-derived appearance, leaving other detail screens alone.
- */
-@Composable
-fun PlaylistFullBleedArtworkBackground(
-    artwork: String?,
-    pageColor: Color,
-    modifier: Modifier = Modifier,
-) {
-    Box(modifier.fillMaxSize()) {
-        if (!artwork.isNullOrBlank()) {
-            AsyncImage(
-                model = artwork,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize().blur(26.dp),
-            )
-        }
-        Box(
-            Modifier.fillMaxSize().background(
-                Brush.verticalGradient(
-                    colorStops = arrayOf(
-                        0.00f to pageColor.copy(alpha = 0.30f),
-                        0.28f to pageColor.copy(alpha = 0.60f),
-                        0.55f to pageColor.copy(alpha = 0.76f),
-                        0.78f to Color.Black.copy(alpha = 0.80f),
-                        1.00f to Color.Black.copy(alpha = 0.96f),
-                    ),
-                ),
-            ),
-        )
     }
 }

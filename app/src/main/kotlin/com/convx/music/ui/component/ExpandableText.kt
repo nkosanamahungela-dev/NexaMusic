@@ -7,6 +7,9 @@ package com.convx.music.ui.component
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,12 +30,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.convx.music.R
 
 data class LinkSegment(
@@ -46,6 +51,9 @@ fun ExpandableText(
     runs: List<LinkSegment>? = null,
     modifier: Modifier = Modifier,
     collapsedMaxLines: Int = 3,
+    /** Render the Apple Music-style bold MORE affordance inline at the end of the collapsed description. */
+    inlineMore: Boolean = false,
+    style: TextStyle = AppTheme.typography.bodyMedium,
 ) {
     var isExpanded by rememberSaveable { mutableStateOf(false) }
     var hasOverflow by rememberSaveable { mutableStateOf(false) }
@@ -76,42 +84,76 @@ fun ExpandableText(
     Column(
         modifier = modifier.animateContentSize()
     ) {
-        @Suppress("DEPRECATION")
-        ClickableText(
-            text = annotatedText,
-            style = AppTheme.typography.bodyMedium.copy(color = bodyColor),
-            maxLines = if (isExpanded) Int.MAX_VALUE else collapsedMaxLines,
-            overflow = TextOverflow.Ellipsis,
-            onTextLayout = { textLayoutResult ->
-                hasOverflow = textLayoutResult.hasVisualOverflow || textLayoutResult.lineCount > collapsedMaxLines
-            },
-            onClick = { offset ->
-                annotatedText.getStringAnnotations(tag = "URL", start = offset, end = offset)
-                    .firstOrNull()?.let { annotation ->
-                        uriHandler.openUri(annotation.item)
-                        return@ClickableText
-                    }
+        if (inlineMore && !isExpanded) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = androidx.compose.ui.Alignment.Bottom,
+            ) {
+                @Suppress("DEPRECATION")
+                ClickableText(
+                    text = annotatedText,
+                    style = style.copy(color = bodyColor),
+                    maxLines = collapsedMaxLines,
+                    overflow = TextOverflow.Ellipsis,
+                    onTextLayout = { textLayoutResult ->
+                        hasOverflow = textLayoutResult.hasVisualOverflow || textLayoutResult.lineCount > collapsedMaxLines
+                    },
+                    onClick = { offset ->
+                        annotatedText.getStringAnnotations(tag = "URL", start = offset, end = offset)
+                            .firstOrNull()?.let { annotation ->
+                                uriHandler.openUri(annotation.item)
+                                return@ClickableText
+                            }
+                        if (hasOverflow) isExpanded = true
+                    },
+                    modifier = Modifier.weight(1f),
+                )
                 if (hasOverflow) {
-                    isExpanded = !isExpanded
+                    Text(
+                        text = "MORE",
+                        style = style.copy(fontWeight = FontWeight.Bold),
+                        color = bodyColor,
+                        modifier = Modifier
+                            .padding(start = 8.dp)
+                            .clickable { isExpanded = true },
+                    )
                 }
             }
-        )
-        
-        if (hasOverflow) {
-            Box(
-                modifier = Modifier
-                    .padding(top = 8.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(AppTheme.colorScheme.secondaryContainer)
-                    .clickable { isExpanded = !isExpanded }
-                    .padding(horizontal = 10.dp, vertical = 4.dp)
-            ) {
-                Text(
-                    text = stringResource(if (isExpanded) R.string.show_less else R.string.show_more),
-                    style = AppTheme.typography.labelSmall,
-                    color = AppTheme.colorScheme.onSecondaryContainer,
-                    fontWeight = FontWeight.Bold
-                )
+        } else {
+            @Suppress("DEPRECATION")
+            ClickableText(
+                text = annotatedText,
+                style = style.copy(color = bodyColor),
+                maxLines = if (isExpanded) Int.MAX_VALUE else collapsedMaxLines,
+                overflow = TextOverflow.Ellipsis,
+                onTextLayout = { textLayoutResult ->
+                    hasOverflow = textLayoutResult.hasVisualOverflow || textLayoutResult.lineCount > collapsedMaxLines
+                },
+                onClick = { offset ->
+                    annotatedText.getStringAnnotations(tag = "URL", start = offset, end = offset)
+                        .firstOrNull()?.let { annotation ->
+                            uriHandler.openUri(annotation.item)
+                            return@ClickableText
+                        }
+                    if (hasOverflow) isExpanded = !isExpanded
+                }
+            )
+            if (hasOverflow && !inlineMore) {
+                Box(
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(AppTheme.colorScheme.secondaryContainer)
+                        .clickable { isExpanded = !isExpanded }
+                        .padding(horizontal = 10.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = stringResource(if (isExpanded) R.string.show_less else R.string.show_more),
+                        style = AppTheme.typography.labelSmall,
+                        color = AppTheme.colorScheme.onSecondaryContainer,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
     }

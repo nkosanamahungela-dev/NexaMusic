@@ -321,6 +321,7 @@ fun OnlinePlaylistScreen(
     val appearance = com.convx.music.ui.component.rememberPlaylistAppearance(
         playlistBackdropArtwork,
         0xFFFF375F.toInt(),
+        adaptiveContrast = true,
     )
     val tint = appearance.background
     com.convx.music.PublishAmbientBackgroundColor(tint)
@@ -358,7 +359,7 @@ fun OnlinePlaylistScreen(
             .layerBackdrop(listBackdrop, frozen = backdropFreeze.frozen)
             .graphicsLayer()
             .hazeSource(hazeState)) {
-                com.convx.music.ui.component.PlaylistFullBleedArtworkBackground(artwork = playlistBackdropArtwork, pageColor = tint, modifier = Modifier.fillMaxSize())
+                Box(Modifier.fillMaxSize().background(tint))
         LazyColumn(
             state = lazyListState,
             overscrollEffect = heroZoom.listOverscroll(),
@@ -427,6 +428,9 @@ fun OnlinePlaylistScreen(
                         enabled = false,
                         onPlay = {},
                         onShuffle = {},
+                        immersiveArtwork = true,
+                        artworkPageColor = tint,
+                        heroScrollProgress = rememberHeroTopBlur(lazyListState).value,
                         modifier = Modifier.padding(top = com.convx.music.ui.component.topBarContentPadding()),
                     )
                 }
@@ -819,14 +823,24 @@ private fun OnlinePlaylistHeader(
     val menuState = LocalMenuState.current
     val downloads by LocalDownloadUtil.current.get().downloads.collectAsStateWithLifecycle()
     val artwork = songs.firstOrNull()?.thumbnail ?: com.convx.music.ui.utils.pendingSharedArtworkThumbFor(playlist.id) ?: playlist.thumbnail
-    val appearance = com.convx.music.ui.component.rememberPlaylistAppearance(artwork)
+    val appearance = com.convx.music.ui.component.rememberPlaylistAppearance(artwork, adaptiveContrast = true)
     val duration = remember(songs) { songs.sumOf { it.duration ?: 0 } }
+    val creatorOrUpdated = remember(playlist.author?.name, dbPlaylist?.playlist?.lastUpdateTime) {
+        playlist.author?.name?.takeIf { it.isNotBlank() }
+            ?: dbPlaylist?.playlist?.lastUpdateTime?.let { updatedAt ->
+                val days = java.time.Duration.between(updatedAt, java.time.LocalDateTime.now()).toDays().coerceAtLeast(0)
+                if (days == 0L) "Updated today" else "Updated ${days}d ago"
+            }
+    }
+    val playlistMetadata = buildString {
+        append(pluralStringResource(R.plurals.n_song, songs.size, songs.size))
+        if (duration > 0) append(" · ").append(makeTimeString(duration * 1000L))
+        creatorOrUpdated?.let { append(" · ").append(it) }
+    }
     com.convx.music.ui.component.CollectionDetailHeader(
         title = playlist.title,
-        subtitle = playlist.author?.name,
         artwork = artwork,
-        metadata = pluralStringResource(R.plurals.n_song, songs.size, songs.size) +
-            if (duration > 0) " \u00b7 " + makeTimeString(duration * 1000L) else "",
+        metadata = playlistMetadata,
         foreground = appearance.foreground,
         playing = isPlaying && songs.any { it.id == mediaMetadata?.id },
         enabled = songs.isNotEmpty(),
@@ -843,7 +857,11 @@ private fun OnlinePlaylistHeader(
         onSearchValueChange = onSearchValueChange,
         onSearchImeAction = onSearchImeAction,
         searchFocusRequester = searchFocusRequester,
-        immersivePlaylistArtwork = true,
+        immersiveArtwork = true,
+        artworkPageColor = appearance.background,
+        rightSymbol = "plus",
+        heroScrollProgress = scrollBlurProgress.value,
+        artworkTopOffset = -com.convx.music.ui.component.topBarContentPadding(),
         onRightAction = {
                         menuState.show {
                             YouTubePlaylistMenu(

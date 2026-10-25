@@ -224,8 +224,6 @@ fun AlbumScreen(
 
     val playlistId by viewModel.playlistId.collectAsState()
     val albumWithSongs by viewModel.albumWithSongs.collectAsState()
-    val artistSignatureUrl by viewModel.artistSignatureUrl.collectAsState()
-    val artistBundledLogo by viewModel.artistBundledLogo.collectAsState()
     val otherVersions by viewModel.otherVersions.collectAsState()
     val releasesForYou by viewModel.releasesForYou.collectAsState()
     val description by viewModel.description.collectAsState()
@@ -352,28 +350,25 @@ fun AlbumScreen(
     )
     val appleAlbumLoading = appleAlbumState.loading
     val appleAlbum = appleAlbumState.art
-    val albumArtistState = com.convx.music.utils.rememberAppleArtist(
-        albumWithSongs?.artists?.firstOrNull()?.name.orEmpty(),
-    )
     // Only estimate from YouTube's art once Apple has settled without a match.
     val estimatedArtworkBg = com.convx.music.utils.rememberEstimatedArtworkBg(
         bgUrl.takeIf { !appleAlbumLoading && appleAlbum == null },
     )
     val tint by androidx.compose.animation.animateColorAsState(
         com.convx.music.ui.theme.AppleColors.color(
-            com.convx.music.ui.theme.AppleColors.pageBackground(
+            com.convx.music.ui.theme.AppleColors.heroPageBackground(
                 appleAlbum?.bgColor ?: estimatedArtworkBg ?: 0x1C1C1E,
             ),
         ),
         label = "albumPage",
     )
     com.convx.music.PublishAmbientBackgroundColor(tint)
-    val onTint = androidx.compose.ui.graphics.Color.White
+    val onTint = if (AppleTokens.prefersLightContent(tint)) Color.White else Color.Black
 
     val glassConfig = LocalGlassEffectConfig.current
     val useGlass = glassConfig.isEnabledFor(GlassComponent.NAV_BAR) && isGlassAllowed()
     val chromeShape = ContinuousRoundedRectangle(percent = 50)
-    val chromeContentColor = if (useGlass) glassConfig.resolvedTextColor() else AppTheme.colorScheme.onSurface
+    val chromeContentColor = if (useGlass) glassConfig.resolvedTextColor() else onTint
 
     // The unattached backdrop avoids a RenderNode cycle in the floating chrome.
     val heroBackdrop = rememberLayerBackdrop()
@@ -425,9 +420,12 @@ fun AlbumScreen(
                 }
                 com.convx.music.ui.component.CollectionDetailHeader(
                     title = title,
-                    subtitle = title,
+                    subtitle = artistName,
                     artwork = appleAlbum?.sized(1200) ?: instantThumbUrl ?: albumWithSongs.album.thumbnailUrl,
                     metadata = albumInfo,
+                    immersiveArtwork = true,
+                    artworkPageColor = tint,
+                    heroScrollProgress = heroTopBlurProgress.value,
                     description = description,
                     descriptionRuns = descriptionRuns?.map { LinkSegment(it.text, it.navigationEndpoint?.urlEndpoint?.url) },
                     foreground = onTint,
@@ -444,25 +442,13 @@ fun AlbumScreen(
                         playerConnection.service.getAutomix(playlistId)
                         playerConnection.playQueue(LocalAlbumRadio(albumWithSongs.copy(songs = albumWithSongs.songs.shuffled())))
                     },
-                    rightSymbol = if (downloadState == Download.STATE_COMPLETED) "checkmark" else "arrow.down",
+                    rightSymbol = "plus",
                     onRightAction = {
                         when (downloadState) {
                             Download.STATE_COMPLETED -> showRemoveDownloadDialog = true
                             Download.STATE_DOWNLOADING -> com.convx.music.playback.cancelDownloads(context, filteredSongs.map { it.id }, downloadUtil.downloads.value)
                             else -> com.convx.music.playback.downloadSongs(context,
                                 filteredSongs.map { com.convx.music.playback.DownloadTarget(it.id, it.song.title, it.artists.firstOrNull()?.name, it.song.duration) }, downloadUtil.downloads.value)
-                        }
-                    },
-                    titleContent = {
-                        Box(Modifier.fillMaxWidth().height(75.dp).padding(horizontal = 20.dp), contentAlignment = Alignment.Center) {
-                            if (!albumArtistState.loading || artistBundledLogo != null || artistSignatureUrl != null) {
-                                com.convx.music.ui.screens.artist.ArtistWordmark(
-                                    logo = albumArtistState.artist?.logo,
-                                    name = artistName,
-                                    signatureUrl = artistSignatureUrl,
-                                    bundledLogo = artistBundledLogo,
-                                )
-                            }
                         }
                     },
                     artworkOverlay = {
@@ -502,6 +488,7 @@ fun AlbumScreen(
                         isActive = song.id == mediaMetadata?.id,
                         isPlaying = isPlaying,
                         showInLibraryIcon = true,
+                        showSubtitle = false,
                         shape = listItemShape(index, filteredSongs.size),
                         flat = true,
                         trailingContent = {
@@ -656,6 +643,9 @@ fun AlbumScreen(
                     enabled = false,
                     onPlay = {},
                     onShuffle = {},
+                    immersiveArtwork = true,
+                    artworkPageColor = tint,
+                    heroScrollProgress = heroTopBlurProgress.value,
                     titleContent = { Box(Modifier.fillMaxWidth().height(75.dp), contentAlignment = Alignment.Center) { ShimmerLine(.55f, 34.dp) } },
                 )
             }

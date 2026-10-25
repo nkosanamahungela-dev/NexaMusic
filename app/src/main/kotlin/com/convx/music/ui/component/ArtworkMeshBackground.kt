@@ -16,6 +16,7 @@ import androidx.compose.ui.MotionDurationScale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntSize
@@ -50,22 +51,44 @@ data class PlaylistAppearance(val mesh: ArtworkMeshPalette, val background: Colo
  * from it until artwork arrives, so the background still moves through colour.
  */
 @Composable
-fun rememberPlaylistAppearance(imageUrl: String?, seed: Int? = null): PlaylistAppearance {
+fun rememberPlaylistAppearance(
+    imageUrl: String?,
+    seed: Int? = null,
+    /** Use WCAG text contrast for the refreshed Album/Playlist detail screens only. */
+    adaptiveContrast: Boolean = false,
+): PlaylistAppearance {
     val sampled = rememberMeshPalette(imageUrl)
     val seeded = remember(seed) { seed?.let(ArtworkMeshPalette::fromSeed) }
     val palette = if (seeded != null && sampled === ArtworkMeshPalette.Fallback) seeded else sampled
-    return remember(palette) {
+    return remember(palette, adaptiveContrast) {
         val average = palette.sourceAverage
-        val dark = average.red * .2126f + average.green * .7152f + average.blue * .0722f < .52f
+        val sourceLuminance = average.luminance()
+        val dark = sourceLuminance < .52f
         val neutral = if (dark) .055f else .94f
         val weight = if (dark) .38f else .30f
-        PlaylistAppearance(
-            palette,
-            Color(average.red * weight + neutral * (1f - weight),
+        val channelSpread = maxOf(average.red, average.green, average.blue) -
+            minOf(average.red, average.green, average.blue)
+        // Neutral mid-grey/black-and-white art uses the familiar near-black Apple
+        // Music page, while white covers, creams and coloured pastels stay light.
+        val monochromeArt = adaptiveContrast && channelSpread < .045f &&
+            sourceLuminance in 0.18f..0.90f
+        val background = if (monochromeArt) {
+            Color(0xFF1C1C1E)
+        } else {
+            Color(
+                average.red * weight + neutral * (1f - weight),
                 average.green * weight + neutral * (1f - weight),
-                average.blue * weight + neutral * (1f - weight)),
-            if (dark) Color.White else Color.Black,
-        )
+                average.blue * weight + neutral * (1f - weight),
+            )
+        }
+        // Choose foreground from the actual rendered page colour, not the source average.
+        // This protects white text on dark pages and black text on creams/pastels.
+        val foreground = if (adaptiveContrast) {
+            if (background.luminance() <= 0.179f) Color.White else Color.Black
+        } else {
+            if (dark) Color.White else Color.Black
+        }
+        PlaylistAppearance(palette, background, foreground)
     }
 }
 
