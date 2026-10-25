@@ -89,7 +89,7 @@ object DownloadNotificationManager {
         val progressStyle = createProgressStyle(0)
 
         val builder = Notification.Builder(appContext, CHANNEL_ID)
-            .setSmallIcon(R.drawable.convx_notification)
+            .setSmallIcon(R.drawable.nexamusic_notification)
             .setContentTitle(appContext.getString(R.string.downloading_update))
             .setContentText(appContext.getString(R.string.version_file_size, version, fileSize))
             .setOngoing(true)
@@ -109,7 +109,7 @@ object DownloadNotificationManager {
         val progressStyle = createProgressStyle(progress)
 
         val builder = Notification.Builder(appContext, CHANNEL_ID)
-            .setSmallIcon(R.drawable.convx_notification)
+            .setSmallIcon(R.drawable.nexamusic_notification)
             .setContentTitle(appContext.getString(R.string.downloading_update))
             .setContentText(appContext.getString(R.string.version_progress, version, progress))
             .setOngoing(progress < 100)
@@ -205,7 +205,7 @@ object DownloadNotificationManager {
 
     private fun showDownloadStartingLegacy(version: String, fileSize: String) {
         val notification = NotificationCompat.Builder(appContext, CHANNEL_ID)
-            .setSmallIcon(R.drawable.convx_notification)
+            .setSmallIcon(R.drawable.nexamusic_notification)
             .setContentTitle(appContext.getString(R.string.downloading_update))
             .setContentText(appContext.getString(R.string.version_file_size, version, fileSize))
             .setProgress(100, 0, false)
@@ -220,7 +220,7 @@ object DownloadNotificationManager {
 
     private fun updateDownloadProgressLegacy(progress: Int, version: String) {
         val notification = NotificationCompat.Builder(appContext, CHANNEL_ID)
-            .setSmallIcon(R.drawable.convx_notification)
+            .setSmallIcon(R.drawable.nexamusic_notification)
             .setContentTitle(appContext.getString(R.string.downloading_update))
             .setContentText(appContext.getString(R.string.version_progress, version, progress))
             .setProgress(100, progress, false)
