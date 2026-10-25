@@ -147,7 +147,13 @@ android {
         debug {
             applicationIdSuffix = ".debug"
             isDebuggable = true
-            signingConfig = signingConfigs.getByName("debug")
+            // CI debug builds use the stable release key when available so Android
+            // accepts updates in place. Local builds retain the normal debug key.
+            signingConfig = if (file("keystore/release.keystore").exists()) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
             buildConfigField("String", "ARCHITECTURE", "\"debug\"")
         }
     }
