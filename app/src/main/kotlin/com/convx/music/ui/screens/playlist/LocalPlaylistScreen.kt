@@ -608,7 +608,7 @@ fun LocalPlaylistScreen(
     val bgHeroUrl = instantLocalThumb ?: heroUrl
     val localChrome = com.convx.music.ui.component.rememberDetailChromeEntrance(iconCount = 1)
 
-    val appearance = com.convx.music.ui.component.rememberPlaylistAppearance(bgHeroUrl, localPlaylistSeed(viewModel.playlistId))
+    val appearance = com.convx.music.ui.component.rememberPlaylistAppearance(bgHeroUrl, localPlaylistSeed(viewModel.playlistId), adaptiveContrast = true)
     val tint = appearance.background
     com.convx.music.PublishAmbientBackgroundColor(tint)
     val onTint = appearance.foreground
@@ -1080,7 +1080,7 @@ fun LocalPlaylistHeader(
         onError = { message -> scope.launch { snackbarHostState.showSnackbar(message) } },
     )
     val artwork = com.convx.music.ui.utils.pendingSharedArtworkThumbFor(playlist.id) ?: playlist.thumbnails.firstOrNull() ?: songs.firstOrNull()?.song?.song?.thumbnailUrl
-    val appearance = com.convx.music.ui.component.rememberPlaylistAppearance(artwork)
+    val appearance = com.convx.music.ui.component.rememberPlaylistAppearance(artwork, adaptiveContrast = true)
     val duration = remember(songs) { songs.fastSumBy { it.song.song.duration } }
     val count = if (playlist.songCount == 0) playlist.playlist.remoteSongCount ?: 0 else playlist.songCount
     com.convx.music.ui.component.CollectionDetailHeader(
