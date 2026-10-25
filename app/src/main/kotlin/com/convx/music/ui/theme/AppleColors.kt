@@ -51,6 +51,14 @@ object AppleColors {
         )
     }
 
+    /**
+     * Hero-page variant for album screens: preserve bright/yellow/cream cover colours,
+     * while using Apple's darkened treatment for deeper reds and dark artwork.
+     * The shared page chrome can then select black or white text by WCAG luminance.
+     */
+    fun heroPageBackground(artworkBg: Int): Int =
+        if (luminance(artworkBg) >= 0.30) artworkBg and 0xFFFFFF else pageBackground(artworkBg)
+
     /** Linear blend; Apple's textColor3/4 = mix(bgColor, textColor1/2, 0.8). */
     fun mix(from: Int, to: Int, t: Double) = rgb(
         (red(from) + (red(to) - red(from)) * t).roundToInt(),
