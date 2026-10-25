@@ -34,43 +34,33 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Generate fallback debug.keystore
+      # Keep one debug signing identity across workflow runs. Without this cache,
+      # every CI run generates a different key and Android refuses in-place updates.
+      - name: Restore persistent debug signing key
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: nexamusic-persistent-debug-keystore-v1
+
+      - name: Generate debug.keystore if needed
         run: |
           mkdir -p ~/.android
-          keytool -genkey -v \
-            -keystore ~/.android/debug.keystore \
-            -storepass android \
-            -alias androiddebugkey \
-            -keypass android \
-            -keyalg RSA \
-            -keysize 2048 \
-            -validity 10000 \
-            -dname "CN=Android Debug,O=Android,C=US"
-
-      # Use the stable beta/release signing identity when repository secrets are
-      # available, so subsequent CI debug APKs can update in place.
-      - name: Decode stable signing key when configured
-        env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE }}
-          STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-        run: |
-          set -euo pipefail
-          if [[ -z "${KEYSTORE_BASE64:-}" ]]; then
-            echo "No stable keystore secret configured; using the fallback debug key."
-            exit 0
+          if [[ ! -f ~/.android/debug.keystore ]]; then
+            keytool -genkey -v \
+              -keystore ~/.android/debug.keystore \
+              -storepass android \
+              -alias androiddebugkey \
+              -keypass android \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -dname "CN=Android Debug,O=Android,C=US"
           fi
-          mkdir -p app/keystore
-          printf '%s' "$KEYSTORE_BASE64" | tr -d '[:space:]' | base64 --decode > app/keystore/release.keystore
-          test -s app/keystore/release.keystore
-          keytool -list -keystore app/keystore/release.keystore -storepass "$STORE_PASSWORD" >/dev/null
 
       - name: Build Debug APK
         env:
           LASTFM_API_KEY: ${{ secrets.LASTFM_API_KEY }}
           LASTFM_SECRET: ${{ secrets.LASTFM_SECRET }}
-          STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           ./gradlew assembleUniversalGmsDebug --no-configuration-cache --console=plain --warning-mode summary
           cp app/build/outputs/apk/universalGms/debug/*.apk nexamusic-universal-gms-debug.apk
