@@ -56,8 +56,27 @@ object AppleColors {
      * while using Apple's darkened treatment for deeper reds and dark artwork.
      * The shared page chrome can then select black or white text by WCAG luminance.
      */
-    fun heroPageBackground(artworkBg: Int): Int =
-        if (luminance(artworkBg) >= 0.30) artworkBg and 0xFFFFFF else pageBackground(artworkBg)
+    fun heroPageBackground(artworkBg: Int): Int {
+        val y = luminance(artworkBg)
+        val hsl = FloatArray(3)
+        androidx.core.graphics.ColorUtils.colorToHSL(artworkBg or 0xFF000000.toInt(), hsl)
+        val hue = hsl[0]
+        val saturation = hsl[1]
+
+        // Monochrome covers get Apple's near-black presentation, even if the sampled
+        // source pixel was a pale grey. Creams/pastels retain their colour because
+        // they carry visible chroma and therefore stay on the light-page path.
+        if (saturation < 0.07f && y > 0.12) return 0x1C1C1E
+
+        // Saturated reds/oranges use a deeper page so white foreground text has
+        // strong contrast. Bright yellow, cream, and non-warm pastels remain light.
+        val warmRedOrOrange = saturation >= 0.28f && (hue <= 45f || hue >= 350f)
+        return if (y >= 0.35 && !warmRedOrOrange) {
+            artworkBg and 0xFFFFFF
+        } else {
+            pageBackground(artworkBg)
+        }
+    }
 
     /** Linear blend; Apple's textColor3/4 = mix(bgColor, textColor1/2, 0.8). */
     fun mix(from: Int, to: Int, t: Double) = rgb(
