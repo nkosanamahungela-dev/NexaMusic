@@ -821,6 +821,7 @@ private fun OnlinePlaylistHeader(
     com.convx.music.ui.component.CollectionDetailHeader(
         title = playlist.title,
         subtitle = playlist.author?.name,
+        appleMusicPlaylistStyle = true,
         artwork = artwork,
         metadata = pluralStringResource(R.plurals.n_song, songs.size, songs.size) +
             if (duration > 0) " \u00b7 " + makeTimeString(duration * 1000L) else "",
