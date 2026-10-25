@@ -442,7 +442,7 @@ fun AlbumScreen(
                         playerConnection.service.getAutomix(playlistId)
                         playerConnection.playQueue(LocalAlbumRadio(albumWithSongs.copy(songs = albumWithSongs.songs.shuffled())))
                     },
-                    rightSymbol = if (downloadState == Download.STATE_COMPLETED) "checkmark" else "arrow.down",
+                    rightSymbol = "plus",
                     onRightAction = {
                         when (downloadState) {
                             Download.STATE_COMPLETED -> showRemoveDownloadDialog = true
