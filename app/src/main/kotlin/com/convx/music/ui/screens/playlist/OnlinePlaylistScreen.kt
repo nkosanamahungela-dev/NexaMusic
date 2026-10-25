@@ -429,7 +429,7 @@ fun OnlinePlaylistScreen(
                         onShuffle = {},
                         immersiveArtwork = true,
                         artworkPageColor = tint,
-                        artworkBlurProgress = rememberHeroTopBlur(lazyListState).value,
+                        heroScrollProgress = rememberHeroTopBlur(lazyListState).value,
                         modifier = Modifier.padding(top = com.convx.music.ui.component.topBarContentPadding()),
                     )
                 }
@@ -848,7 +848,7 @@ private fun OnlinePlaylistHeader(
         searchFocusRequester = searchFocusRequester,
         immersiveArtwork = true,
         artworkPageColor = appearance.background,
-        artworkBlurProgress = scrollBlurProgress.value,
+        heroScrollProgress = scrollBlurProgress.value,
         onRightAction = {
                         menuState.show {
                             YouTubePlaylistMenu(
