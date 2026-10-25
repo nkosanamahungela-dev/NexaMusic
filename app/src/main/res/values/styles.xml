@@ -12,10 +12,10 @@
         <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
 
-    <!-- Launch theme: show the NexaMusic mark on black before the animated intro. -->
+    <!-- Keep Android’s system launch splash blank; the app handles its own intro animation. -->
     <style name="Theme.Convx.Starting" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">#000000</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/convx_logo</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_transparent_icon</item>
         <item name="postSplashScreenTheme">@style/Theme.Convx</item>
     </style>
 
