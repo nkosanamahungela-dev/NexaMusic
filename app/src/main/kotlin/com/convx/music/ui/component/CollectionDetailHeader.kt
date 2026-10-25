@@ -64,13 +64,14 @@ fun CollectionDetailHeader(
     searchFocusRequester: FocusRequester? = null,
     titleContent: (@Composable () -> Unit)? = null,
     artworkOverlay: (@Composable BoxScope.() -> Unit)? = null,
+    appleMusicPlaylistStyle: Boolean = false,
 ) {
     CompositionLocalProvider(LocalContentColor provides foreground) {
         BoxWithConstraints(modifier.fillMaxWidth()) {
-            val artworkSize = minOf(maxWidth * .68f, 300.dp)
+            val artworkSize = minOf(maxWidth * if (appleMusicPlaylistStyle) .64f else .68f, if (appleMusicPlaylistStyle) 280.dp else 300.dp)
             var artworkFailed by remember(artwork) { mutableStateOf(false) }
             Column(
-                Modifier.fillMaxWidth().padding(top = 26.dp, bottom = 22.dp),
+                Modifier.fillMaxWidth().padding(top = if (appleMusicPlaylistStyle) 16.dp else 26.dp, bottom = if (appleMusicPlaylistStyle) 16.dp else 22.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 if (onSearch != null) {
@@ -142,7 +143,7 @@ fun CollectionDetailHeader(
                 }
                 Spacer(Modifier.height(24.dp))
                 if (titleContent != null) titleContent() else Text(
-                    title, style = SfStyle(22.sp, 27.sp, FontWeight.Bold), color = foreground,
+                    title, style = if (appleMusicPlaylistStyle) SfStyle(25.sp, 30.sp, FontWeight.Bold) else SfStyle(22.sp, 27.sp, FontWeight.Bold), color = foreground,
                     maxLines = 2, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center,
                     modifier = Modifier.sharedTitleTarget().padding(horizontal = 24.dp),
                 )
@@ -158,7 +159,7 @@ fun CollectionDetailHeader(
                         color = foreground.copy(alpha = .48f), textAlign = TextAlign.Center,
                         modifier = Modifier.padding(horizontal = 24.dp))
                 }
-                Row(Modifier.padding(top = 17.dp), verticalAlignment = Alignment.CenterVertically,
+                Row(Modifier.padding(top = if (appleMusicPlaylistStyle) 14.dp else 17.dp), verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                     ContrastCircleButton(foreground, onShuffle, size = 54.dp, enabled = enabled) {
                         SymbolIcon(sf("shuffle"), stringResource(R.string.shuffle), size = 26.dp)
