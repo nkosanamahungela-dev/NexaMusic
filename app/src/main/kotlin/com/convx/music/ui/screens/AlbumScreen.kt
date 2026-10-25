@@ -232,7 +232,7 @@ fun AlbumScreen(
     val dataSaverEnabled by rememberPreference(key = DataSaverEnabledKey, defaultValue = false)
     val hideVideoSongsPref by rememberPreference(key = HideVideoSongsKey, defaultValue = false)
     val hideVideoSongs = if (dataSaverEnabled) true else hideVideoSongsPref
-    val albumCanvasEnabledPref by rememberPreference(key = AlbumCanvasEnabledKey, defaultValue = false)
+    val albumCanvasEnabledPref by rememberPreference(key = AlbumCanvasEnabledKey, defaultValue = true)
     val albumCanvasEnabled = if (dataSaverEnabled) false else albumCanvasEnabledPref
 
     val albumCanvas = rememberAlbumCanvas(
@@ -336,10 +336,13 @@ fun AlbumScreen(
     val heroTopBlurProgress = rememberHeroTopBlur(lazyListState)
     val chrome = com.convx.music.ui.component.rememberDetailChromeEntrance(iconCount = 2)
 
+    // Route/shared artwork is only a loading seed. Once album data is available, both the
+    // hero colour and static hero image must come from the album entity itself.
     val instantThumbUrl = viewModel.thumbArg
         ?: pendingSharedArtworkThumbFor(viewModel.albumId)
         ?: albumWithSongs?.album?.thumbnailUrl
-    val bgUrl = instantThumbUrl ?: albumWithSongs?.album?.thumbnailUrl
+    val albumArtworkUrl = albumWithSongs?.album?.thumbnailUrl
+    val bgUrl = albumArtworkUrl
 
     // Apple Music colours, unified with the artist page: Apple's server-computed bgColor
     // through pageBackground (99% path); unmatched albums fall back to the on-device
@@ -418,10 +421,17 @@ fun AlbumScreen(
                     val duration = filteredSongs.sumOf { it.song.duration }
                     if (duration > 0) append(" \u00b7 ").append(makeTimeString(duration * 1000L))
                 }
+                // Album artwork is authoritative; animated Canvas is layered over it when available.
+                val albumCoverSource = com.convx.music.ui.component.resolveCollectionCoverSource(
+                    isAlbum = true,
+                    albumArtworkUrl = appleAlbum?.sized(1200) ?: albumArtworkUrl,
+                    animatedAlbumArtwork = canvasArtwork,
+                    isCommunityPlaylist = false,
+                )
                 com.convx.music.ui.component.CollectionDetailHeader(
                     title = title,
                     subtitle = artistName,
-                    artwork = appleAlbum?.sized(1200) ?: instantThumbUrl ?: albumWithSongs.album.thumbnailUrl,
+                    artwork = albumCoverSource.artworkUrl,
                     metadata = albumInfo,
                     immersiveArtwork = true,
                     artworkPageColor = tint,
@@ -452,11 +462,16 @@ fun AlbumScreen(
                         }
                     },
                     artworkOverlay = {
-                        if (albumCanvasEnabled && canvasArtwork != null) {
-                            CanvasArtworkPlayer(primaryUrl = canvasArtwork.animated, fallbackUrl = canvasArtwork.videoUrl,
+                        val animation = albumCoverSource.animatedArtwork
+                        if (albumCanvasEnabled && animation != null) {
+                            CanvasArtworkPlayer(
+                                primaryUrl = animation.animated,
+                                fallbackUrl = animation.videoUrl,
                                 isPlaying = !com.convx.music.ui.utils.artworkTransitionRunning(),
-                                onExhausted = albumCanvas.onError, onReady = albumCanvas.onReady,
-                                modifier = Modifier.fillMaxSize())
+                                onExhausted = albumCanvas.onError,
+                                onReady = albumCanvas.onReady,
+                                modifier = Modifier.fillMaxSize(),
+                            )
                         }
                     },
                 )
@@ -488,7 +503,7 @@ fun AlbumScreen(
                         isActive = song.id == mediaMetadata?.id,
                         isPlaying = isPlaying,
                         showInLibraryIcon = true,
-                        showSubtitle = false,
+                        showSubtitle = true,
                         shape = listItemShape(index, filteredSongs.size),
                         flat = true,
                         trailingContent = {

@@ -104,8 +104,8 @@ fun SongListItem(
     val content: @Composable () -> Unit = {
         ListItem(
             title = song.song.title,
-            // Numbered album rows use medium weight; queue rows use semibold.
-            titleFontWeight = if (albumIndex != null) FontWeight.Medium else FontWeight.SemiBold,
+            // Album track titles are bold; queue rows remain semibold.
+            titleFontWeight = if (albumIndex != null) FontWeight.Bold else FontWeight.SemiBold,
             titleLetterSpacing = (-0.23).sp,
             subtitle = if (!showSubtitle) null else queueDetailsLine(
                 song.artists.joinToString { it.name },

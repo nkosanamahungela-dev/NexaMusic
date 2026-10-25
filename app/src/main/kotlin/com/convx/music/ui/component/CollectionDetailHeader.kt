@@ -111,12 +111,16 @@ fun CollectionDetailHeader(
                             .background(
                                 Brush.verticalGradient(
                                     colorStops = arrayOf(
-                                        0.00f to Color.Black.copy(alpha = 0.02f),
-                                        0.35f to artworkPageColor.copy(alpha = 0.02f),
-                                        0.48f to artworkPageColor.copy(alpha = 0.24f),
-                                        0.62f to artworkPageColor.copy(alpha = 0.68f),
-                                        0.76f to artworkPageColor.copy(alpha = 0.94f),
-                                        0.90f to artworkPageColor,
+                                        // Keep the top and middle of the image completely clean.
+                                        0.00f to Color.Transparent,
+                                        0.52f to Color.Transparent,
+                                        // Darken before blending into the artwork-derived page colour.
+                                        0.62f to Color.Black.copy(alpha = 0.08f),
+                                        0.72f to Color.Black.copy(alpha = 0.22f),
+                                        0.80f to Color.Black.copy(alpha = 0.42f),
+                                        // The tint reaches the image only at the bottom edge, never as a mid-art wash.
+                                        0.88f to artworkPageColor.copy(alpha = 0.55f),
+                                        0.95f to artworkPageColor.copy(alpha = 0.96f),
                                         1.00f to artworkPageColor,
                                     ),
                                 ),

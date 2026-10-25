@@ -592,7 +592,9 @@ fun LocalPlaylistScreen(
     // playlist's own thumbnail list changes repeatedly while it's running, so
     // grabbing "the first one" live chases every intermediate result. Debounce:
     // only commit to a hero thumbnail once it's held still for a bit.
-    val rawHeroUrl = playlist?.thumbnails?.firstOrNull() ?: songs.firstOrNull()?.song?.song?.thumbnailUrl
+    val rawHeroUrl = playlist?.playlist?.thumbnailUrl
+        ?: playlist?.thumbnails?.firstOrNull()
+        ?: songs.firstOrNull()?.song?.song?.thumbnailUrl
     var heroUrl by remember { mutableStateOf(rawHeroUrl) }
     LaunchedEffect(rawHeroUrl, playlist?.playlist?.thumbnailUrl) {
         // Custom cover selection is authoritative and should recolour the page immediately.
@@ -1086,7 +1088,13 @@ fun LocalPlaylistHeader(
         playlist = playlist,
         onError = { message -> scope.launch { snackbarHostState.showSnackbar(message) } },
     )
-    val artwork = playlist.playlist.thumbnailUrl ?: playlist.thumbnails.firstOrNull() ?: songs.firstOrNull()?.song?.song?.thumbnailUrl ?: com.convx.music.ui.utils.pendingSharedArtworkThumbFor(playlist.id)
+    val artwork = com.convx.music.ui.component.resolveCollectionCoverSource(
+        isAlbum = false,
+        customPlaylistCoverUrl = playlist.playlist.thumbnailUrl,
+        firstSongCoverUrl = songs.firstOrNull()?.song?.song?.thumbnailUrl ?: playlist.thumbnails.firstOrNull(),
+        isCommunityPlaylist = false,
+        fallbackPlaylistCoverUrl = com.convx.music.ui.utils.pendingSharedArtworkThumbFor(playlist.id),
+    ).artworkUrl
     val appearance = com.convx.music.ui.component.rememberPlaylistAppearance(artwork, adaptiveContrast = true)
     val duration = remember(songs) { songs.fastSumBy { it.song.song.duration } }
     val count = if (playlist.songCount == 0) playlist.playlist.remoteSongCount ?: 0 else playlist.songCount

@@ -315,9 +315,13 @@ fun OnlinePlaylistScreen(
     )
     val onlineChrome = com.convx.music.ui.component.rememberDetailChromeEntrance(iconCount = 3)
 
-    // Community playlists use the first track's artwork as the immersive cover.
-    // Keep the route thumbnail as a loading fallback until tracks are available.
-    val playlistBackdropArtwork = songs.firstOrNull()?.thumbnail ?: instantPlaylistThumb ?: playlist?.thumbnail
+    // Community playlists always use the first track cover; route/playlist art is only a loading fallback.
+    val playlistBackdropArtwork = com.convx.music.ui.component.resolveCollectionCoverSource(
+        isAlbum = false,
+        firstSongCoverUrl = songs.firstOrNull()?.thumbnail,
+        isCommunityPlaylist = true,
+        fallbackPlaylistCoverUrl = instantPlaylistThumb ?: playlist?.thumbnail,
+    ).artworkUrl
     val appearance = com.convx.music.ui.component.rememberPlaylistAppearance(
         playlistBackdropArtwork,
         0xFFFF375F.toInt(),
@@ -822,7 +826,12 @@ private fun OnlinePlaylistHeader(
     val database = LocalDatabase.current.get()
     val menuState = LocalMenuState.current
     val downloads by LocalDownloadUtil.current.get().downloads.collectAsStateWithLifecycle()
-    val artwork = songs.firstOrNull()?.thumbnail ?: com.convx.music.ui.utils.pendingSharedArtworkThumbFor(playlist.id) ?: playlist.thumbnail
+    val artwork = com.convx.music.ui.component.resolveCollectionCoverSource(
+        isAlbum = false,
+        firstSongCoverUrl = songs.firstOrNull()?.thumbnail,
+        isCommunityPlaylist = true,
+        fallbackPlaylistCoverUrl = com.convx.music.ui.utils.pendingSharedArtworkThumbFor(playlist.id) ?: playlist.thumbnail,
+    ).artworkUrl
     val appearance = com.convx.music.ui.component.rememberPlaylistAppearance(artwork, adaptiveContrast = true)
     val duration = remember(songs) { songs.sumOf { it.duration ?: 0 } }
     val creatorOrUpdated = remember(playlist.author?.name, dbPlaylist?.playlist?.lastUpdateTime) {
