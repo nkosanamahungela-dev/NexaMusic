@@ -405,6 +405,7 @@ fun AppearanceSettings(
                     icon = painterResource(R.drawable.convx_logo),
                     title = { Text(stringResource(R.string.app_icon)) },
                     description = { Text(stringResource(R.string.app_icon_desc)) },
+                    tintIcon = false,
                     onClick = { showAppIconAvailableSoon = true }
                 )
             )
