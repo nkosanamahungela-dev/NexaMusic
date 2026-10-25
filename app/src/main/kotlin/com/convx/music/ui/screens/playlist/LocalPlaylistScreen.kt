@@ -1089,6 +1089,7 @@ fun LocalPlaylistHeader(
         metadata = pluralStringResource(R.plurals.n_song, count, count) +
             if (duration > 0) " \u00b7 " + makeTimeString(duration * 1000L) else "",
         description = playlist.playlist.description,
+        appleMusicPlaylistStyle = true,
         foreground = appearance.foreground,
         playing = isPlaying && songs.any { it.song.id == mediaMetadata?.id },
         enabled = songs.isNotEmpty(),
