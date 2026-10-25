@@ -19,8 +19,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
@@ -43,10 +43,10 @@ import kotlin.math.sin
 
 /**
  * Cold-start intro, drawn over the already-composed app: a white disc springs in carrying the
- * black monogram, beats twice (with ripples and a haptic tick each), then zooms through the
- * camera -- the monogram outgrowing the disc for a layered tunnel -- and a hole opens from the
- * centre onto the live app underneath. One clock drives every layer, so it holds the display's
- * refresh rate with no per-phase animation state.
+ * supplied NexaMusic monogram, beats twice (with ripples and a haptic tick each), then zooms
+ * through the camera -- the mark outgrowing the disc for a layered tunnel -- and a hole opens
+ * from the centre onto the live app underneath. One clock drives every layer, so it holds the
+ * display's refresh rate with no per-phase animation state.
  *
  * The clock advances per frame, capped at [MAX_STEP_MS]: it runs while the app is still starting
  * up, and a wall-clock tween would skip the whole intro across one startup stall. A stall pauses
@@ -82,10 +82,10 @@ fun ConvxIntro(onFinished: () -> Unit) {
     // VectorPainter caches a bitmap at its draw size, and this glyph changes size every
     // frame (up to ~17x in the zoom) -- that re-rasterised into a fresh, eventually
     // multi-megapixel bitmap per frame, which is what made the intro stutter.
-    val logoVector = ImageVector.vectorResource(R.drawable.convx_logo)
+    val logoVector = ImageVector.vectorResource(R.drawable.nexamusic_logo_mark)
     val logo = remember(logoVector) {
         Path().apply {
-            fillType = PathFillType.EvenOdd
+            fillType = PathFillType.NonZero
             logoVector.root.filterIsInstance<VectorPath>().forEach { addPath(it.pathData.toPath()) }
         }
     }
@@ -139,11 +139,7 @@ fun ConvxIntro(onFinished: () -> Unit) {
                     translate(c.x - glyph / 2f, c.y - glyph / 2f) {
                         scale(glyph / logoViewport, pivot = Offset.Zero) { drawPath(
                             logo,
-                            Brush.linearGradient(
-                                colors = listOf(Color(0xFF43FF35), Color(0xFF00ED69), Color(0xFF007D70)),
-                                start = Offset(28f, 26f),
-                                end = Offset(80f, 81f),
-                            ),
+                            SolidColor(Color(0xFF222222)),
                         ) }
                     }
                 }

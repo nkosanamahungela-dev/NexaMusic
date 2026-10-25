@@ -35,6 +35,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -887,41 +888,17 @@ fun WelcomePagerScreen(onFinished: () -> Unit) {
 
 @Composable
 fun RotatingShapeContainer(modifier: Modifier = Modifier) {
-    val infiniteTransition = rememberInfiniteTransition(label = "shapeRotation")
-    val rotation by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(20000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "rotation"
-    )
-
-    val primaryColor = AppTheme.colorScheme.primary
-    val backgroundColor = AppTheme.colorScheme.background
-
     Box(
         modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
-        Icon(
-            painter = painterResource(id = com.convx.music.R.drawable.ic_ten_sided_cookie),
-            contentDescription = null,
-            tint = primaryColor,
-            modifier = Modifier
-                .fillMaxSize()
-                .graphicsLayer { rotationZ = rotation }
-        )
-
-        Icon(
+        Image(
             painter = painterResource(com.convx.music.R.drawable.convx_logo),
-            contentDescription = null,
-            modifier = Modifier.size(150.dp)
+            contentDescription = stringResource(com.convx.music.R.string.app_name),
+            modifier = Modifier.size(220.dp)
         )
     }
 }
-
 @Composable
 fun PermissionCard(
     icon: Painter,

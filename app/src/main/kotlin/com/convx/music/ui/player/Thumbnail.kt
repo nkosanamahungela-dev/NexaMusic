@@ -16,6 +16,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
@@ -725,7 +726,7 @@ private fun ThumbnailItem(
                 }
         ) {
             if (hidePlayerThumbnail) {
-                HiddenThumbnailPlaceholder(textBackgroundColor = textBackgroundColor)
+                HiddenThumbnailPlaceholder()
             } else {
                 val artworkUriToUse = if (item.mediaId == currentMediaId && !currentMediaThumbnail.isNullOrBlank()) {
                     currentMediaThumbnail
@@ -887,11 +888,10 @@ private fun ThumbnailItem(
 }
 
 /**
- * Placeholder shown when thumbnail is hidden.
+ * Branded placeholder shown when thumbnail art is hidden.
  */
 @Composable
 private fun HiddenThumbnailPlaceholder(
-    textBackgroundColor: Color,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -900,10 +900,10 @@ private fun HiddenThumbnailPlaceholder(
             .background(AppTheme.colorScheme.surfaceVariant),
         contentAlignment = Alignment.Center
     ) {
-        Icon(
+        Image(
             painter = painterResource(R.drawable.convx_logo),
             contentDescription = stringResource(R.string.hide_player_thumbnail),
-            tint = textBackgroundColor.copy(alpha = 0.7f),
+            contentScale = ContentScale.Fit,
             modifier = Modifier.size(120.dp)
         )
     }
@@ -1092,22 +1092,34 @@ internal fun ThumbnailImage(
         // The resting frame: a plain image respecting cropArtwork exactly like
         // before. The shader only ever draws on top of this during the brief
         // transition window below, so the steady state pays nothing extra.
-        AsyncImage(
-            model = ImageRequest.Builder(context)
-                .data(currentUrl)
-                .size(CoilSize.ORIGINAL)
-                .memoryCachePolicy(CachePolicy.ENABLED)
-                .diskCachePolicy(CachePolicy.ENABLED)
-                .networkCachePolicy(CachePolicy.ENABLED)
-                .build(),
-            onError = onError@{
-                val fallback = nextThumbnailFallback(currentUrl) ?: return@onError
-                currentUrl = fallback
-            },
-            contentDescription = null,
-            contentScale = if (cropArtwork) ContentScale.Crop else ContentScale.Fit,
-            modifier = Modifier.fillMaxSize(),
-        )
+        if (currentUrl.isNullOrBlank()) {
+            Image(
+                painter = painterResource(R.drawable.thumbnail_fallback),
+                contentDescription = null,
+                contentScale = if (cropArtwork) ContentScale.Crop else ContentScale.Fit,
+                modifier = Modifier.fillMaxSize(),
+            )
+        } else {
+            AsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(currentUrl)
+                    .size(CoilSize.ORIGINAL)
+                    .memoryCachePolicy(CachePolicy.ENABLED)
+                    .diskCachePolicy(CachePolicy.ENABLED)
+                    .networkCachePolicy(CachePolicy.ENABLED)
+                    .build(),
+                onError = onError@{
+                    val fallback = nextThumbnailFallback(currentUrl) ?: return@onError
+                    currentUrl = fallback
+                },
+                contentDescription = null,
+                placeholder = painterResource(R.drawable.thumbnail_fallback),
+                error = painterResource(R.drawable.thumbnail_fallback),
+                fallback = painterResource(R.drawable.thumbnail_fallback),
+                contentScale = if (cropArtwork) ContentScale.Crop else ContentScale.Fit,
+                modifier = Modifier.fillMaxSize(),
+            )
+        }
 
         val outgoingBitmap = outgoingUrl?.let { rawBitmaps[it] }
         val currentBitmap = currentUrl?.let { rawBitmaps[it] }
