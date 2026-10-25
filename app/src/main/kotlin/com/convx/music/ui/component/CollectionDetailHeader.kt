@@ -16,6 +16,8 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
@@ -64,6 +66,7 @@ fun CollectionDetailHeader(
     searchFocusRequester: FocusRequester? = null,
     titleContent: (@Composable () -> Unit)? = null,
     artworkOverlay: (@Composable BoxScope.() -> Unit)? = null,
+    immersivePlaylistArtwork: Boolean = false,
 ) {
     CompositionLocalProvider(LocalContentColor provides foreground) {
         BoxWithConstraints(modifier.fillMaxWidth()) {
@@ -112,33 +115,40 @@ fun CollectionDetailHeader(
                     }
                     Spacer(Modifier.height(26.dp))
                 }
-                Box(
-                    Modifier.size(artworkSize).shadow(18.dp, RoundedCornerShape(12.dp), clip = false,
-                        ambientColor = Color.Black.copy(alpha = .18f), spotColor = Color.Black.copy(alpha = .18f)),
-                ) {
+                if (!immersivePlaylistArtwork) {
                     Box(
-                        Modifier.sharedArtworkTarget().fillMaxSize().clip(RoundedCornerShape(12.dp))
-                            .background(foreground.copy(alpha = .12f)),
-                        contentAlignment = Alignment.Center,
+                        Modifier.size(artworkSize).shadow(18.dp, RoundedCornerShape(12.dp), clip = false,
+                            ambientColor = Color.Black.copy(alpha = .18f), spotColor = Color.Black.copy(alpha = .18f)),
                     ) {
-                        val seeded = SharedArtworkSeedImage(Modifier.fillMaxSize(), ContentScale.Crop)
-                        if (artwork.isNullOrBlank() || artworkFailed) {
-                            SymbolIcon(sf("music.note.list"), null, tint = foreground.copy(alpha = .5f), size = 72.dp)
-                        } else if (!seeded) {
-                            // Keep the tapped tile's decoded image as the hero for the
-                            // whole screen lifetime. Starting another request after the
-                            // morph causes a visible swap and defeats the seeded handoff.
-                            AsyncImage(artwork, null, onError = { if (!seeded) artworkFailed = true },
-                                contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+                        Box(
+                            Modifier.sharedArtworkTarget().fillMaxSize().clip(RoundedCornerShape(12.dp))
+                                .background(foreground.copy(alpha = .12f)),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            val seeded = SharedArtworkSeedImage(Modifier.fillMaxSize(), ContentScale.Crop)
+                            if (artwork.isNullOrBlank() || artworkFailed) {
+                                SymbolIcon(sf("music.note.list"), null, tint = foreground.copy(alpha = .5f), size = 72.dp)
+                            } else if (!seeded) {
+                                // Keep the tapped tile's decoded image as the hero for the
+                                // whole screen lifetime. Starting another request after the
+                                // morph causes a visible swap and defeats the seeded handoff.
+                                AsyncImage(artwork, null, onError = { if (!seeded) artworkFailed = true },
+                                    contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+                            }
+                            artworkOverlay?.invoke(this)
                         }
-                        artworkOverlay?.invoke(this)
-                    }
-                    if (onEditCover != null) {
-                        ContrastCircleButton(foreground, onEditCover,
-                            modifier = Modifier.align(Alignment.BottomEnd).padding(8.dp), size = 36.dp) {
-                            SymbolIcon(sf("square.and.pencil"), stringResource(R.string.edit_playlist_cover), size = 18.dp)
+                        if (onEditCover != null) {
+                            ContrastCircleButton(foreground, onEditCover,
+                                modifier = Modifier.align(Alignment.BottomEnd).padding(8.dp), size = 36.dp) {
+                                SymbolIcon(sf("square.and.pencil"), stringResource(R.string.edit_playlist_cover), size = 18.dp)
+                            }
                         }
                     }
+    
+                } else {
+                    // Playlist artwork is rendered as a full-page background by the
+                    // playlist screen; do not render a square/collage hero here.
+                    Spacer(Modifier.height(10.dp))
                 }
                 Spacer(Modifier.height(24.dp))
                 if (titleContent != null) titleContent() else Text(
@@ -191,5 +201,41 @@ fun CollectionDetailHeader(
                 }
             }
         }
+    }
+}
+
+
+/**
+ * Playlist-only immersive cover backdrop. The screen supplies the already-selected
+ * artwork URL and its cover-derived appearance, leaving other detail screens alone.
+ */
+@Composable
+fun PlaylistFullBleedArtworkBackground(
+    artwork: String?,
+    pageColor: Color,
+    modifier: Modifier = Modifier,
+) {
+    Box(modifier.fillMaxSize()) {
+        if (!artwork.isNullOrBlank()) {
+            AsyncImage(
+                model = artwork,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize().blur(26.dp),
+            )
+        }
+        Box(
+            Modifier.fillMaxSize().background(
+                Brush.verticalGradient(
+                    colorStops = arrayOf(
+                        0.00f to pageColor.copy(alpha = 0.30f),
+                        0.28f to pageColor.copy(alpha = 0.60f),
+                        0.55f to pageColor.copy(alpha = 0.76f),
+                        0.78f to Color.Black.copy(alpha = 0.80f),
+                        1.00f to Color.Black.copy(alpha = 0.96f),
+                    ),
+                ),
+            ),
+        )
     }
 }
