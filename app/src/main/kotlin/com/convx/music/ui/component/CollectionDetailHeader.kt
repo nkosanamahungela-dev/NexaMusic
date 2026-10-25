@@ -16,8 +16,8 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
@@ -70,8 +70,8 @@ fun CollectionDetailHeader(
     immersiveArtwork: Boolean = false,
     /** Flat artwork-derived colour that fills the page below the image. */
     artworkPageColor: Color = Color.Black,
-    /** 0..1 scroll progress used to soften the art as it passes behind top glass. */
-    artworkBlurProgress: Float = 0f,
+    /** 0..1 list scroll progress for a subtle image parallax. TopFadeBlur handles glass blur. */
+    heroScrollProgress: Float = 0f,
 ) {
     CompositionLocalProvider(LocalContentColor provides foreground) {
         BoxWithConstraints(modifier.fillMaxWidth()) {
@@ -86,6 +86,7 @@ fun CollectionDetailHeader(
                         .fillMaxWidth()
                         .height(520.dp)
                         .offset(y = (-64).dp)
+                        .graphicsLayer { translationY = heroScrollProgress.coerceIn(0f, 1f) * 48.dp.toPx() }
                         .background(artworkPageColor),
                 ) {
                     if (!artwork.isNullOrBlank() && !artworkFailed) {
@@ -94,10 +95,7 @@ fun CollectionDetailHeader(
                             contentDescription = null,
                             onError = { artworkFailed = true },
                             contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                // Sharp at rest. Only soften the cover as it scrolls under glass.
-                                .blur((artworkBlurProgress.coerceIn(0f, 1f) * 18f).dp),
+                            modifier = Modifier.fillMaxSize(),
                         )
                     }
 
