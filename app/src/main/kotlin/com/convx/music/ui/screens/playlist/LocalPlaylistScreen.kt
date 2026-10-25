@@ -592,7 +592,7 @@ fun LocalPlaylistScreen(
     // playlist's own thumbnail list changes repeatedly while it's running, so
     // grabbing "the first one" live chases every intermediate result. Debounce:
     // only commit to a hero thumbnail once it's held still for a bit.
-    val rawHeroUrl = playlist?.thumbnails?.firstOrNull()
+    val rawHeroUrl = playlist?.thumbnails?.firstOrNull() ?: songs.firstOrNull()?.song?.song?.thumbnailUrl
     var heroUrl by remember { mutableStateOf(rawHeroUrl) }
     LaunchedEffect(rawHeroUrl) {
         delay(1500)
@@ -651,7 +651,7 @@ fun LocalPlaylistScreen(
             .layerBackdrop(listBackdrop, frozen = backdropFreeze.frozen)
             .graphicsLayer()
             .hazeSource(hazeState)) {
-                com.convx.music.ui.component.PlaylistFullBleedArtworkBackground(artwork = bgHeroUrl, pageColor = tint, modifier = Modifier.fillMaxSize())
+                Box(Modifier.fillMaxSize().background(tint))
         LazyColumn(
             state = lazyListState,
             overscrollEffect = heroZoom.listOverscroll(),
@@ -1079,7 +1079,7 @@ fun LocalPlaylistHeader(
         playlist = playlist,
         onError = { message -> scope.launch { snackbarHostState.showSnackbar(message) } },
     )
-    val artwork = com.convx.music.ui.utils.pendingSharedArtworkThumbFor(playlist.id) ?: playlist.thumbnails.firstOrNull()
+    val artwork = com.convx.music.ui.utils.pendingSharedArtworkThumbFor(playlist.id) ?: playlist.thumbnails.firstOrNull() ?: songs.firstOrNull()?.song?.song?.thumbnailUrl
     val appearance = com.convx.music.ui.component.rememberPlaylistAppearance(artwork)
     val duration = remember(songs) { songs.fastSumBy { it.song.song.duration } }
     val count = if (playlist.songCount == 0) playlist.playlist.remoteSongCount ?: 0 else playlist.songCount
@@ -1102,7 +1102,9 @@ fun LocalPlaylistHeader(
         onSearchValueChange = onSearchValueChange,
         onSearchImeAction = onSearchImeAction,
         searchFocusRequester = searchFocusRequester,
-        immersivePlaylistArtwork = true,
+        immersiveArtwork = true,
+        artworkPageColor = appearance.background,
+        artworkBlurProgress = scrollBlurProgress.value,
         onRightAction = {
                         menuState.show {
                             LocalPlaylistMenu(
