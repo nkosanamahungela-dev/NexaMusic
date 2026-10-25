@@ -293,7 +293,7 @@ fun CollectionDetailHeader(
                             if (immersiveArtwork) 17.sp else 19.sp,
                             FontWeight.Medium,
                         ),
-                        color = foreground.copy(alpha = if (immersiveArtwork) .88f else .70f),
+                        color = foreground.copy(alpha = if (immersiveArtwork) .88f else .48f),
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(horizontal = 24.dp),
                     )
@@ -341,7 +341,7 @@ fun CollectionDetailHeader(
 
                 if (!description.isNullOrBlank()) {
                     Spacer(Modifier.height(if (immersiveArtwork) 12.dp else 20.dp))
-                    CompositionLocalProvider(LocalContentColor provides foreground.copy(alpha = .84f)) {
+                    CompositionLocalProvider(LocalContentColor provides foreground.copy(alpha = if (immersiveArtwork) .84f else .48f)) {
                         ExpandableText(
                             description,
                             runs = descriptionRuns,
