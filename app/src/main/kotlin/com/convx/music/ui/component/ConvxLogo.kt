@@ -15,8 +15,8 @@ import androidx.compose.ui.unit.dp
 import com.convx.music.R
 
 /**
- * The NexaMusic brand mark. Uses the restored vector drawable so the logo
- * resource stays compatible with the restored Convx artwork.
+ * The NexaMusic brand mark. Uses the filled monogram and mint tile from the Android icon pack,
+ * matching the current launcher branding across app screens.
  */
 @Composable
 fun NexaMusicLogo(modifier: Modifier = Modifier, size: Dp = 20.dp) {
