@@ -111,8 +111,9 @@ fun CollectionDetailHeader(
                                     colorStops = arrayOf(
                                         0.00f to Color.Black.copy(alpha = 0.02f),
                                         0.35f to artworkPageColor.copy(alpha = 0.02f),
-                                        0.55f to artworkPageColor.copy(alpha = 0.18f),
-                                        0.72f to artworkPageColor.copy(alpha = 0.72f),
+                                        0.48f to artworkPageColor.copy(alpha = 0.24f),
+                                        0.62f to artworkPageColor.copy(alpha = 0.68f),
+                                        0.76f to artworkPageColor.copy(alpha = 0.94f),
                                         0.90f to artworkPageColor,
                                         1.00f to artworkPageColor,
                                     ),
@@ -178,7 +179,7 @@ fun CollectionDetailHeader(
                             )
                         }
                     }
-                    Spacer(Modifier.height(if (immersiveArtwork) 145.dp else 26.dp))
+                    Spacer(Modifier.height(if (immersiveArtwork) 230.dp else 26.dp))
                 }
 
                 if (!immersiveArtwork) {
@@ -229,7 +230,7 @@ fun CollectionDetailHeader(
                     Spacer(Modifier.height(24.dp))
                 } else if (onSearch == null) {
                     // Albums do not have an in-page search field; keep the title low in the hero.
-                    Spacer(Modifier.height(205.dp))
+                    Spacer(Modifier.height(285.dp))
                 }
 
                 if (titleContent != null) {
