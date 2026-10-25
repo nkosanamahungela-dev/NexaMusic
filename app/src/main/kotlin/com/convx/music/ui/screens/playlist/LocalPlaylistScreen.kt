@@ -594,7 +594,13 @@ fun LocalPlaylistScreen(
     // only commit to a hero thumbnail once it's held still for a bit.
     val rawHeroUrl = playlist?.thumbnails?.firstOrNull() ?: songs.firstOrNull()?.song?.song?.thumbnailUrl
     var heroUrl by remember { mutableStateOf(rawHeroUrl) }
-    LaunchedEffect(rawHeroUrl) {
+    LaunchedEffect(rawHeroUrl, playlist?.playlist?.thumbnailUrl) {
+        // Custom cover selection is authoritative and should recolour the page immediately.
+        // Only debounce the changing first-song thumbnail list while a local playlist scan settles.
+        if (!playlist?.playlist?.thumbnailUrl.isNullOrBlank()) {
+            heroUrl = rawHeroUrl
+            return@LaunchedEffect
+        }
         delay(1500)
         heroUrl = rawHeroUrl
     }
