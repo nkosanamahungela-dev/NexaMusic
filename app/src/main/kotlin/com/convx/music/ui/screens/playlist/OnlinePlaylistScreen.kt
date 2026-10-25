@@ -358,7 +358,7 @@ fun OnlinePlaylistScreen(
             .layerBackdrop(listBackdrop, frozen = backdropFreeze.frozen)
             .graphicsLayer()
             .hazeSource(hazeState)) {
-                com.convx.music.ui.component.PlaylistFullBleedArtworkBackground(artwork = playlistBackdropArtwork, pageColor = tint, modifier = Modifier.fillMaxSize())
+                Box(Modifier.fillMaxSize().background(tint))
         LazyColumn(
             state = lazyListState,
             overscrollEffect = heroZoom.listOverscroll(),
@@ -427,6 +427,9 @@ fun OnlinePlaylistScreen(
                         enabled = false,
                         onPlay = {},
                         onShuffle = {},
+                        immersiveArtwork = true,
+                        artworkPageColor = tint,
+                        artworkBlurProgress = rememberHeroTopBlur(lazyListState).value,
                         modifier = Modifier.padding(top = com.convx.music.ui.component.topBarContentPadding()),
                     )
                 }
@@ -843,7 +846,9 @@ private fun OnlinePlaylistHeader(
         onSearchValueChange = onSearchValueChange,
         onSearchImeAction = onSearchImeAction,
         searchFocusRequester = searchFocusRequester,
-        immersivePlaylistArtwork = true,
+        immersiveArtwork = true,
+        artworkPageColor = appearance.background,
+        artworkBlurProgress = scrollBlurProgress.value,
         onRightAction = {
                         menuState.show {
                             YouTubePlaylistMenu(
