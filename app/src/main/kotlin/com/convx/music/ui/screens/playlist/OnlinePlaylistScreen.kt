@@ -850,6 +850,7 @@ private fun OnlinePlaylistHeader(
         immersiveArtwork = true,
         artworkPageColor = appearance.background,
         heroScrollProgress = scrollBlurProgress.value,
+        artworkTopOffset = -com.convx.music.ui.component.topBarContentPadding(),
         onRightAction = {
                         menuState.show {
                             YouTubePlaylistMenu(
