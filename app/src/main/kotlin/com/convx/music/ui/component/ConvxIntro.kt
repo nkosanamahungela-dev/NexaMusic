@@ -78,7 +78,7 @@ fun ConvxIntro(onFinished: () -> Unit) {
     }
     if (reducedMotion) return
 
-    // The monogram as a raw path in its 24x24 viewport, drawn under a canvas scale. A
+    // The monogram as a raw path in its 600x600 viewport, drawn under a canvas scale. A
     // VectorPainter caches a bitmap at its draw size, and this glyph changes size every
     // frame (up to ~17x in the zoom) -- that re-rasterised into a fresh, eventually
     // multi-megapixel bitmap per frame, which is what made the intro stutter.
