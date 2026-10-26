@@ -76,7 +76,9 @@ fun CollectionDetailHeader(
     /** Start the sharp artwork behind the status bar while header content keeps its safe-area spacing. */
     artworkTopOffset: androidx.compose.ui.unit.Dp = (-24).dp,
 ) {
-    CompositionLocalProvider(LocalContentColor provides foreground) {
+    // Full-page collection headers always use white foreground over the lower dark scrim.
+    val contentForeground = if (immersiveArtwork) Color.White else foreground
+    CompositionLocalProvider(LocalContentColor provides contentForeground) {
         BoxWithConstraints(modifier.fillMaxWidth()) {
             val artworkSize = minOf(maxWidth * .68f, 300.dp)
             var artworkFailed by remember(artwork) { mutableStateOf(false) }
@@ -144,7 +146,7 @@ fun CollectionDetailHeader(
                             .padding(horizontal = if (immersiveArtwork) 20.dp else 18.dp)
                             .height(40.dp)
                             .clip(RoundedCornerShape(20.dp))
-                            .background(foreground.copy(alpha = 0.12f))
+                            .background(contentForeground.copy(alpha = 0.12f))
                             .clickable(role = Role.Button) {
                                 if (searchValue == null) onSearch()
                                 else searchFocusRequester?.requestFocus()
@@ -152,20 +154,20 @@ fun CollectionDetailHeader(
                             .padding(horizontal = 14.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        SymbolIcon(sf("magnifyingglass"), null, size = 18.dp, tint = foreground.copy(alpha = if (immersiveArtwork) .72f else .48f))
+                        SymbolIcon(sf("magnifyingglass"), null, size = 18.dp, tint = contentForeground.copy(alpha = if (immersiveArtwork) .72f else .48f))
                         Spacer(Modifier.width(8.dp))
                         if (searchValue == null || onSearchValueChange == null) {
                             Text(
                                 stringResource(R.string.search),
                                 style = SfStyle(17.sp, 22.sp),
-                                color = foreground.copy(alpha = if (immersiveArtwork) .72f else .48f),
+                                color = contentForeground.copy(alpha = if (immersiveArtwork) .72f else .48f),
                             )
                         } else {
                             BasicTextField(
                                 value = searchValue,
                                 onValueChange = onSearchValueChange,
                                 singleLine = true,
-                                textStyle = SfStyle(17.sp, 22.sp).copy(color = foreground),
+                                textStyle = SfStyle(17.sp, 22.sp).copy(color = contentForeground),
                                 cursorBrush = SolidColor(foreground),
                                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                                 keyboardActions = KeyboardActions(onSearch = { onSearchImeAction?.invoke() }),
@@ -178,7 +180,7 @@ fun CollectionDetailHeader(
                                             Text(
                                                 stringResource(R.string.search),
                                                 style = SfStyle(17.sp, 22.sp),
-                                                color = foreground.copy(alpha = .72f),
+                                                color = contentForeground.copy(alpha = .72f),
                                             )
                                         }
                                         innerTextField()
@@ -207,12 +209,12 @@ fun CollectionDetailHeader(
                                 .sharedArtworkTarget()
                                 .fillMaxSize()
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(foreground.copy(alpha = .12f)),
+                                .background(contentForeground.copy(alpha = .12f)),
                             contentAlignment = Alignment.Center,
                         ) {
                             val seeded = SharedArtworkSeedImage(Modifier.fillMaxSize(), ContentScale.Crop)
                             if (artwork.isNullOrBlank() || artworkFailed) {
-                                SymbolIcon(sf("music.note.list"), null, tint = foreground.copy(alpha = .5f), size = 72.dp)
+                                SymbolIcon(sf("music.note.list"), null, tint = contentForeground.copy(alpha = .5f), size = 72.dp)
                             } else if (!seeded) {
                                 AsyncImage(
                                     artwork,
@@ -251,7 +253,7 @@ fun CollectionDetailHeader(
                             if (immersiveArtwork) 33.sp else 27.sp,
                             FontWeight.Bold,
                         ),
-                        color = foreground,
+                        color = contentForeground,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                         textAlign = TextAlign.Center,
@@ -267,7 +269,7 @@ fun CollectionDetailHeader(
                             if (immersiveArtwork) 18.sp else 20.sp,
                             if (immersiveArtwork) 23.sp else 24.sp,
                         ),
-                        color = foreground,
+                        color = contentForeground,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                         textAlign = TextAlign.Center,
@@ -286,7 +288,7 @@ fun CollectionDetailHeader(
                             if (immersiveArtwork) 17.sp else 19.sp,
                             FontWeight.Medium,
                         ),
-                        color = foreground.copy(alpha = if (immersiveArtwork) .88f else .48f),
+                        color = contentForeground.copy(alpha = if (immersiveArtwork) .88f else .48f),
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(horizontal = 24.dp),
                     )
@@ -297,7 +299,7 @@ fun CollectionDetailHeader(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(14.dp),
                 ) {
-                    ContrastCircleButton(foreground, onShuffle, size = 54.dp, enabled = enabled) {
+                    ContrastCircleButton(contentForeground, onShuffle, size = 54.dp, enabled = enabled) {
                         SymbolIcon(sf("shuffle"), stringResource(R.string.shuffle), size = 26.dp)
                     }
                     Row(
@@ -307,16 +309,16 @@ fun CollectionDetailHeader(
                             .clip(RoundedCornerShape(25.dp))
                             .background(
                                 if (immersiveArtwork && enabled) {
-                                    if (foreground == Color.White) Color.White else Color.Black
+                                    Color.White
                                 } else {
-                                    foreground.copy(alpha = if (enabled) .82f else .4f)
+                                    contentForeground.copy(alpha = if (enabled) .82f else .4f)
                                 },
                             )
                             .clickable(enabled = enabled, role = Role.Button, onClick = onPlay),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center,
                     ) {
-                        val inverse = if (foreground == Color.White) Color.Black else Color.White
+                        val inverse = if (immersiveArtwork) Color.Black else if (contentForeground == Color.White) Color.Black else Color.White
                         SymbolIcon(sf(if (playing) "pause.fill" else "play.fill"), null, tint = inverse, size = 19.dp)
                         Spacer(Modifier.width(7.dp))
                         Text(
@@ -326,7 +328,7 @@ fun CollectionDetailHeader(
                         )
                     }
                     if (onRightAction != null) {
-                        ContrastCircleButton(foreground, onRightAction, size = 54.dp) {
+                        ContrastCircleButton(contentForeground, onRightAction, size = 54.dp) {
                             SymbolIcon(sf(rightSymbol), stringResource(R.string.more_options), size = 26.dp)
                         }
                     }
@@ -334,7 +336,7 @@ fun CollectionDetailHeader(
 
                 if (!description.isNullOrBlank()) {
                     Spacer(Modifier.height(if (immersiveArtwork) 12.dp else 20.dp))
-                    CompositionLocalProvider(LocalContentColor provides foreground.copy(alpha = if (immersiveArtwork) .84f else .48f)) {
+                    CompositionLocalProvider(LocalContentColor provides contentForeground.copy(alpha = if (immersiveArtwork) .84f else .48f)) {
                         ExpandableText(
                             description,
                             runs = descriptionRuns,
