@@ -2714,10 +2714,44 @@ class MusicService :
             bufferingRecoveryJob?.cancel()
             bufferingRecoveryJob = null
             bufferingMediaId?.let(bufferingRecoveryAttempted::remove)
+            progressRecoveryJob?.cancel()
+            if (player.playWhenReady && !bufferingMediaId.isNullOrBlank()) {
+                val monitoredId = bufferingMediaId
+                val monitoredPlayer = player
+                progressRecoveryJob = scope.launch {
+                    var lastPosition = monitoredPlayer.currentPosition
+                    while (isActive && player === monitoredPlayer &&
+                        monitoredPlayer.currentMediaItem?.mediaId == monitoredId &&
+                        monitoredPlayer.playbackState == Player.STATE_READY
+                    ) {
+                        delay(15_000L)
+                        if (!monitoredPlayer.playWhenReady) continue
+                        val currentPosition = monitoredPlayer.currentPosition
+                        if (currentPosition >= 5_000L &&
+                            currentPosition <= lastPosition + 1_000L &&
+                            bufferingRecoveryAttempted.add(monitoredId)
+                        ) {
+                            Timber.tag(TAG).w(
+                                "Playback position stopped advancing while READY; refreshing stream URL for $monitoredId"
+                            )
+                            errorRecovery.handleStalledBuffering(monitoredId)
+                            break
+                        }
+                        lastPosition = currentPosition
+                    }
+                }
+            }
         } else if (playbackState != Player.STATE_BUFFERING) {
             bufferingRecoveryJob?.cancel()
             bufferingRecoveryJob = null
-        } else if (
+            progressRecoveryJob?.cancel()
+            progressRecoveryJob = null
+        } else {
+            progressRecoveryJob?.cancel()
+            progressRecoveryJob = null
+        }
+        if (
+            playbackState == Player.STATE_BUFFERING &&
             player.playWhenReady &&
             player.currentPosition >= 5_000L &&
             !bufferingMediaId.isNullOrBlank() &&
@@ -3315,6 +3349,7 @@ class MusicService :
 
     // Recover a mid-track buffering stall even when ExoPlayer never emits onPlayerError.
     private var bufferingRecoveryJob: Job? = null
+    private var progressRecoveryJob: Job? = null
     private val bufferingRecoveryAttempted = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
 
     /** Recovers from long silence skips and stalled lossless streams. */
