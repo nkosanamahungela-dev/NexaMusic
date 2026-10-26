@@ -16,6 +16,8 @@ internal fun resolveCollectionCoverSource(
     isAlbum: Boolean,
     albumArtworkUrl: String? = null,
     animatedAlbumArtwork: CanvasArtwork? = null,
+    /** Official YouTube Music genre/mood/editorial cover, when present. */
+    providerPlaylistCoverUrl: String? = null,
     customPlaylistCoverUrl: String? = null,
     firstSongCoverUrl: String? = null,
     isCommunityPlaylist: Boolean = false,
@@ -26,9 +28,11 @@ internal fun resolveCollectionCoverSource(
         animatedArtwork = animatedAlbumArtwork,
     )
     isCommunityPlaylist -> CollectionCoverSource(
-        artworkUrl = firstSongCoverUrl ?: fallbackPlaylistCoverUrl,
+        // YouTube Music's own editorial/genre/mood cover is authoritative.
+        artworkUrl = providerPlaylistCoverUrl ?: fallbackPlaylistCoverUrl ?: firstSongCoverUrl,
     )
     else -> CollectionCoverSource(
+        // User cover first, then first song only when no playlist cover exists.
         artworkUrl = customPlaylistCoverUrl ?: firstSongCoverUrl ?: fallbackPlaylistCoverUrl,
     )
 }
