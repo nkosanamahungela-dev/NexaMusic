@@ -5,6 +5,9 @@
 
 package com.convx.music.ui.screens
 
+import android.os.PowerManager
+import android.provider.Settings
+
 import com.convx.music.ui.utils.sharedTitleTarget
 
 import com.convx.music.ui.component.sf
