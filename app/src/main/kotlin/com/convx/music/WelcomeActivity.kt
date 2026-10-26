@@ -746,8 +746,12 @@ private fun RequiredPermissionsIntroPage(
     onNotificationToggle: (Boolean) -> Unit,
     onInstallClick: () -> Unit,
 ) {
+    // The whole page scrolls when Dynamic Type is large; the action buttons remain fixed outside it.
     Column(
-        modifier = Modifier.fillMaxSize().padding(horizontal = 4.dp, vertical = 10.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 4.dp, vertical = 10.dp),
     ) {
         IntroHeading(
             firstLine = stringResource(com.convx.music.R.string.perm_required),
@@ -757,7 +761,7 @@ private fun RequiredPermissionsIntroPage(
 
         Spacer(Modifier.height(22.dp))
         Column(
-            modifier = Modifier.fillMaxWidth().weight(1f).verticalScroll(rememberScrollState()),
+            modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             IntroGlassCard(onClick = onNotificationsClick) {
@@ -831,21 +835,12 @@ private fun RequiredPermissionsIntroPage(
                                 color = NexaIntroColors.muted,
                             )
                         }
-                        Box(
-                            Modifier
-                                .clip(CircleShape)
-                                .background(NexaIntroColors.accent)
-                                .clickable(onClick = onInstallClick)
-                                .padding(horizontal = 14.dp, vertical = 9.dp),
-                        ) {
-                            Text(
-                                text = if (canInstallPackages) "Allowed" else "Allow",
-                                fontFamily = GoogleSansFlex,
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White,
-                            )
-                        }
+                        IntroActionButton(
+                            text = if (canInstallPackages) "Allowed" else "Allow",
+                            isPrimary = true,
+                            modifier = Modifier.widthIn(min = 72.dp).heightIn(min = 38.dp),
+                            onClick = onInstallClick,
+                        )
                     }
                 }
             }
@@ -867,7 +862,13 @@ private fun CommunityIntroPage(
     onGitHub: () -> Unit,
     onDiscord: () -> Unit,
 ) {
-    Column(Modifier.fillMaxSize().padding(horizontal = 4.dp, vertical = 10.dp)) {
+    // On short displays or large text, let the page itself scroll instead of clipping cards.
+    Column(
+        Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 4.dp, vertical = 10.dp)
+    ) {
         IntroHeading(
             firstLine = "Join our",
             accentLine = "Community",
@@ -875,12 +876,12 @@ private fun CommunityIntroPage(
         )
         Spacer(Modifier.height(22.dp))
         Row(
-            modifier = Modifier.fillMaxWidth().weight(1f),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.Top,
         ) {
             CommunityLinkCard(
-                modifier = Modifier.weight(1f).fillMaxHeight(),
+                modifier = Modifier.weight(1f).heightIn(min = 270.dp),
                 icon = rememberVectorPainter(Icons.Rounded.Star),
                 iconBackground = Color(0xFFFFF1A8),
                 iconTint = Color(0xFF8D6E00),
@@ -889,7 +890,7 @@ private fun CommunityIntroPage(
                 onClick = onGitHub,
             )
             CommunityLinkCard(
-                modifier = Modifier.weight(1f).fillMaxHeight(),
+                modifier = Modifier.weight(1f).heightIn(min = 270.dp),
                 icon = rememberVectorPainter(SfSymbols.Monochrome.SFEllipsisBubble),
                 iconBackground = Color(0xFF67D4FF),
                 iconTint = Color(0xFF004E5D),
@@ -897,6 +898,61 @@ private fun CommunityIntroPage(
                 description = "Get the latest updates and chat with the community.",
                 onClick = onDiscord,
             )
+        }
+    }
+}
+
+@Composable
+private fun CommunityLinkCard(
+    modifier: Modifier,
+    icon: Painter,
+    iconBackground: Color,
+    iconTint: Color,
+    title: String,
+    description: String,
+    onClick: () -> Unit,
+) {
+    IntroGlassCard(modifier = modifier, onClick = onClick) {
+        Box(Modifier.fillMaxWidth().padding(15.dp)) {
+            Box(
+                Modifier.align(Alignment.TopEnd).size(30.dp)
+                    .clip(CircleShape)
+                    .background(Color.White.copy(alpha = 0.09f))
+                    .border(BorderStroke(1.dp, NexaIntroColors.glassBorder), CircleShape),
+                contentAlignment = Alignment.Center,
+            ) {
+                SymbolIcon(symbol = sf("arrow.up.right"), contentDescription = null, tint = NexaIntroColors.text)
+            }
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(top = 42.dp),
+            ) {
+                IntroIconTile(icon, iconBackground, iconTint, size = 54.dp)
+                Spacer(Modifier.height(18.dp))
+                Text(
+                    text = title,
+                    fontFamily = GoogleSansFlex,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    lineHeight = 22.sp,
+                    color = NexaIntroColors.text,
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = description,
+                    fontFamily = GoogleSansFlex,
+                    fontSize = 13.sp,
+                    lineHeight = 18.sp,
+                    color = NexaIntroColors.muted,
+                )
+                Spacer(Modifier.height(18.dp))
+                Text(
+                    text = "Open",
+                    fontFamily = GoogleSansFlex,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = NexaIntroColors.accentText,
+                )
+            }
         }
     }
 }
