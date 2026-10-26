@@ -1034,14 +1034,19 @@ private fun FeaturesIntroPage(
                         title = stringResource(com.convx.music.R.string.feat_discord_title),
                         description = stringResource(com.convx.music.R.string.feat_discord_desc),
                     )
-                    IntroFeatureTile(
-                        modifier = Modifier.weight(1f),
-                        icon = rememberVectorPainter(Icons.Rounded.SystemUpdate),
-                        iconBackground = Color(0xFF67D4FF),
-                        iconTint = Color(0xFF004E5D),
-                        title = stringResource(com.convx.music.R.string.feat_update_title),
-                        description = stringResource(com.convx.music.R.string.feat_update_desc),
-                    )
+                    if (BuildConfig.FLAVOR.contains("gms", ignoreCase = true)) {
+                        IntroFeatureTile(
+                            modifier = Modifier.weight(1f),
+                            icon = rememberVectorPainter(Icons.Rounded.SystemUpdate),
+                            iconBackground = Color(0xFF67D4FF),
+                            iconTint = Color(0xFF004E5D),
+                            title = stringResource(com.convx.music.R.string.feat_update_title),
+                            description = stringResource(com.convx.music.R.string.feat_update_desc),
+                        )
+                    } else {
+                        // Keep the 2-column grid aligned without exposing the GMS-only updater in Foss.
+                        Spacer(Modifier.weight(1f))
+                    }
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     IntroFeatureTile(
