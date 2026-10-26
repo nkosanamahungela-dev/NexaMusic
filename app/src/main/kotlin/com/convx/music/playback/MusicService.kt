@@ -2700,6 +2700,49 @@ class MusicService :
     override fun onPlaybackStateChanged(
         @Player.State playbackState: Int,
     ) {
+        val bufferingMediaId = player.currentMediaItem?.mediaId
+        if (playbackState == Player.STATE_READY) {
+            bufferingRecoveryJob?.cancel()
+            bufferingRecoveryJob = null
+            bufferingMediaId?.let(bufferingRecoveryAttempted::remove)
+        } else if (playbackState != Player.STATE_BUFFERING) {
+            bufferingRecoveryJob?.cancel()
+            bufferingRecoveryJob = null
+        } else if (
+            player.playWhenReady &&
+            player.currentPosition >= 5_000L &&
+            !bufferingMediaId.isNullOrBlank() &&
+            bufferingRecoveryAttempted.add(bufferingMediaId)
+        ) {
+            // Ignore startup buffering. Only retry if a track that was already
+            // playing becomes stuck mid-song for 15 seconds without an error callback.
+            val stalledId = bufferingMediaId
+            val stalledPlayer = player
+            val stalledPosition = player.currentPosition
+            bufferingRecoveryJob?.cancel()
+            bufferingRecoveryJob = scope.launch {
+                delay(15_000L)
+                if (
+                    playerInitialized.value &&
+                    player === stalledPlayer &&
+                    player.playWhenReady &&
+                    player.playbackState == Player.STATE_BUFFERING &&
+                    player.currentMediaItem?.mediaId == stalledId &&
+                    player.currentPosition <= stalledPosition + 1_000L
+                ) {
+                    Timber.tag(TAG).w(
+                        "Playback stuck buffering mid-track; refreshing stream URL for $stalledId"
+                    )
+                    errorRecovery.retryStream(
+                        mediaId = stalledId,
+                        reason = "prolonged mid-track buffering without PlaybackException",
+                        bypassQualityCache = true,
+                    )
+                } else {
+                    bufferingRecoveryAttempted.remove(stalledId)
+                }
+            }
+        }
         // Self-healing re-arm: the DataSourceResolver may populate
         // losslessStreamMediaIds slightly after onMediaItemTransition already
         // checked it (first play with no preload buffer). By STATE_READY the
@@ -3264,6 +3307,10 @@ class MusicService :
     // Flag to prevent queue saving during silence skip operations
     private var isSilenceSkipping = false
     private var stallRecoveryJob: Job? = null
+
+    // Recover a mid-track buffering stall even when ExoPlayer never emits onPlayerError.
+    private var bufferingRecoveryJob: Job? = null
+    private val bufferingRecoveryAttempted = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
 
     /** Recovers from long silence skips and stalled lossless streams. */
     inner class LosslessStallGuard {
