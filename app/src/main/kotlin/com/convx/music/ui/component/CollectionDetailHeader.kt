@@ -91,45 +91,48 @@ fun CollectionDetailHeader(
                         .fillMaxWidth()
                         .height(520.dp)
                         .offset(y = artworkTopOffset)
+                        // Parallax remains tied to scroll progress; the list's overscroll
+                        // modifier supplies the stretch when the user pulls past the top.
                         .graphicsLayer { translationY = heroScrollProgress.coerceIn(0f, 1f) * 48.dp.toPx() }
                         .background(artworkPageColor)
                         .sharedArtworkTarget(),
                 ) {
-                    val seededArtwork = !immersiveArtwork && SharedArtworkSeedImage(Modifier.fillMaxSize(), ContentScale.Crop)
-                    if (!seededArtwork && !artwork.isNullOrBlank() && !artworkFailed) {
-                        AsyncImage(
-                            model = artwork,
-                            contentDescription = null,
-                            onError = { artworkFailed = true },
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize(),
-                        )
+                    // Blur only image/video pixels. The scrims remain crisp, and the
+                    // blur radius ramps from 0 to 30 dp over the first 300 px of scroll.
+                    Box(Modifier.fillMaxSize().blur(30.dp * heroScrollProgress.coerceIn(0f, 1f))) {
+                        val seededArtwork = !immersiveArtwork && SharedArtworkSeedImage(Modifier.fillMaxSize(), ContentScale.Crop)
+                        if (!seededArtwork && !artwork.isNullOrBlank() && !artworkFailed) {
+                            AsyncImage(
+                                model = artwork,
+                                contentDescription = null,
+                                onError = { artworkFailed = true },
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize(),
+                            )
+                        }
+                        artworkOverlay?.invoke(this)
                     }
 
-                    artworkOverlay?.invoke(this)
-
+                    // A narrow status-bar shade, then a lower-only contrast fade that
+                    // preserves any typography baked into the provider's cover.
                     Box(
-                        Modifier
-                            .fillMaxSize()
-                            .background(
-                                Brush.verticalGradient(
-                                    colorStops = arrayOf(
-                                        // Keep the top and middle of the image completely clean.
-                                        0.00f to Color.Transparent,
-                                        0.52f to Color.Transparent,
-                                        // Darken before blending into the artwork-derived page colour.
-                                        0.62f to Color.Black.copy(alpha = 0.08f),
-                                        0.72f to Color.Black.copy(alpha = 0.22f),
-                                        0.80f to Color.Black.copy(alpha = 0.42f),
-                                        // The tint reaches the image only at the bottom edge, never as a mid-art wash.
-                                        0.88f to artworkPageColor.copy(alpha = 0.55f),
-                                        0.95f to artworkPageColor.copy(alpha = 0.96f),
-                                        1.00f to artworkPageColor,
-                                    ),
+                        Modifier.fillMaxSize().background(
+                            Brush.verticalGradient(
+                                colorStops = arrayOf(
+                                    0.00f to Color.Black.copy(alpha = 0.28f),
+                                    0.08f to Color.Black.copy(alpha = 0.12f),
+                                    0.20f to Color.Transparent,
+                                    0.52f to Color.Transparent,
+                                    0.62f to Color.Black.copy(alpha = 0.12f),
+                                    0.72f to Color.Black.copy(alpha = 0.38f),
+                                    0.80f to Color.Black.copy(alpha = 0.62f),
+                                    0.88f to artworkPageColor.copy(alpha = 0.76f),
+                                    0.95f to artworkPageColor.copy(alpha = 0.98f),
+                                    1.00f to artworkPageColor,
                                 ),
                             ),
+                        ),
                     )
-
                 }
             }
 
