@@ -1,12 +1,8 @@
 package com.convx.music.ui.onboarding
 
-import android.Manifest
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.provider.Settings
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -20,9 +16,11 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -33,6 +31,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.State
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -86,11 +85,6 @@ fun NexaOnboardingFlow(
         NexaIntroTokens.PermissionsBg, NexaIntroTokens.FinishBg,
     )
     val background by animateColorAsStateCompat(backgrounds[page], reduceMotion)
-    val notificationLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        notificationEnabled = granted || notificationsGranted()
-    }
 
     fun openUrl(url: String) {
         if (url.isBlank()) return
@@ -139,10 +133,8 @@ fun NexaOnboardingFlow(
                     notificationsEnabled = notificationEnabled,
                     installAllowed = installAllowed,
                     onNotificationToggle = { enabled ->
-                        if (enabled) {
-                            if (Build.VERSION.SDK_INT >= 33) notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                            else requestNotifications { notificationEnabled = notificationsGranted() }
-                        } else notificationEnabled = false
+                        if (enabled) requestNotifications { notificationEnabled = notificationsGranted() }
+                        else notificationEnabled = false
                     },
                     onInstallClick = {
                         requestInstallPermission()
@@ -386,7 +378,7 @@ private fun CommunityScreen(reduceMotion: Boolean, onGitHub: () -> Unit, onDisco
         Spacer(Modifier.height(8.dp))
         Row(horizontalArrangement=Arrangement.spacedBy(8.dp), verticalAlignment=Alignment.CenterVertically) {
             InfoChip("Dynamic Updates", NexaIntroTokens.Ink, NexaIntroTokens.FinishBg)
-            androidx.compose.foundation.clickable.ClickableTextCompat("Open source · GPL v3.0", NexaIntroTokens.Ink, NexaIntroTokens.FinishBg, onLicense)
+            ClickableTextCompat("Open source · GPL v3.0", NexaIntroTokens.Ink, NexaIntroTokens.FinishBg, onLicense)
         }
         Spacer(Modifier.height(24.dp))
         Row(horizontalArrangement=Arrangement.spacedBy(12.dp)) {
@@ -511,7 +503,7 @@ private fun InfoChip(text: String, color: Color, bg: Color) {
 }
 
 @Composable
-private fun androidx.compose.foundation.clickable.ClickableTextCompat(text: String, color: Color, bg: Color, onClick: () -> Unit) {
+private fun ClickableTextCompat(text: String, color: Color, bg: Color, onClick: () -> Unit) {
     Box(Modifier.clip(CircleShape).background(bg).border(1.dp,color.copy(alpha=.25f),CircleShape).clickableNoRipple(onClick).padding(horizontal=11.dp,vertical=9.dp)) {
         Text(text,color=color,fontSize=11.sp,fontWeight=FontWeight.SemiBold)
     }
@@ -526,14 +518,4 @@ private fun animateFloatAsStateCompat(target: Float, reduceMotion: Boolean): Sta
     animateFloatAsState(target, tween(if(reduceMotion) 0 else 280), label="control")
 
 private fun Modifier.clickableNoRipple(onClick: () -> Unit): Modifier =
-    this.then(Modifier.pointerInput(onClick) {
-        awaitPointerEventScope {
-            while(true) {
-                val down=awaitPointerEvent()
-                if(down.changes.any { it.pressed }) {
-                    val up=awaitPointerEvent()
-                    if(up.changes.any { !it.pressed }) onClick()
-                }
-            }
-        }
-    })
+    this.clickable(onClick = onClick)
