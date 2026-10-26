@@ -913,61 +913,6 @@ private fun CommunityLinkCard(
     onClick: () -> Unit,
 ) {
     IntroGlassCard(modifier = modifier, onClick = onClick) {
-        Box(Modifier.fillMaxWidth().padding(15.dp)) {
-            Box(
-                Modifier.align(Alignment.TopEnd).size(30.dp)
-                    .clip(CircleShape)
-                    .background(Color.White.copy(alpha = 0.09f))
-                    .border(BorderStroke(1.dp, NexaIntroColors.glassBorder), CircleShape),
-                contentAlignment = Alignment.Center,
-            ) {
-                SymbolIcon(symbol = sf("arrow.up.right"), contentDescription = null, tint = NexaIntroColors.text)
-            }
-            Column(
-                modifier = Modifier.fillMaxWidth().padding(top = 42.dp),
-            ) {
-                IntroIconTile(icon, iconBackground, iconTint, size = 54.dp)
-                Spacer(Modifier.height(18.dp))
-                Text(
-                    text = title,
-                    fontFamily = GoogleSansFlex,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    lineHeight = 22.sp,
-                    color = NexaIntroColors.text,
-                )
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    text = description,
-                    fontFamily = GoogleSansFlex,
-                    fontSize = 13.sp,
-                    lineHeight = 18.sp,
-                    color = NexaIntroColors.muted,
-                )
-                Spacer(Modifier.height(18.dp))
-                Text(
-                    text = "Open",
-                    fontFamily = GoogleSansFlex,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = NexaIntroColors.accentText,
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun CommunityLinkCard(
-    modifier: Modifier,
-    icon: Painter,
-    iconBackground: Color,
-    iconTint: Color,
-    title: String,
-    description: String,
-    onClick: () -> Unit,
-) {
-    IntroGlassCard(modifier = modifier, onClick = onClick) {
         Box(Modifier.fillMaxSize().padding(15.dp)) {
             Box(
                 Modifier.align(Alignment.TopEnd).size(30.dp)
@@ -1090,19 +1035,16 @@ private fun FeaturesIntroPage(
                         title = stringResource(com.convx.music.R.string.feat_discord_title),
                         description = stringResource(com.convx.music.R.string.feat_discord_desc),
                     )
-                    if (BuildConfig.FLAVOR.contains("gms", ignoreCase = true)) {
-                        IntroFeatureTile(
-                            modifier = Modifier.weight(1f),
-                            icon = rememberVectorPainter(Icons.Rounded.SystemUpdate),
-                            iconBackground = Color(0xFF67D4FF),
-                            iconTint = Color(0xFF004E5D),
-                            title = stringResource(com.convx.music.R.string.feat_update_title),
-                            description = stringResource(com.convx.music.R.string.feat_update_desc),
-                        )
-                    } else {
-                        // Keep the 2-column grid aligned without exposing the GMS-only updater in Foss.
-                        Spacer(Modifier.weight(1f))
-                    }
+                    // Keep all eight advertised features visible in both editions.
+                    // The existing updater/permission logic remains GMS-specific elsewhere.
+                    IntroFeatureTile(
+                        modifier = Modifier.weight(1f),
+                        icon = rememberVectorPainter(Icons.Rounded.SystemUpdate),
+                        iconBackground = Color(0xFF67D4FF),
+                        iconTint = Color(0xFF004E5D),
+                        title = stringResource(com.convx.music.R.string.feat_update_title),
+                        description = stringResource(com.convx.music.R.string.feat_update_desc),
+                    )
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     IntroFeatureTile(
