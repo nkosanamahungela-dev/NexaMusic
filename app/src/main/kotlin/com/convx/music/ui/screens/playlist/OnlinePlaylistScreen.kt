@@ -829,9 +829,10 @@ private fun OnlinePlaylistHeader(
     val downloads by LocalDownloadUtil.current.get().downloads.collectAsStateWithLifecycle()
     val artwork = com.convx.music.ui.component.resolveCollectionCoverSource(
         isAlbum = false,
+        providerPlaylistCoverUrl = playlist.thumbnail,
         firstSongCoverUrl = songs.firstOrNull()?.thumbnail,
         isCommunityPlaylist = true,
-        fallbackPlaylistCoverUrl = com.convx.music.ui.utils.pendingSharedArtworkThumbFor(playlist.id) ?: playlist.thumbnail,
+        fallbackPlaylistCoverUrl = com.convx.music.ui.utils.pendingSharedArtworkThumbFor(playlist.id),
     ).artworkUrl
     val appearance = com.convx.music.ui.component.rememberPlaylistAppearance(artwork, adaptiveContrast = true)
     val duration = remember(songs) { songs.sumOf { it.duration ?: 0 } }
