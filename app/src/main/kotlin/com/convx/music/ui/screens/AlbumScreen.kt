@@ -486,7 +486,7 @@ fun AlbumScreen(
                                 primaryUrl = animation.animated,
                                 fallbackUrl = animation.videoUrl,
                                 // Match the key used by DownloadUtil so the cached Canvas can play offline too.
-                                mediaId = animation.albumId,
+                                mediaId = albumWithSongs?.songs?.firstOrNull()?.id,
                                 // The player keeps its instance while scrolling; this only
                                 // pauses playback when the hero is out of view or motion is reduced.
                                 isPlaying = !com.convx.music.ui.utils.artworkTransitionRunning() &&
