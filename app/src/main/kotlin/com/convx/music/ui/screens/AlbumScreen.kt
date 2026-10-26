@@ -408,7 +408,11 @@ fun AlbumScreen(
         state = lazyListState,
         overscrollEffect = heroZoom.listOverscroll(),
         modifier = Modifier.heroPullZoom(heroZoom),
-        contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
+        // The artwork is full-bleed from y=0; only list controls keep safe-area padding.
+        contentPadding = LocalPlayerAwareWindowInsets.current
+            .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)
+            .union(WindowInsets.ime)
+            .asPaddingValues(),
     ) {
         val albumWithSongs = albumWithSongs
         if (albumWithSongs != null && albumWithSongs.songs.isNotEmpty()) {
@@ -463,11 +467,25 @@ fun AlbumScreen(
                     },
                     artworkOverlay = {
                         val animation = albumCoverSource.animatedArtwork
+                        val powerManager = context.getSystemService(PowerManager::class.java)
+                        val lowPowerMode = powerManager?.isPowerSaveMode == true
+                        val reduceMotion = runCatching {
+                            Settings.Global.getFloat(
+                                context.contentResolver,
+                                Settings.Global.ANIMATOR_DURATION_SCALE,
+                                1f,
+                            ) == 0f
+                        }.getOrDefault(false)
                         if (albumCanvasEnabled && animation != null) {
                             CanvasArtworkPlayer(
                                 primaryUrl = animation.animated,
                                 fallbackUrl = animation.videoUrl,
-                                isPlaying = !com.convx.music.ui.utils.artworkTransitionRunning(),
+                                // The player keeps its instance while scrolling; this only
+                                // pauses playback when the hero is out of view or motion is reduced.
+                                isPlaying = !com.convx.music.ui.utils.artworkTransitionRunning() &&
+                                    heroTopBlurProgress.value < 0.98f &&
+                                    !lowPowerMode &&
+                                    !reduceMotion,
                                 onExhausted = albumCanvas.onError,
                                 onReady = albumCanvas.onReady,
                                 modifier = Modifier.fillMaxSize(),
