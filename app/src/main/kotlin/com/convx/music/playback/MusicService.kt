@@ -2713,7 +2713,8 @@ class MusicService :
         if (playbackState == Player.STATE_READY) {
             bufferingRecoveryJob?.cancel()
             bufferingRecoveryJob = null
-            bufferingMediaId?.let(bufferingRecoveryAttempted::remove)
+            // Keep the recovery lock through prepare()/READY. Clearing it here lets
+            // a stalled track trigger another prepare every 15 seconds indefinitely.
             progressRecoveryJob?.cancel()
             if (player.playWhenReady && !bufferingMediaId.isNullOrBlank()) {
                 val monitoredId = bufferingMediaId
@@ -2727,6 +2728,11 @@ class MusicService :
                         delay(15_000L)
                         if (!monitoredPlayer.playWhenReady) continue
                         val currentPosition = monitoredPlayer.currentPosition
+                        if (currentPosition > lastPosition + 1_000L) {
+                            // Real playback progress is the signal that another
+                            // recovery attempt may be allowed for this media item.
+                            bufferingRecoveryAttempted.remove(monitoredId)
+                        }
                         if (currentPosition >= 5_000L &&
                             currentPosition <= lastPosition + 1_000L &&
                             bufferingRecoveryAttempted.add(monitoredId)
