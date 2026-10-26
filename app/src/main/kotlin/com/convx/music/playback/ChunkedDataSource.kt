@@ -6,6 +6,7 @@
 package com.convx.music.playback
 
 import android.net.Uri
+import java.io.EOFException
 import androidx.media3.common.C
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
@@ -78,7 +79,16 @@ class ChunkedDataSource(private val upstream: DataSource) : DataSource {
             }
             val read = upstream.read(buffer, offset, minOf(length.toLong(), pieceLeft).toInt())
             if (read == C.RESULT_END_OF_INPUT) {
-                if (pieceLeft > 0) return C.RESULT_END_OF_INPUT
+                if (pieceLeft > 0) {
+                    // A bounded range ended before the server delivered the bytes it
+                    // promised. Do not report normal EOF: ExoPlayer may treat that as
+                    // a completed track and freeze progress at the truncated position.
+                    // Surface an I/O failure so the playback recovery path can refresh
+                    // the stream URL and retry instead.
+                    throw EOFException(
+                        "Unexpected end of Google Video range at position $position; $pieceLeft bytes were still expected"
+                    )
+                }
                 upstream.close()
                 opened = false
                 continue
