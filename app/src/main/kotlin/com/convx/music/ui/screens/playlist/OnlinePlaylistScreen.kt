@@ -315,12 +315,13 @@ fun OnlinePlaylistScreen(
     )
     val onlineChrome = com.convx.music.ui.component.rememberDetailChromeEntrance(iconCount = 3)
 
-    // Community playlists always use the first track cover; route/playlist art is only a loading fallback.
+    // Provider-owned genre/mood/editorial covers always win over track thumbnails.
     val playlistBackdropArtwork = com.convx.music.ui.component.resolveCollectionCoverSource(
         isAlbum = false,
+        providerPlaylistCoverUrl = playlist?.thumbnail,
         firstSongCoverUrl = songs.firstOrNull()?.thumbnail,
         isCommunityPlaylist = true,
-        fallbackPlaylistCoverUrl = instantPlaylistThumb ?: playlist?.thumbnail,
+        fallbackPlaylistCoverUrl = instantPlaylistThumb,
     ).artworkUrl
     val appearance = com.convx.music.ui.component.rememberPlaylistAppearance(
         playlistBackdropArtwork,
