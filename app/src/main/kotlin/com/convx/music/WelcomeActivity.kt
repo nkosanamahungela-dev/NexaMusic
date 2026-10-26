@@ -36,6 +36,17 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -211,33 +222,9 @@ fun WelcomePagerScreen(onFinished: () -> Unit) {
     val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
     val scope = rememberCoroutineScope()
-    val commonAnimSpec = tween<Float>(durationMillis = 200, easing = FastOutSlowInEasing)
-    val commonDpAnimSpec = tween<Dp>(durationMillis = 200, easing = FastOutSlowInEasing)
+    val animationSpec = tween<Float>(durationMillis = 360, easing = FastOutSlowInEasing)
 
-    val topCardShape =
-        RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp, bottomStart = 4.dp, bottomEnd = 4.dp)
-    val middleCardShape = RoundedCornerShape(4.dp)
-    val bottomCardShape =
-        RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp, bottomStart = 20.dp, bottomEnd = 20.dp)
-
-    val customWelcomeFontFamily = FontFamily(
-        Font(
-            resId = com.convx.music.R.font.sans_flex,
-            variationSettings = FontVariation.Settings(
-                FontVariation.slant(-9f),
-                FontVariation.width(111f),
-                FontVariation.weight(333),
-                FontVariation.Setting("GRAD", 100f),
-                FontVariation.Setting("ROND", 100f)
-            )
-        )
-    )
-
-    val thinHeaderStyle = TextStyle(
-        fontFamily = customWelcomeFontFamily,
-        fontSize = 48.sp
-    )
-
+    // Keep permission state and all request/settings behaviour from the original onboarding.
     var hasNotificationPermission by remember {
         mutableStateOf(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -256,7 +243,6 @@ fun WelcomePagerScreen(onFinished: () -> Unit) {
             } else true
         )
     }
-
     var isLastPageScrolledToEnd by remember { mutableStateOf(true) }
 
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -270,7 +256,9 @@ fun WelcomePagerScreen(onFinished: () -> Unit) {
                     ) == PackageManager.PERMISSION_GRANTED
                 }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    canInstallPackages = runCatching { context.packageManager.canRequestPackageInstalls() }.getOrDefault(false)
+                    canInstallPackages = runCatching {
+                        context.packageManager.canRequestPackageInstalls()
+                    }.getOrDefault(false)
                 }
             }
         }
@@ -280,605 +268,185 @@ fun WelcomePagerScreen(onFinished: () -> Unit) {
 
     val notificationLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
-        onResult = { isGranted ->
-            hasNotificationPermission = isGranted
-        }
+        onResult = { isGranted -> hasNotificationPermission = isGranted }
     )
 
     val installParamsLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            canInstallPackages = runCatching { context.packageManager.canRequestPackageInstalls() }.getOrDefault(false)
+            canInstallPackages = runCatching {
+                context.packageManager.canRequestPackageInstalls()
+            }.getOrDefault(false)
+        }
+    }
+
+    fun requestOrOpenNotifications() {
+        if (hasNotificationPermission) {
+            val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+            }
+            context.startActivity(intent)
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
+    fun openInstallSettings() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val intent = Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES).apply {
+                data = Uri.parse("package:${context.packageName}")
+            }
+            installParamsLauncher.launch(intent)
         }
     }
 
     val pages = listOf(
-        OnboardingPageInfo(
-            content = { _ ->
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.Start
-                ) {
-                    Spacer(modifier = Modifier.height(80.dp))
-
-                    Text(
-                        text = stringResource(com.convx.music.R.string.welcome_to),
-                        style = thinHeaderStyle,
-                        color = AppTheme.colorScheme.onBackground
-                    )
-                    Text(
-                        text = stringResource(com.convx.music.R.string.app_name).uppercase(),
-                        fontFamily = GoogleSansFlex,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 48.sp,
-                        color = AppTheme.colorScheme.primary,
-                        lineHeight = 56.sp
-                    )
-
-                    val flavorSuffix = if (BuildConfig.FLAVOR.contains("gms", ignoreCase = true)) "Gms Edition" else "Foss Edition"
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(start = 2.dp)
-                    ) {
-                        Text(
-                            text = flavorSuffix,
-                            fontFamily = GoogleSansFlex,
-                            style = AppTheme.typography.titleMedium,
-                            color = AppTheme.colorScheme.secondary
-                        )
-
-                        Spacer(modifier = Modifier.width(8.dp))
-
-                        Surface(
-                            shape = CircleShape,
-                            color = AppTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f)
-                        ) {
-                            Text(
-                                text = "v${BuildConfig.VERSION_NAME}",
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-                                style = AppTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = AppTheme.colorScheme.onSecondaryContainer
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.weight(1f))
-
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        RotatingShapeContainer(
-                            modifier = Modifier.size(280.dp)
-                        )
-
-                        Spacer(modifier = Modifier.height(32.dp))
-
-                        Text(
-                            text = stringResource(com.convx.music.R.string.welcome_preparing_subtitle),
-                            fontFamily = GoogleSansFlex,
-                            style = AppTheme.typography.bodyLarge,
-                            color = AppTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                    Spacer(modifier = Modifier.weight(1.2f))
-                }
-            }
-        ),
-        OnboardingPageInfo(
-            content = { _ ->
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.Start
-                ) {
-                    Spacer(modifier = Modifier.height(80.dp))
-
-                    Text(
-                        text = stringResource(com.convx.music.R.string.perm_required),
-                        style = thinHeaderStyle,
-                        color = AppTheme.colorScheme.onBackground
-                    )
-                    Text(
-                        text = stringResource(com.convx.music.R.string.perm_permissions),
-                        fontFamily = GoogleSansFlex,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 48.sp,
-                        color = AppTheme.colorScheme.primary,
-                        lineHeight = 56.sp
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Text(
-                        text = stringResource(com.convx.music.R.string.perm_intro_text),
-                        style = AppTheme.typography.bodyLarge.copy(
-                            fontFamily = GoogleSansFlex
-                        ),
-                        color = AppTheme.colorScheme.onSurfaceVariant
-                    )
-
-                    Spacer(modifier = Modifier.height(32.dp))
-
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .verticalScroll(rememberScrollState())
-                    ) {
-                        PermissionCard(
-                            icon = rememberVectorPainter(Icons.Rounded.Notifications),
-                            iconColor = Color(0xFFffaee4),
-                            iconTint = Color(0xFF8d0053),
-                            title = stringResource(com.convx.music.R.string.perm_notif_title),
-                            description = stringResource(com.convx.music.R.string.perm_notif_desc),
-                            shape = if (BuildConfig.FLAVOR.contains("gms", ignoreCase = true)) topCardShape else RoundedCornerShape(20.dp),
-                            control = {
-                                Switch(
-                                    checked = hasNotificationPermission,
-                                    onCheckedChange = {
-                                        if (hasNotificationPermission) {
-                                            val intent =
-                                                Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
-                                                    putExtra(
-                                                        Settings.EXTRA_APP_PACKAGE,
-                                                        context.packageName
-                                                    )
-                                                }
-                                            context.startActivity(intent)
-                                        } else {
-                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                                notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                                            }
-                                        }
-                                    }
-                                )
-                            },
-                            onClick = {
-                                if (hasNotificationPermission) {
-                                    val intent =
-                                        Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
-                                            putExtra(
-                                                Settings.EXTRA_APP_PACKAGE,
-                                                context.packageName
-                                            )
-                                        }
-                                    context.startActivity(intent)
-                                } else {
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                        notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                                    }
-                                }
-                            }
-                        )
-
-                        if (BuildConfig.FLAVOR.contains("gms", ignoreCase = true)) {
-                            Spacer(modifier = Modifier.height(2.dp))
-
-                            PermissionCard(
-                                icon = rememberVectorPainter(Icons.Rounded.SystemUpdate),
-                                iconColor = Color(0xFFffb683),
-                                iconTint = Color(0xFF753403),
-                                title = stringResource(com.convx.music.R.string.perm_install_title),
-                                description = stringResource(com.convx.music.R.string.perm_install_desc),
-                                shape = bottomCardShape,
-                                control = {
-                                    SymbolIcon(symbol = if (canInstallPackages) sf("checkmark") else sf("chevron.right"), contentDescription = null, tint = if (canInstallPackages) AppTheme.colorScheme.primary else AppTheme.colorScheme.onSurfaceVariant)
-                                },
-                                onClick = {
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                        val intent =
-                                            Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES).apply {
-                                                data = Uri.parse("package:${context.packageName}")
-                                            }
-                                        installParamsLauncher.launch(intent)
-                                    }
-                                }
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(100.dp))
-                    }
-                }
-            }
-        ),
-        OnboardingPageInfo(
-            content = { _ ->
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.Start
-                ) {
-                    Spacer(modifier = Modifier.height(80.dp))
-
-                    Text(
-                        text = "Join our",
-                        style = thinHeaderStyle,
-                        color = AppTheme.colorScheme.onBackground
-                    )
-                    Text(
-                        text = "Community",
-                        fontFamily = GoogleSansFlex,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 48.sp,
-                        color = AppTheme.colorScheme.primary,
-                        lineHeight = 56.sp
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Text(
-                        text = "NexaMusic is an open-source music app built with community support. Your help makes a difference!",
-                        style = AppTheme.typography.bodyLarge.copy(
-                            fontFamily = GoogleSansFlex
-                        ),
-                        color = AppTheme.colorScheme.onSurfaceVariant
-                    )
-
-                    Spacer(modifier = Modifier.height(32.dp))
-
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .verticalScroll(rememberScrollState())
-                    ) {
-                        PermissionCard(
-                            icon = rememberVectorPainter(Icons.Rounded.Star),
-                            iconColor = Color(0xFFfff1a8),
-                            iconTint = Color(0xFF8d6e00),
-                            title = "Star on GitHub",
-                            description = "Help us reach more people by starring our repository.",
-                            shape = topCardShape,
-                            control = {
-                                SymbolIcon(symbol = sf("chevron.right"), contentDescription = null, tint = AppTheme.colorScheme.onSurfaceVariant)
-                            },
-                            onClick = {
-                                uriHandler.safeOpenUri(context, "https://github.com/nkosanamahungela-dev/NexaMusic")
-                            }
-                        )
-
-                        Spacer(modifier = Modifier.height(2.dp))
-
-                        PermissionCard(
-                            icon = rememberVectorPainter(SfSymbols.Monochrome.SFEllipsisBubble),
-                            iconColor = Color(0xFF67d4ff),
-                            iconTint = Color(0xFF004e5d),
-                            title = "Join Discord",
-                            description = "Get the latest updates and chat with the community.",
-                            shape = bottomCardShape,
-                            control = {
-                                SymbolIcon(symbol = sf("chevron.right"), contentDescription = null, tint = AppTheme.colorScheme.onSurfaceVariant)
-                            },
-                            onClick = {
-                                uriHandler.safeOpenUri(context, "https://discord.gg/D8fYQKUEzw")
-                            }
-                        )
-
-                        Spacer(modifier = Modifier.height(100.dp))
-                    }
-                }
-            }
-        ),
-        OnboardingPageInfo(
-            content = { onUpdateScroll ->
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.Start
-                ) {
-                    Spacer(modifier = Modifier.height(80.dp))
-
-                    Column(modifier = Modifier.padding(bottom = 16.dp)) {
-                        Text(
-                            text = stringResource(com.convx.music.R.string.feat_discover),
-                            style = thinHeaderStyle,
-                            color = AppTheme.colorScheme.onBackground
-                        )
-                        Text(
-                            text = stringResource(com.convx.music.R.string.feat_features),
-                            fontFamily = GoogleSansFlex,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 48.sp,
-                            color = AppTheme.colorScheme.primary,
-                            lineHeight = 56.sp
-                        )
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        Text(
-                            text = stringResource(com.convx.music.R.string.feat_intro),
-                            style = AppTheme.typography.bodyLarge.copy(
-                                fontFamily = GoogleSansFlex
-                            ),
-                            color = AppTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-
-                    Box(modifier = Modifier.weight(1f)) {
-                        val scrollState = rememberScrollState()
-
-                        val isAtBottom by remember {
-                            derivedStateOf {
-                                val layoutInfo = scrollState.maxValue
-                                layoutInfo == 0 || scrollState.value >= (layoutInfo - 20)
-                            }
-                        }
-
-                        LaunchedEffect(isAtBottom) {
-                            onUpdateScroll(isAtBottom)
-                        }
-
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .verticalScroll(scrollState)
-                        ) {
-                            FeatureCard(
-                                icon = rememberVectorPainter(Icons.Rounded.Lyrics),
-                                iconColor = Color(0xFFffaee4),
-                                iconTint = Color(0xFF8d0053),
-                                title = stringResource(com.convx.music.R.string.feat_lyrics_title),
-                                description = stringResource(com.convx.music.R.string.feat_lyrics_desc),
-                                shape = topCardShape
-                            )
-
-                            Spacer(modifier = Modifier.height(2.dp))
-
-                            FeatureCard(
-                                icon = rememberVectorPainter(Icons.Rounded.CloudDownload),
-                                iconColor = Color(0xFF80da88),
-                                iconTint = Color(0xFF00522c),
-                                shape = middleCardShape,
-                                title = stringResource(com.convx.music.R.string.feat_download_title),
-                                description = stringResource(com.convx.music.R.string.feat_download_desc)
-                            )
-
-                            Spacer(modifier = Modifier.height(2.dp))
-
-                            FeatureCard(
-                                icon = rememberVectorPainter(Icons.Rounded.HighQuality),
-                                iconColor = Color(0xFFffb683),
-                                iconTint = Color(0xFF753403),
-                                title = stringResource(com.convx.music.R.string.feat_quality_title),
-                                description = stringResource(com.convx.music.R.string.feat_quality_desc),
-                                shape = middleCardShape
-                            )
-
-                            Spacer(modifier = Modifier.height(2.dp))
-
-                            FeatureCard(
-                                icon = rememberVectorPainter(Icons.Rounded.BlurOn),
-                                iconColor = Color(0xFFcabeff),
-                                iconTint = Color(0xFF1c0062),
-                                title = stringResource(com.convx.music.R.string.feat_glass_title),
-                                description = stringResource(com.convx.music.R.string.feat_glass_desc),
-                                shape = middleCardShape
-                            )
-
-                            Spacer(modifier = Modifier.height(2.dp))
-
-                            FeatureCard(
-                                icon = rememberVectorPainter(Icons.Rounded.Forum),
-                                iconColor = Color(0xFF67d4ff),
-                                iconTint = Color(0xFF004e5d),
-                                title = stringResource(com.convx.music.R.string.feat_discord_title),
-                                description = stringResource(com.convx.music.R.string.feat_discord_desc),
-                                shape = middleCardShape
-                            )
-
-                            if (BuildConfig.FLAVOR.contains("gms", ignoreCase = true)) {
-                                Spacer(modifier = Modifier.height(2.dp))
-
-                                FeatureCard(
-                                    icon = rememberVectorPainter(Icons.Rounded.SystemUpdate),
-                                    iconColor = Color(0xFF67d4ff),
-                                    iconTint = Color(0xFF004e5d),
-                                    title = stringResource(com.convx.music.R.string.feat_update_title),
-                                    description = stringResource(com.convx.music.R.string.feat_update_desc),
-                                    shape = middleCardShape
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.height(2.dp))
-
-                            FeatureCard(
-                                icon = rememberVectorPainter(Icons.Rounded.Gavel),
-                                iconColor = Color(0xFFb6c6ed),
-                                iconTint = Color(0xFF001b3f),
-                                title = stringResource(com.convx.music.R.string.feat_license_title),
-                                description = stringResource(com.convx.music.R.string.feat_license_desc),
-                                shape = middleCardShape
-                            )
-
-                            Spacer(modifier = Modifier.height(2.dp))
-
-                            FeatureCard(
-                                icon = rememberVectorPainter(Icons.Rounded.Terminal),
-                                iconColor = Color(0xFFcabeff),
-                                iconTint = Color(0xFF1c0062),
-                                title = stringResource(com.convx.music.R.string.feat_github_title),
-                                description = stringResource(com.convx.music.R.string.feat_github_desc),
-                                shape = bottomCardShape
-                            )
-
-                            Spacer(modifier = Modifier.height(100.dp))
-                        }
-                    }
-                }
-            }
-        )
+        OnboardingPageInfo { _ ->
+            WelcomeIntroPage()
+        },
+        OnboardingPageInfo { _ ->
+            RequiredPermissionsIntroPage(
+                hasNotificationPermission = hasNotificationPermission,
+                canInstallPackages = canInstallPackages,
+                showInstallationPermission = BuildConfig.FLAVOR.contains("gms", ignoreCase = true),
+                onNotificationsClick = ::requestOrOpenNotifications,
+                onNotificationToggle = { enabled ->
+                    if (enabled != hasNotificationPermission) requestOrOpenNotifications()
+                },
+                onInstallClick = ::openInstallSettings,
+            )
+        },
+        OnboardingPageInfo { _ ->
+            CommunityIntroPage(
+                onGitHub = { uriHandler.safeOpenUri(context, NexaIntroLinks.GITHUB_REPO_URL) },
+                onDiscord = { uriHandler.safeOpenUri(context, NexaIntroLinks.DISCORD_INVITE_URL) },
+            )
+        },
+        OnboardingPageInfo { onUpdateScroll ->
+            FeaturesIntroPage(
+                onGitHub = { uriHandler.safeOpenUri(context, NexaIntroLinks.GITHUB_REPO_URL) },
+                onLicense = { uriHandler.safeOpenUri(context, NexaIntroLinks.LICENSE_URL) },
+                onScrollPositionChanged = onUpdateScroll,
+            )
+        }
     )
 
     val pagerState = rememberPagerState(pageCount = { pages.size })
     val isFirstPage = pagerState.currentPage == 0
-    val isLastPage = pagerState.currentPage == pages.size - 1
+    val isLastPage = pagerState.currentPage == pages.lastIndex
 
     BackHandler(enabled = !isFirstPage) {
         scope.launch {
-            pagerState.animateScrollToPage(
-                pagerState.currentPage - 1,
-                animationSpec = commonAnimSpec
-            )
+            pagerState.animateScrollToPage(pagerState.currentPage - 1, animationSpec = animationSpec)
         }
     }
 
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.TopCenter
-    ) {
+    Box(Modifier.fillMaxSize().background(NexaIntroColors.background)) {
+        IntroAmbientBackground()
+
         Column(
             modifier = Modifier
-                .widthIn(max = 700.dp)
                 .fillMaxSize()
-                .padding(24.dp)
+                .statusBarsPadding()
+                .navigationBarsPadding()
+                .padding(horizontal = 20.dp, vertical = 10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             HorizontalPager(
                 state = pagerState,
-                userScrollEnabled = false,
-                // Four light pages: compose them all up front. With the default (0) the next
-                // page is composed the moment the transition starts, on the UI thread, in the
-                // middle of the animation.
-                beyondViewportPageCount = pages.size - 1,
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-            ) { index ->
+                userScrollEnabled = true, // Swiping and button navigation use the same pager state.
+                beyondViewportPageCount = pages.lastIndex,
+                modifier = Modifier.weight(1f).fillMaxWidth(),
+            ) { page ->
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .graphicsLayer {
-                            // iOS-style crossfade: the outgoing page shrinks slightly and
-                            // slides out while the incoming page does the reverse, driven by
-                            // the pager's own scroll so it plays during animateScrollToPage.
-                            // No RenderEffect blur: a full-page blur per frame blows the budget.
-                            val pageOffset = pagerState.getOffsetDistanceInPages(index)
-                            val absOffset = pageOffset.absoluteValue.coerceIn(0f, 1f)
-                            alpha = 1f - absOffset
-                            translationX = pageOffset * size.width * 0.2f
-                            scaleX = 1f - absOffset * 0.08f
-                            scaleY = 1f - absOffset * 0.08f
+                            val offset = pagerState.getOffsetDistanceInPages(page)
+                            val distance = offset.absoluteValue.coerceIn(0f, 1f)
+                            alpha = 1f - distance * 0.15f
+                            translationX = offset * size.width * 0.12f
+                            scaleX = 1f - distance * 0.025f
+                            scaleY = 1f - distance * 0.025f
                         }
                 ) {
-                    pages[index].content { scrolledToEnd ->
-                        if (index == pages.size - 1) {
-                            isLastPageScrolledToEnd = true
+                    pages[page].content { scrolledToEnd ->
+                        if (page == pages.lastIndex) {
+                            isLastPageScrolledToEnd = scrolledToEnd
                         }
                     }
                 }
             }
 
+            // The animated, stretched active pill remains above the fixed action row.
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
+                modifier = Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 18.dp),
                 horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                pages.indices.forEach { index ->
-                    val selected = index == pagerState.currentPage
+                pages.indices.forEach { page ->
+                    val selected = page == pagerState.currentPage
                     val dotWidth by animateDpAsState(
-                        targetValue = if (selected) 20.dp else 6.dp,
-                        animationSpec = commonDpAnimSpec,
-                        label = "dotWidth"
+                        targetValue = if (selected) 28.dp else 6.dp,
+                        animationSpec = tween(durationMillis = 260, easing = FastOutSlowInEasing),
+                        label = "introPageDotWidth",
                     )
                     Box(
-                        modifier = Modifier
-                            .padding(horizontal = 3.dp)
-                            .height(6.dp)
+                        Modifier
+                            .padding(horizontal = 4.dp)
                             .width(dotWidth)
-                            .clip(RoundedCornerShape(50))
+                            .height(6.dp)
+                            .clip(CircleShape)
                             .background(
-                                if (selected) AppTheme.colorScheme.primary
-                                else AppTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
+                                if (selected) NexaIntroColors.accent
+                                else Color.White.copy(alpha = 0.28f)
                             )
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            val backButtonWeight by animateFloatAsState(
-                targetValue = if (isFirstPage) 0.0001f else 1f,
-                animationSpec = commonAnimSpec,
-                label = "backWeight"
-            )
-
-            val spacerWeight by animateFloatAsState(
-                targetValue = if (isFirstPage) 0.0001f else 0.05f,
-                animationSpec = commonAnimSpec,
-                label = "spacerWeight"
-            )
-
-            val alphaBack by animateFloatAsState(
-                targetValue = if (isFirstPage) 0f else 1f,
-                animationSpec = commonAnimSpec,
-                label = "backAlpha"
-            )
-
+            // Keep both button slots stable so the primary pill never jumps between pages.
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 24.dp)
-                    .height(64.dp),
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier.fillMaxWidth().height(58.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Box(
-                    modifier = Modifier
-                        .weight(backButtonWeight)
-                        .fillMaxHeight()
-                        .alpha(alphaBack)
-                ) {
-                    WelcomeExpressiveButton(
-                        text = stringResource(com.convx.music.R.string.back_button_desc),
-                        onClick = {
-                            if (!isFirstPage) {
+                Box(Modifier.weight(0.88f).fillMaxHeight()) {
+                    if (!isFirstPage) {
+                        IntroActionButton(
+                            text = stringResource(com.convx.music.R.string.back_button_desc),
+                            isPrimary = false,
+                            modifier = Modifier.fillMaxSize(),
+                            onClick = {
                                 scope.launch {
-                                    pagerState.animateScrollToPage(
-                                        pagerState.currentPage - 1,
-                                        animationSpec = commonAnimSpec
-                                    )
+                                    pagerState.animateScrollToPage(pagerState.currentPage - 1, animationSpec = animationSpec)
                                 }
-                            }
-                        },
-                        containerColor = Color.Transparent,
-                        contentColor = AppTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.fillMaxSize(),
-                        isOutlined = true
-                    )
+                            },
+                        )
+                    }
                 }
 
-                Spacer(modifier = Modifier.weight(spacerWeight))
-
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
-                ) {
-                    val isNextEnabled = !isLastPage || isLastPageScrolledToEnd
-
-                    val alphaNext by animateFloatAsState(
-                        targetValue = if (isNextEnabled) 1f else 0.5f,
-                        label = "nextAlpha"
-                    )
-
-                    WelcomeExpressiveButton(
-                        text = if (isLastPage) stringResource(com.convx.music.R.string.get_started) else stringResource(
-                            com.convx.music.R.string.next
-                        ),
+                Box(Modifier.weight(1.12f).fillMaxHeight()) {
+                    val enabled = !isLastPage || isLastPageScrolledToEnd
+                    IntroActionButton(
+                        text = if (isLastPage) {
+                            stringResource(com.convx.music.R.string.get_started)
+                        } else {
+                            stringResource(com.convx.music.R.string.next)
+                        },
+                        isPrimary = true,
+                        enabled = enabled,
+                        modifier = Modifier.fillMaxSize(),
                         onClick = {
                             if (isLastPage) {
                                 if (isLastPageScrolledToEnd) onFinished()
                             } else {
                                 scope.launch {
-                                    pagerState.animateScrollToPage(
-                                        pagerState.currentPage + 1,
-                                        animationSpec = commonAnimSpec
-                                    )
+                                    pagerState.animateScrollToPage(pagerState.currentPage + 1, animationSpec = animationSpec)
                                 }
                             }
                         },
-                        containerColor = AppTheme.colorScheme.primary.copy(alpha = alphaNext),
-                        contentColor = AppTheme.colorScheme.onPrimary.copy(alpha = alphaNext),
-                        modifier = Modifier.fillMaxSize()
                     )
                 }
             }
@@ -886,215 +454,690 @@ fun WelcomePagerScreen(onFinished: () -> Unit) {
     }
 }
 
+/** Brand palette for the intro only. Mint matches the existing logo vector fill (#C9E4C8). */
+private object NexaIntroColors {
+    val nexaMint = Color(0xFFC9E4C8)
+    val accent = Color(0xFFE5173F)
+    val accentText = Color(0xFFFF4B6B)
+    val background = Color(0xFF08080A)
+    val text = Color(0xFFF8F8FA)
+    val muted = Color(0xFFA1A1A6)
+    val glass = Color.White.copy(alpha = 0.07f)
+    val glassBorder = Color.White.copy(alpha = 0.10f)
+    val violetGlow = Color(0x443F2D83)
+}
+
+/** Keep all web destinations in one place, so each link is easy to update. */
+private object NexaIntroLinks {
+    const val GITHUB_REPO_URL = "https://github.com/nkosanamahungela-dev/NexaMusic"
+    const val DISCORD_INVITE_URL = "https://discord.gg/D8fYQKUEzw"
+    const val LICENSE_URL = "https://github.com/nkosanamahungela-dev/NexaMusic/blob/main/LICENSE"
+}
+
+/** Uses the existing logo resource, unchanged. Connect a different existing asset only here if needed. */
 @Composable
-fun RotatingShapeContainer(modifier: Modifier = Modifier) {
-    Box(
+private fun NexaLogo(modifier: Modifier = Modifier) {
+    Image(
+        painter = painterResource(com.convx.music.R.drawable.convx_logo),
+        contentDescription = stringResource(com.convx.music.R.string.app_name),
         modifier = modifier,
-        contentAlignment = Alignment.Center
-    ) {
-        Image(
-            painter = painterResource(com.convx.music.R.drawable.convx_logo),
-            contentDescription = stringResource(com.convx.music.R.string.app_name),
-            modifier = Modifier.size(220.dp)
-        )
-    }
-}
-@Composable
-fun PermissionCard(
-    icon: Painter,
-    iconColor: Color,
-    iconTint: Color,
-    title: String,
-    description: String,
-    shape: Shape,
-    control: @Composable () -> Unit,
-    onClick: () -> Unit
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    val pressProgress by animateFloatAsState(
-        targetValue = if (isPressed) 1f else 0f,
-        animationSpec = tween(durationMillis = 200),
-        label = "anim_shape"
     )
+}
 
-    val animatedShape = remember(shape, pressProgress) {
-        if (shape is RoundedCornerShape) {
-            object : Shape {
-                override fun createOutline(
-                    size: Size,
-                    layoutDirection: LayoutDirection,
-                    density: Density
-                ): Outline {
-                    val targetPx = with(density) { 20.dp.toPx() }
-                    fun lerp(start: Float, stop: Float, fraction: Float) =
-                        (1 - fraction) * start + fraction * stop
-
-                    val ts = lerp(shape.topStart.toPx(size, density), targetPx, pressProgress)
-                    val te = lerp(shape.topEnd.toPx(size, density), targetPx, pressProgress)
-                    val bs = lerp(shape.bottomStart.toPx(size, density), targetPx, pressProgress)
-                    val be = lerp(shape.bottomEnd.toPx(size, density), targetPx, pressProgress)
-
-                    return Outline.Rounded(
-                        androidx.compose.ui.geometry.RoundRect(
-                            rect = androidx.compose.ui.geometry.Rect(
-                                0f,
-                                0f,
-                                size.width,
-                                size.height
-                            ),
-                            topLeft = androidx.compose.ui.geometry.CornerRadius(ts),
-                            topRight = androidx.compose.ui.geometry.CornerRadius(te),
-                            bottomRight = androidx.compose.ui.geometry.CornerRadius(be),
-                            bottomLeft = androidx.compose.ui.geometry.CornerRadius(bs)
-                        )
-                    )
-                }
-            }
-        } else shape
-    }
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(animatedShape)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null, 
-                onClick = onClick
+@Composable
+private fun IntroAmbientBackground() {
+    Canvas(Modifier.fillMaxSize()) {
+        drawRect(
+            brush = Brush.radialGradient(
+                colors = listOf(NexaIntroColors.accent.copy(alpha = 0.22f), Color.Transparent),
+                center = Offset(size.width * 0.52f, 0f),
+                radius = size.width * 0.95f,
             ),
-        shape = animatedShape,
-        colors = CardDefaults.cardColors(containerColor = AppTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
-        ListItem(
-            headlineContent = {
-                Text(
-                    text = title,
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = GoogleSansFlex
-                )
-            },
-            supportingContent = {
-                Text(
-                    text = description,
-                    fontFamily = GoogleSansFlex,
-                    color = AppTheme.colorScheme.onSurfaceVariant
-                )
-            },
-            leadingContent = {
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = iconColor,
-                    modifier = Modifier.size(48.dp)
-                ) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Icon(
-                            painter = icon,
-                            contentDescription = null,
-                            tint = iconTint,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-                }
-            },
-            trailingContent = control,
-            colors = androidx.compose.material3.ListItemDefaults.colors(containerColor = Color.Transparent)
+            size = size,
+        )
+        drawRect(
+            brush = Brush.radialGradient(
+                colors = listOf(NexaIntroColors.violetGlow, Color.Transparent),
+                center = Offset(0f, size.height),
+                radius = size.width * 0.95f,
+            ),
+            size = size,
         )
     }
 }
 
 @Composable
-fun FeatureCard(
-    icon: Painter,
-    iconColor: Color,
-    iconTint: Color,
-    title: String,
-    description: String,
-    shape: Shape
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(shape),
-        shape = shape,
-        colors = CardDefaults.cardColors(containerColor = AppTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
-        ListItem(
-            headlineContent = {
-                Text(
-                    text = title,
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = GoogleSansFlex
-                )
-            },
-            supportingContent = {
-                Text(
-                    text = description,
-                    fontFamily = GoogleSansFlex,
-                    color = AppTheme.colorScheme.onSurfaceVariant
-                )
-            },
-            leadingContent = {
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = iconColor,
-                    modifier = Modifier.size(48.dp)
-                ) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Icon(
-                            painter = icon,
-                            contentDescription = null,
-                            tint = iconTint,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-                }
-            },
-            colors = androidx.compose.material3.ListItemDefaults.colors(containerColor = Color.Transparent)
-        )
-    }
-}
-
-@Composable
-fun WelcomeExpressiveButton(
-    text: String,
-    onClick: () -> Unit,
-    containerColor: Color,
-    contentColor: Color,
+private fun IntroGlassCard(
     modifier: Modifier = Modifier,
-    isOutlined: Boolean = false
+    onClick: (() -> Unit)? = null,
+    content: @Composable () -> Unit,
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.95f else 1f,
-        label = "buttonScale"
+        targetValue = if (pressed && onClick != null) 0.975f else 1f,
+        animationSpec = tween(durationMillis = 120, easing = FastOutSlowInEasing),
+        label = "introCardPress",
     )
-
-    Surface(
-        onClick = onClick,
+    val shape = RoundedCornerShape(21.dp)
+    Box(
         modifier = modifier
-            .clip(CircleShape)
-            .then(if (isPressed) Modifier.rotate(0f) else Modifier), // placeholder for scale
-        color = containerColor,
-        contentColor = contentColor,
-        border = if (isOutlined) androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colorScheme.outline.copy(alpha = 0.3f)) else null,
-        shape = CircleShape,
-        interactionSource = interactionSource
+            .graphicsLayer { scaleX = scale; scaleY = scale }
+            .clip(shape)
+            .background(NexaIntroColors.glass)
+            .border(BorderStroke(1.dp, NexaIntroColors.glassBorder), shape)
+            .then(
+                if (onClick != null) {
+                    Modifier.clickable(
+                        interactionSource = interaction,
+                        indication = null,
+                        onClick = onClick,
+                    )
+                } else Modifier
+            ),
+    ) {
+        content()
+    }
+}
+
+@Composable
+private fun IntroActionButton(
+    text: String,
+    isPrimary: Boolean,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    onClick: () -> Unit,
+) {
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (pressed) 0.97f else 1f,
+        animationSpec = tween(durationMillis = 120),
+        label = "introButtonPress",
+    )
+    val shape = CircleShape
+    Box(
+        modifier = modifier
+            .graphicsLayer { scaleX = scale; scaleY = scale }
+            .clip(shape)
+            .background(
+                when {
+                    !enabled && isPrimary -> NexaIntroColors.accent.copy(alpha = 0.48f)
+                    isPrimary -> NexaIntroColors.accent
+                    else -> Color.White.copy(alpha = 0.08f)
+                }
+            )
+            .border(
+                BorderStroke(
+                    1.dp,
+                    if (isPrimary) Color.White.copy(alpha = 0.08f) else NexaIntroColors.glassBorder,
+                ),
+                shape,
+            )
+            .clickable(
+                interactionSource = interaction,
+                indication = null,
+                enabled = enabled,
+                onClick = onClick,
+            )
+            .padding(horizontal = 18.dp, vertical = 10.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = text,
+            fontFamily = GoogleSansFlex,
+            fontSize = 17.sp,
+            fontWeight = FontWeight.Bold,
+            color = if (isPrimary) Color.White else NexaIntroColors.text,
+            textAlign = TextAlign.Center,
+            maxLines = 1,
+        )
+    }
+}
+
+@Composable
+private fun WelcomeIntroPage() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 4.dp, vertical = 12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
     ) {
         Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
+            modifier = Modifier.size(194.dp),
+            contentAlignment = Alignment.Center,
         ) {
+            Box(
+                Modifier
+                    .size(190.dp)
+                    .background(
+                        Brush.radialGradient(
+                            listOf(NexaIntroColors.accent.copy(alpha = 0.34f), Color.Transparent)
+                        ),
+                        CircleShape,
+                    )
+            )
+            Box(
+                Modifier
+                    .size(142.dp)
+                    .clip(RoundedCornerShape(32.dp))
+                    .background(NexaIntroColors.glass)
+                    .border(BorderStroke(1.dp, NexaIntroColors.glassBorder), RoundedCornerShape(32.dp)),
+                contentAlignment = Alignment.Center,
+            ) {
+                NexaLogo(Modifier.size(82.dp))
+            }
+        }
+
+        Spacer(Modifier.height(20.dp))
+        Text(
+            text = stringResource(com.convx.music.R.string.welcome_to),
+            fontFamily = GoogleSansFlex,
+            fontSize = 20.sp,
+            color = NexaIntroColors.muted,
+            textAlign = TextAlign.Center,
+        )
+        Text(
+            text = buildAnnotatedString {
+                withStyle(SpanStyle(color = NexaIntroColors.nexaMint)) { append("Nexa") }
+                withStyle(SpanStyle(color = NexaIntroColors.text)) { append("Music") }
+            },
+            fontFamily = GoogleSansFlex,
+            fontWeight = FontWeight.Bold,
+            fontSize = 46.sp,
+            lineHeight = 54.sp,
+            textAlign = TextAlign.Center,
+        )
+
+        Spacer(Modifier.height(16.dp))
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            IntroPill(
+                text = if (BuildConfig.FLAVOR.contains("gms", ignoreCase = true)) "Gms Edition" else "Foss Edition",
+                leadingDot = NexaIntroColors.nexaMint,
+            )
+            IntroPill(text = "v${BuildConfig.VERSION_NAME}")
+        }
+
+        Spacer(Modifier.height(22.dp))
+        Text(
+            text = stringResource(com.convx.music.R.string.welcome_preparing_subtitle),
+            fontFamily = GoogleSansFlex,
+            fontSize = 16.sp,
+            lineHeight = 24.sp,
+            color = NexaIntroColors.muted,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(0.86f),
+        )
+    }
+}
+
+@Composable
+private fun IntroPill(text: String, leadingDot: Color? = null) {
+    Row(
+        modifier = Modifier
+            .clip(CircleShape)
+            .background(Color.White.copy(alpha = 0.07f))
+            .border(BorderStroke(1.dp, NexaIntroColors.glassBorder), CircleShape)
+            .padding(horizontal = 13.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(7.dp),
+    ) {
+        if (leadingDot != null) {
+            Box(Modifier.size(6.dp).clip(CircleShape).background(leadingDot))
+        }
+        Text(
+            text = text,
+            fontFamily = GoogleSansFlex,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = NexaIntroColors.text,
+        )
+    }
+}
+
+@Composable
+private fun IntroHeading(
+    firstLine: String,
+    accentLine: String,
+    subtitle: String? = null,
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = firstLine,
+            fontFamily = GoogleSansFlex,
+            fontWeight = FontWeight.Medium,
+            fontSize = 39.sp,
+            lineHeight = 43.sp,
+            color = NexaIntroColors.text,
+        )
+        Text(
+            text = accentLine,
+            fontFamily = GoogleSansFlex,
+            fontWeight = FontWeight.Bold,
+            fontSize = 39.sp,
+            lineHeight = 43.sp,
+            color = NexaIntroColors.accentText,
+        )
+        if (subtitle != null) {
+            Spacer(Modifier.height(12.dp))
             Text(
-                text = text,
-                fontWeight = FontWeight.Bold,
+                text = subtitle,
                 fontFamily = GoogleSansFlex,
-                fontSize = 18.sp
+                fontSize = 15.sp,
+                lineHeight = 22.sp,
+                color = NexaIntroColors.muted,
             )
         }
+    }
+}
+
+@Composable
+private fun RequiredPermissionsIntroPage(
+    hasNotificationPermission: Boolean,
+    canInstallPackages: Boolean,
+    showInstallationPermission: Boolean,
+    onNotificationsClick: () -> Unit,
+    onNotificationToggle: (Boolean) -> Unit,
+    onInstallClick: () -> Unit,
+) {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(horizontal = 4.dp, vertical = 10.dp),
+    ) {
+        IntroHeading(
+            firstLine = stringResource(com.convx.music.R.string.perm_required),
+            accentLine = stringResource(com.convx.music.R.string.perm_permissions),
+            subtitle = stringResource(com.convx.music.R.string.perm_intro_text),
+        )
+
+        Spacer(Modifier.height(22.dp))
+        Column(
+            modifier = Modifier.fillMaxWidth().weight(1f).verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            IntroGlassCard(onClick = onNotificationsClick) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    IntroIconTile(
+                        painter = rememberVectorPainter(Icons.Rounded.Notifications),
+                        background = Color(0xFFFFAEE4),
+                        tint = Color(0xFF8D0053),
+                        size = 46.dp,
+                    )
+                    Column(Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(com.convx.music.R.string.perm_notif_title),
+                            fontFamily = GoogleSansFlex,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = NexaIntroColors.text,
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = stringResource(com.convx.music.R.string.perm_notif_desc),
+                            fontFamily = GoogleSansFlex,
+                            fontSize = 13.sp,
+                            lineHeight = 18.sp,
+                            color = NexaIntroColors.muted,
+                        )
+                    }
+                    Switch(
+                        checked = hasNotificationPermission,
+                        onCheckedChange = onNotificationToggle,
+                        colors = androidx.compose.material3.SwitchDefaults.colors(
+                            checkedThumbColor = NexaIntroColors.nexaMint,
+                            checkedTrackColor = NexaIntroColors.nexaMint.copy(alpha = 0.40f),
+                            checkedBorderColor = NexaIntroColors.nexaMint,
+                        ),
+                    )
+                }
+            }
+
+            if (showInstallationPermission) {
+                IntroGlassCard(onClick = onInstallClick) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        IntroIconTile(
+                            painter = rememberVectorPainter(Icons.Rounded.SystemUpdate),
+                            background = Color(0xFFFFB683),
+                            tint = Color(0xFF753403),
+                            size = 46.dp,
+                        )
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                text = stringResource(com.convx.music.R.string.perm_install_title),
+                                fontFamily = GoogleSansFlex,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = NexaIntroColors.text,
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                text = stringResource(com.convx.music.R.string.perm_install_desc),
+                                fontFamily = GoogleSansFlex,
+                                fontSize = 13.sp,
+                                lineHeight = 18.sp,
+                                color = NexaIntroColors.muted,
+                            )
+                        }
+                        Box(
+                            Modifier
+                                .clip(CircleShape)
+                                .background(NexaIntroColors.accent)
+                                .clickable(onClick = onInstallClick)
+                                .padding(horizontal = 14.dp, vertical = 9.dp),
+                        ) {
+                            Text(
+                                text = if (canInstallPackages) "Allowed" else "Allow",
+                                fontFamily = GoogleSansFlex,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White,
+                            )
+                        }
+                    }
+                }
+            }
+
+            Text(
+                text = "You can change these anytime in Settings.",
+                fontFamily = GoogleSansFlex,
+                fontSize = 13.sp,
+                lineHeight = 18.sp,
+                color = NexaIntroColors.muted,
+                modifier = Modifier.padding(start = 4.dp, top = 2.dp, bottom = 14.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun CommunityIntroPage(
+    onGitHub: () -> Unit,
+    onDiscord: () -> Unit,
+) {
+    Column(Modifier.fillMaxSize().padding(horizontal = 4.dp, vertical = 10.dp)) {
+        IntroHeading(
+            firstLine = "Join our",
+            accentLine = "Community",
+            subtitle = "NexaMusic is an open-source music app built with community support. Your help makes a difference!",
+        )
+        Spacer(Modifier.height(22.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth().weight(1f),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            CommunityLinkCard(
+                modifier = Modifier.weight(1f).fillMaxHeight(),
+                icon = rememberVectorPainter(Icons.Rounded.Star),
+                iconBackground = Color(0xFFFFF1A8),
+                iconTint = Color(0xFF8D6E00),
+                title = "Star on GitHub",
+                description = "Help us reach more people by starring our repository.",
+                onClick = onGitHub,
+            )
+            CommunityLinkCard(
+                modifier = Modifier.weight(1f).fillMaxHeight(),
+                icon = rememberVectorPainter(SfSymbols.Monochrome.SFEllipsisBubble),
+                iconBackground = Color(0xFF67D4FF),
+                iconTint = Color(0xFF004E5D),
+                title = "Join Discord",
+                description = "Get the latest updates and chat with the community.",
+                onClick = onDiscord,
+            )
+        }
+    }
+}
+
+@Composable
+private fun CommunityLinkCard(
+    modifier: Modifier,
+    icon: Painter,
+    iconBackground: Color,
+    iconTint: Color,
+    title: String,
+    description: String,
+    onClick: () -> Unit,
+) {
+    IntroGlassCard(modifier = modifier, onClick = onClick) {
+        Box(Modifier.fillMaxSize().padding(15.dp)) {
+            Box(
+                Modifier.align(Alignment.TopEnd).size(30.dp)
+                    .clip(CircleShape)
+                    .background(Color.White.copy(alpha = 0.09f))
+                    .border(BorderStroke(1.dp, NexaIntroColors.glassBorder), CircleShape),
+                contentAlignment = Alignment.Center,
+            ) {
+                SymbolIcon(symbol = sf("arrow.up.right"), contentDescription = null, tint = NexaIntroColors.text)
+            }
+            Column(
+                modifier = Modifier.fillMaxSize().padding(top = 42.dp),
+                verticalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Column {
+                    IntroIconTile(icon, iconBackground, iconTint, size = 54.dp)
+                    Spacer(Modifier.height(18.dp))
+                    Text(
+                        text = title,
+                        fontFamily = GoogleSansFlex,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        lineHeight = 22.sp,
+                        color = NexaIntroColors.text,
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        text = description,
+                        fontFamily = GoogleSansFlex,
+                        fontSize = 13.sp,
+                        lineHeight = 18.sp,
+                        color = NexaIntroColors.muted,
+                    )
+                }
+                Text(
+                    text = "Open",
+                    fontFamily = GoogleSansFlex,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = NexaIntroColors.accentText,
+                    modifier = Modifier.padding(top = 16.dp),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun FeaturesIntroPage(
+    onGitHub: () -> Unit,
+    onLicense: () -> Unit,
+    onScrollPositionChanged: (Boolean) -> Unit,
+) {
+    val scrollState = rememberScrollState()
+    val isAtBottom by remember {
+        derivedStateOf {
+            scrollState.maxValue == 0 || scrollState.value >= scrollState.maxValue - 20
+        }
+    }
+    LaunchedEffect(isAtBottom) { onScrollPositionChanged(isAtBottom) }
+
+    Column(
+        modifier = Modifier.fillMaxSize().padding(horizontal = 4.dp, vertical = 10.dp),
+    ) {
+        Column(
+            modifier = Modifier.weight(1f).fillMaxWidth().verticalScroll(scrollState),
+        ) {
+            IntroHeading(
+                firstLine = stringResource(com.convx.music.R.string.feat_discover),
+                accentLine = stringResource(com.convx.music.R.string.feat_features),
+                subtitle = stringResource(com.convx.music.R.string.feat_intro),
+            )
+            Spacer(Modifier.height(18.dp))
+
+            // Four explicit rows keep the grid aligned at 2 columns. It can scroll on
+            // compact displays or with large text rather than clipping a tile.
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    IntroFeatureTile(
+                        modifier = Modifier.weight(1f),
+                        icon = rememberVectorPainter(Icons.Rounded.Lyrics),
+                        iconBackground = Color(0xFFFFAEE4),
+                        iconTint = Color(0xFF8D0053),
+                        title = stringResource(com.convx.music.R.string.feat_lyrics_title),
+                        description = stringResource(com.convx.music.R.string.feat_lyrics_desc),
+                    )
+                    IntroFeatureTile(
+                        modifier = Modifier.weight(1f),
+                        icon = rememberVectorPainter(Icons.Rounded.CloudDownload),
+                        iconBackground = Color(0xFF80DA88),
+                        iconTint = Color(0xFF00522C),
+                        title = stringResource(com.convx.music.R.string.feat_download_title),
+                        description = stringResource(com.convx.music.R.string.feat_download_desc),
+                    )
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    IntroFeatureTile(
+                        modifier = Modifier.weight(1f),
+                        icon = rememberVectorPainter(Icons.Rounded.HighQuality),
+                        iconBackground = Color(0xFFFFB683),
+                        iconTint = Color(0xFF753403),
+                        title = stringResource(com.convx.music.R.string.feat_quality_title),
+                        description = stringResource(com.convx.music.R.string.feat_quality_desc),
+                    )
+                    IntroFeatureTile(
+                        modifier = Modifier.weight(1f),
+                        icon = rememberVectorPainter(Icons.Rounded.BlurOn),
+                        iconBackground = Color(0xFFCABEFF),
+                        iconTint = Color(0xFF1C0062),
+                        title = stringResource(com.convx.music.R.string.feat_glass_title),
+                        description = stringResource(com.convx.music.R.string.feat_glass_desc),
+                    )
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    IntroFeatureTile(
+                        modifier = Modifier.weight(1f),
+                        icon = rememberVectorPainter(Icons.Rounded.Forum),
+                        iconBackground = Color(0xFF67D4FF),
+                        iconTint = Color(0xFF004E5D),
+                        title = stringResource(com.convx.music.R.string.feat_discord_title),
+                        description = stringResource(com.convx.music.R.string.feat_discord_desc),
+                    )
+                    IntroFeatureTile(
+                        modifier = Modifier.weight(1f),
+                        icon = rememberVectorPainter(Icons.Rounded.SystemUpdate),
+                        iconBackground = Color(0xFF67D4FF),
+                        iconTint = Color(0xFF004E5D),
+                        title = stringResource(com.convx.music.R.string.feat_update_title),
+                        description = stringResource(com.convx.music.R.string.feat_update_desc),
+                    )
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    IntroFeatureTile(
+                        modifier = Modifier.weight(1f),
+                        icon = rememberVectorPainter(Icons.Rounded.Gavel),
+                        iconBackground = Color(0xFFB6C6ED),
+                        iconTint = Color(0xFF001B3F),
+                        title = stringResource(com.convx.music.R.string.feat_license_title),
+                        description = stringResource(com.convx.music.R.string.feat_license_desc),
+                        onClick = onLicense,
+                    )
+                    IntroFeatureTile(
+                        modifier = Modifier.weight(1f),
+                        icon = rememberVectorPainter(Icons.Rounded.Terminal),
+                        iconBackground = Color(0xFFCABEFF),
+                        iconTint = Color(0xFF1C0062),
+                        title = stringResource(com.convx.music.R.string.feat_github_title),
+                        description = stringResource(com.convx.music.R.string.feat_github_desc),
+                        onClick = onGitHub,
+                    )
+                }
+            }
+            Spacer(Modifier.height(10.dp))
+        }
+    }
+}
+
+@Composable
+private fun IntroFeatureTile(
+    modifier: Modifier = Modifier,
+    icon: Painter,
+    iconBackground: Color,
+    iconTint: Color,
+    title: String,
+    description: String,
+    onClick: (() -> Unit)? = null,
+) {
+    IntroGlassCard(
+        modifier = modifier.heightIn(min = 110.dp),
+        onClick = onClick,
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                IntroIconTile(icon, iconBackground, iconTint, size = 30.dp)
+                if (onClick != null) {
+                    SymbolIcon(
+                        symbol = sf("arrow.up.right"),
+                        contentDescription = null,
+                        tint = NexaIntroColors.muted,
+                        size = 13.dp,
+                    )
+                }
+            }
+            Text(
+                text = title,
+                fontFamily = GoogleSansFlex,
+                fontSize = 14.sp,
+                lineHeight = 17.sp,
+                fontWeight = FontWeight.Bold,
+                color = NexaIntroColors.text,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = description,
+                fontFamily = GoogleSansFlex,
+                fontSize = 12.sp,
+                lineHeight = 16.sp,
+                color = NexaIntroColors.muted,
+            )
+        }
+    }
+}
+
+@Composable
+private fun IntroIconTile(
+    painter: Painter,
+    background: Color,
+    tint: Color,
+    size: Dp,
+) {
+    Box(
+        modifier = Modifier.size(size).clip(RoundedCornerShape(12.dp)).background(background),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            painter = painter,
+            contentDescription = null,
+            tint = tint,
+            modifier = Modifier.size(size * 0.52f),
+        )
     }
 }
