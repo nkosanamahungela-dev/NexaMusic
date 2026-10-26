@@ -1932,6 +1932,15 @@ class MusicService :
             retryStream(mediaId, reason = "generic IO error")
         }
 
+        /** Refreshes an expired or stalled stream URL when playback buffers without an error. */
+        fun handleStalledBuffering(mediaId: String) {
+            retryStream(
+                mediaId = mediaId,
+                reason = "prolonged mid-track buffering without PlaybackException",
+                bypassQualityCache = true,
+            )
+        }
+
         fun handleFinalFailure() {
             if (dataStore.get(AutoSkipNextOnErrorKey, false)) {
                 Timber.tag(TAG).d("All recovery attempts exhausted, auto-skipping to next track")
@@ -2733,11 +2742,7 @@ class MusicService :
                     Timber.tag(TAG).w(
                         "Playback stuck buffering mid-track; refreshing stream URL for $stalledId"
                     )
-                    errorRecovery.retryStream(
-                        mediaId = stalledId,
-                        reason = "prolonged mid-track buffering without PlaybackException",
-                        bypassQualityCache = true,
-                    )
+                    errorRecovery.handleStalledBuffering(stalledId)
                 } else {
                     bufferingRecoveryAttempted.remove(stalledId)
                 }
