@@ -1770,7 +1770,7 @@ class MusicService :
             }
         }
 
-        private fun retryStream(
+        fun retryStream(
             mediaId: String,
             reason: String,
             fromStart: Boolean = false,
