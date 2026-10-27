@@ -398,7 +398,7 @@ private fun CommunityScreen(reduceMotion: Boolean, onGitHub: () -> Unit, onDisco
 @Composable
 private fun NexaLogo(modifier: Modifier = Modifier) {
     Image(
-        painter = painterResource(R.drawable.nexamusic_logo_mark),
+        painter = painterResource(R.drawable.convx_logo),
         contentDescription = "NexaMusic logo",
         modifier = modifier,
     )
