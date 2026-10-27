@@ -5,6 +5,7 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -15,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.asComposePath
@@ -57,7 +59,7 @@ private fun introIconPaths(name: String): List<String> = when (name) {
 @Composable
 fun AnimatedLineIcon(
     name: String,
-    size: androidx.compose.ui.unit.Dp,
+    iconSize: androidx.compose.ui.unit.Dp,
     colour: Color,
     play: Boolean,
     reduceMotion: Boolean,
@@ -87,19 +89,19 @@ fun AnimatedLineIcon(
         introIconPaths(name).map { d -> PathParser().parsePathString(d).toPath() }
     }
     Canvas(
-        modifier = modifier.size(size).semantics { contentDescription = name },
+        modifier = modifier.size(iconSize).semantics { contentDescription = name },
     ) {
-        drawContext.transform.scale(size.width / 24f, size.height / 24f, pivot = androidx.compose.ui.geometry.Offset.Zero)
+        drawContext.transform.scale(this.size.width / 24f, this.size.height / 24f, pivot = androidx.compose.ui.geometry.Offset.Zero)
         paths.forEach { source ->
             val nativePath = source.asAndroidPath()
             val measure = PathMeasure(nativePath, false)
             val length = measure.length
             val segment = android.graphics.Path()
             if (animatedProgress >= 1f || reduceMotion) {
-                drawPath(source, colour, style = Stroke(NexaIntroIconPaths.StrokeWidth, cap = StrokeCap.Round))
+                drawPath(source, colour, style = Stroke(NexaIntroIconPaths.StrokeWidth, cap = StrokeCap.Round, join = StrokeJoin.Round))
             } else if (animatedProgress > 0f && length > 0f) {
                 measure.getSegment(0f, length * animatedProgress, segment, true)
-                drawPath(segment.asComposePath(), colour, style = Stroke(NexaIntroIconPaths.StrokeWidth.dp.toPx(), cap = StrokeCap.Round))
+                drawPath(segment.asComposePath(), colour, style = Stroke(NexaIntroIconPaths.StrokeWidth, cap = StrokeCap.Round, join = StrokeJoin.Round))
             }
         }
     }
