@@ -247,7 +247,7 @@ private fun LyricsScreen(reduceMotion: Boolean, play: Boolean) {
         }
     }
     Column(Modifier.fillMaxSize().padding(top = 86.dp, bottom = 112.dp), verticalArrangement = Arrangement.Center) {
-        Box(Modifier.size(48.dp).clip(RoundedCornerShape(15.dp)).background(NexaIntroTokens.Cream.copy(alpha = .16f)).border(1.dp, NexaIntroTokens.Cream.copy(alpha = .35f), RoundedCornerShape(15.dp)), contentAlignment = Alignment.Center) { DrawnIcon("lyrics", NexaIntroTokens.Cream, reduceMotion, Modifier.size(26.dp), play) }
+        Box(Modifier.size(48.dp).clip(RoundedCornerShape(15.dp)).background(NexaIntroTokens.Cream.copy(alpha = .16f)).border(1.dp, NexaIntroTokens.Cream.copy(alpha = .35f), RoundedCornerShape(15.dp)), contentAlignment = Alignment.Center) { DrawnIcon("lyrics", NexaIntroTokens.Cream, reduceMotion, Modifier, play, 26.dp) }
         Spacer(Modifier.height(22.dp))
         RichHeadline("Sing along.\nWord by word.", "Word by word.", NexaIntroTokens.Cream, NexaIntroTokens.Ink)
         Spacer(Modifier.height(14.dp))
@@ -293,7 +293,7 @@ private fun OfflineScreen(reduceMotion: Boolean, play: Boolean) {
                 drawArc(NexaIntroTokens.Mint.copy(alpha=.2f), -90f, 360f, false, style=Stroke(7.dp.toPx(), cap=StrokeCap.Round))
                 drawArc(NexaIntroTokens.Mint, -90f, 360f*progress, false, style=Stroke(7.dp.toPx(), cap=StrokeCap.Round))
             }
-            DrawnIcon("cloud-download", NexaIntroTokens.Mint, reduceMotion, Modifier.size(54.dp).offset(y=bounce.dp), play)
+            DrawnIcon("cloud-download", NexaIntroTokens.Mint, reduceMotion, Modifier.offset(y=bounce.dp), play, 54.dp)
             Box(Modifier.align(Alignment.BottomCenter).offset(x=52.dp, y=(-10).dp).clip(RoundedCornerShape(10.dp)).background(NexaIntroTokens.Saffron).padding(horizontal=12.dp, vertical=6.dp)) {
                 Text("HQ", color=NexaIntroTokens.Ink, fontWeight=FontWeight.ExtraBold, fontSize=13.sp)
             }
@@ -335,7 +335,7 @@ private fun PermissionsScreen(
         Text("You can change these anytime in Settings.", color=NexaIntroTokens.PermissionsInk.copy(alpha=.78f), fontSize=17.sp)
         Spacer(Modifier.height(26.dp))
         Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(NexaIntroTokens.CardWhite).padding(18.dp), verticalAlignment=Alignment.CenterVertically) {
-            Box(Modifier.size(52.dp).clip(RoundedCornerShape(14.dp)).background(NexaIntroTokens.PermissionsInk.copy(alpha = .08f)), contentAlignment = Alignment.Center) { DrawnIcon("bell", Color(0xFFB3331A), reduceMotion, Modifier.size(26.dp).rotate(bellRotation), play) }
+            Box(Modifier.size(52.dp).clip(RoundedCornerShape(14.dp)).background(NexaIntroTokens.PermissionsInk.copy(alpha = .08f)), contentAlignment = Alignment.Center) { DrawnIcon("bell", Color(0xFFB3331A), reduceMotion, Modifier.rotate(bellRotation), play, 26.dp) }
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {
                 Text("Notifications", color=NexaIntroTokens.PermissionsInk, fontWeight=FontWeight.Bold, fontSize=18.sp)
@@ -346,7 +346,7 @@ private fun PermissionsScreen(
         }
         Spacer(Modifier.height(14.dp))
         Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(NexaIntroTokens.CardWhite).padding(18.dp), verticalAlignment=Alignment.CenterVertically) {
-            Box(Modifier.size(52.dp).clip(RoundedCornerShape(14.dp)).background(NexaIntroTokens.PermissionsInk.copy(alpha = .08f)), contentAlignment = Alignment.Center) { DrawnIcon("phone-download", Color(0xFFB3331A), reduceMotion, Modifier.size(26.dp), play) }
+            Box(Modifier.size(52.dp).clip(RoundedCornerShape(14.dp)).background(NexaIntroTokens.PermissionsInk.copy(alpha = .08f)), contentAlignment = Alignment.Center) { DrawnIcon("phone-download", Color(0xFFB3331A), reduceMotion, Modifier, play, 26.dp) }
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {
                 Text("App Installation", color=NexaIntroTokens.PermissionsInk, fontWeight=FontWeight.Bold, fontSize=18.sp)
@@ -370,7 +370,7 @@ private fun CommunityScreen(reduceMotion: Boolean, play: Boolean, onGitHub: () -
         Text("Built in the open by people who love music.", color=NexaIntroTokens.Ink, fontSize=17.sp, textAlign=TextAlign.Center, lineHeight=24.sp)
         Spacer(Modifier.height(24.dp))
         Box(Modifier.size(104.dp).offset(y=float.dp).clip(RoundedCornerShape(24.dp)).background(Color(0xFF1A120C)), contentAlignment=Alignment.Center) {
-            DrawnIcon("music-note", NexaIntroTokens.Mint, reduceMotion, Modifier.size(52.dp), play)
+            DrawnIcon("music-note", NexaIntroTokens.Mint, reduceMotion, Modifier, play, 52.dp)
         }
         Spacer(Modifier.height(26.dp))
         Row(horizontalArrangement=Arrangement.spacedBy(8.dp), verticalAlignment=Alignment.CenterVertically) {
@@ -385,11 +385,11 @@ private fun CommunityScreen(reduceMotion: Boolean, play: Boolean, onGitHub: () -
         Spacer(Modifier.height(24.dp))
         Row(horizontalArrangement=Arrangement.spacedBy(12.dp)) {
             Button(onClick=onGitHub, shape=RoundedCornerShape(16.dp), colors=ButtonDefaults.buttonColors(containerColor=NexaIntroTokens.Ink,contentColor=NexaIntroTokens.Saffron)) {
-                DrawnIcon("star", NexaIntroTokens.Saffron, reduceMotion, Modifier.size(20.dp), play)
+                DrawnIcon("star", NexaIntroTokens.Saffron, reduceMotion, Modifier, play, 20.dp)
                 Spacer(Modifier.width(6.dp)); Text("Star on GitHub", fontWeight=FontWeight.Bold)
             }
             Button(onClick=onDiscord, shape=RoundedCornerShape(16.dp), colors=ButtonDefaults.buttonColors(containerColor=NexaIntroTokens.Ink,contentColor=NexaIntroTokens.Saffron)) {
-                DrawnIcon("chat", NexaIntroTokens.Saffron, reduceMotion, Modifier.size(20.dp), play)
+                DrawnIcon("chat", NexaIntroTokens.Saffron, reduceMotion, Modifier, play, 20.dp)
                 Spacer(Modifier.width(6.dp)); Text("Join Discord", fontWeight=FontWeight.Bold)
             }
         }
@@ -442,10 +442,11 @@ private fun DrawnIcon(
     reduceMotion: Boolean,
     modifier: Modifier = Modifier,
     play: Boolean = true,
+    size: androidx.compose.ui.unit.Dp = 24.dp,
 ) {
     AnimatedLineIcon(
         name = name,
-        size = 24.dp,
+        size = size,
         colour = color,
         play = play,
         reduceMotion = reduceMotion,
