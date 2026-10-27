@@ -155,6 +155,7 @@ fun SearchScreen(
     onAccountClick: () -> Unit = { navController.navigate(com.convx.music.ui.screens.Screens.Settings.route) },
 ) {
     val database = LocalDatabase.current.get()
+    val recentSearches by remember(database) { database.searchHistory() }.collectAsStateWithLifecycle(initialValue = emptyList())
     val coroutineScope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -222,6 +223,8 @@ fun SearchScreen(
                     contentPadding = PaddingValues(start = sideInset, top = titleTop, bottom = bottomPadding + 16.dp),
                     header = { AppleSearchHeader(accountImageUrl, accountName, onAccountClick,
                         horizontalInset = 0.dp, bottomInset = 2.dp) },
+                    recentSearches = recentSearches.map { it.query }.distinct().take(12),
+                    onRecentSearchClick = onSearchFromSuggestion,
                 )
             }
             TopFadeBlur(
