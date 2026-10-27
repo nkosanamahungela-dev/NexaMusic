@@ -21,6 +21,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.calculateStartPadding
@@ -297,14 +298,15 @@ private fun FeaturedMoodCard(
 @Composable
 internal fun CategoryTile(
     title: String,
+    color: Color = SearchPalette.Placeholder,
     art: String?,
     modifier: Modifier = Modifier,
-    onPlay: () -> Unit,
+    onPlay: () -> Unit = {},
     onClick: () -> Unit,
 ) {
     val shape = RoundedCornerShape(20.dp)
     Box(
-        modifier = modifier.clip(shape).background(SearchPalette.Placeholder)
+        modifier = modifier.clip(shape).background(if (art.isNullOrBlank()) color else SearchPalette.Placeholder)
             .clickable(onClick = onClick)
             .semantics { contentDescription = "$title, mood playlist" },
     ) {
