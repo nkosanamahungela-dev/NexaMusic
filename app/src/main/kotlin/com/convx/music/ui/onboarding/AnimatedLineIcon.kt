@@ -89,13 +89,14 @@ fun AnimatedLineIcon(
     Canvas(
         modifier = modifier.size(size).semantics { contentDescription = name },
     ) {
+        drawContext.transform.scale(size.width / 24f, size.height / 24f, pivot = androidx.compose.ui.geometry.Offset.Zero)
         paths.forEach { source ->
             val nativePath = source.asAndroidPath()
             val measure = PathMeasure(nativePath, false)
             val length = measure.length
             val segment = android.graphics.Path()
             if (animatedProgress >= 1f || reduceMotion) {
-                drawPath(source, colour, style = Stroke(NexaIntroIconPaths.StrokeWidth.dp.toPx(), cap = StrokeCap.Round))
+                drawPath(source, colour, style = Stroke(NexaIntroIconPaths.StrokeWidth, cap = StrokeCap.Round))
             } else if (animatedProgress > 0f && length > 0f) {
                 measure.getSegment(0f, length * animatedProgress, segment, true)
                 drawPath(segment.asComposePath(), colour, style = Stroke(NexaIntroIconPaths.StrokeWidth.dp.toPx(), cap = StrokeCap.Round))
