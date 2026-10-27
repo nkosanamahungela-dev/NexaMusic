@@ -303,7 +303,7 @@ private fun OfflineScreen(reduceMotion: Boolean) {
             LaunchedEffect(reduceMotion) { if (reduceMotion) visible=true else { delay(500L+i*180L); visible=true } }
             Row(Modifier.fillMaxWidth().padding(vertical=5.dp).clip(RoundedCornerShape(16.dp)).background(Color.White.copy(alpha=.08f)).padding(14.dp), verticalAlignment=Alignment.CenterVertically) {
                 Box(Modifier.size(30.dp).clip(CircleShape).background(NexaIntroTokens.Mint), contentAlignment=Alignment.Center) {
-                    AnimatedVisibility(visible, enter=fadeIn(tween(180))+androidx.compose.animation.scaleIn()) {
+                    if (visible) {
                         Text("✓", color=NexaIntroTokens.Ink, fontWeight=FontWeight.Bold)
                     }
                 }
@@ -451,15 +451,15 @@ private fun DrawnIcon(name: String, color: Color, reduceMotion: Boolean, modifie
                 drawLine(color, androidx.compose.ui.geometry.Offset(w*.12f,h*.12f), androidx.compose.ui.geometry.Offset(w*.88f,h*.12f), sw, StrokeCap.Round)
             }
             "cloud-download" -> {
-                drawArc(color,180f,180f*p,false, androidx.compose.ui.geometry.Offset(w*.12f,h*.18f).let { androidx.compose.ui.geometry.Size(w*.76f,h*.62f) }, style=stroke)
+                drawArc(color=color, startAngle=180f, sweepAngle=180f*p, useCenter=false, topLeft=androidx.compose.ui.geometry.Offset(w*.12f,h*.18f), size=androidx.compose.ui.geometry.Size(w*.76f,h*.62f), style=stroke)
                 drawLine(color, androidx.compose.ui.geometry.Offset(w*.5f,h*.42f), androidx.compose.ui.geometry.Offset(w*.5f,h*.86f*p), sw, StrokeCap.Round)
                 drawLine(color, androidx.compose.ui.geometry.Offset(w*.33f,h*.67f), androidx.compose.ui.geometry.Offset(w*.5f,h*.84f*p), sw, StrokeCap.Round)
                 drawLine(color, androidx.compose.ui.geometry.Offset(w*.67f,h*.67f), androidx.compose.ui.geometry.Offset(w*.5f,h*.84f*p), sw, StrokeCap.Round)
             }
             "bell" -> {
-                drawArc(color,180f,180f*p,false, androidx.compose.ui.geometry.Offset(w*.22f,h*.08f).let { androidx.compose.ui.geometry.Size(w*.56f,h*.72f) }, style=stroke)
+                drawArc(color=color, startAngle=180f, sweepAngle=180f*p, useCenter=false, topLeft=androidx.compose.ui.geometry.Offset(w*.22f,h*.08f), size=androidx.compose.ui.geometry.Size(w*.56f,h*.72f), style=stroke)
                 drawLine(color, androidx.compose.ui.geometry.Offset(w*.2f,h*.77f), androidx.compose.ui.geometry.Offset(w*.8f,h*.77f), sw, StrokeCap.Round)
-                drawArc(color,0f,180f*p,false, androidx.compose.ui.geometry.Offset(w*.39f,h*.69f).let { androidx.compose.ui.geometry.Size(w*.22f,h*.22f) }, style=stroke)
+                drawArc(color=color, startAngle=0f, sweepAngle=180f*p, useCenter=false, topLeft=androidx.compose.ui.geometry.Offset(w*.39f,h*.69f), size=androidx.compose.ui.geometry.Size(w*.22f,h*.22f), style=stroke)
             }
             "phone-download" -> {
                 drawRoundRect(color, androidx.compose.ui.geometry.Offset(w*.22f,h*.05f), androidx.compose.ui.geometry.Size(w*.56f,h*.9f), androidx.compose.ui.geometry.CornerRadius(w*.08f), style=stroke)
