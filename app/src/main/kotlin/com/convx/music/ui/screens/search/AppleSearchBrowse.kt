@@ -6,6 +6,16 @@
 package com.convx.music.ui.screens.search
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items as rowItems
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -29,12 +39,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.ColorMatrix
-import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -69,11 +75,9 @@ import kotlinx.coroutines.sync.withPermit
 import javax.inject.Inject
 
 /**
- * Apple Music's Search landing (iOS 26 reference, `938cf0…png`): two across, every
- * category a rounded colour tile with a duotone photo in that colour and its name in
- * white at the bottom-left. YouTube Music's moods & genres carry a colour but no picture,
- * so each tile borrows the lead artwork of its own category page, fetched as the tile
- * scrolls into view and cached for the session.
+ * Premium Search browse content. Covers stay unmodified and edge-to-edge.
+ * Category artwork is taken from a playlist/album on that category page, never a song
+ * or artist thumbnail. If no suitable cover exists, the tile stays on a dark gradient.
  */
 @HiltViewModel
 class AppleSearchViewModel @Inject constructor() : ViewModel() {
@@ -104,9 +108,8 @@ class AppleSearchViewModel @Inject constructor() : ViewModel() {
                 gate.withPermit {
                     val url = YouTube.browse(item.endpoint.browseId, item.endpoint.params).getOrNull()
                         ?.items?.asSequence()?.flatMap { it.items.asSequence() }
-                        // People read best in the duotone, then covers.
-                        ?.sortedBy { if (it is ArtistItem) 0 else if (it is PlaylistItem || it is AlbumItem) 1 else 2 }
-                        ?.firstOrNull()?.thumbnail
+                        // Only category playlist/album covers; never borrow a song or artist image.
+                        ?.firstOrNull { it is PlaylistItem || it is AlbumItem }?.thumbnail
                     // ConcurrentHashMap rejects null; a category may have no artwork.
                     if (url != null) artCache[key] = url
                     _art.update { it + (key to url) }
@@ -133,9 +136,9 @@ fun AppleSearchBrowse(
 ) {
     val categories by viewModel.categories.collectAsStateWithLifecycle()
     val art by viewModel.art.collectAsStateWithLifecycle()
+    val items = categories.orEmpty()
 
     BoxWithConstraints(Modifier.fillMaxSize()) {
-        // Two columns on phone; keep tiles near their reference width in the iPad pane.
         val startInset = contentPadding.calculateStartPadding(androidx.compose.ui.platform.LocalLayoutDirection.current)
         val columns = maxOf(2, ((maxWidth - startInset - 24.dp) / 189.dp).toInt())
         LazyVerticalGrid(
@@ -145,85 +148,215 @@ fun AppleSearchBrowse(
                 start = startInset + 16.dp,
                 end = 16.dp,
                 top = contentPadding.calculateTopPadding(),
-                bottom = contentPadding.calculateBottomPadding(),
+                bottom = contentPadding.calculateBottomPadding() + 28.dp,
             ),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            item(key = "header", span = { GridItemSpan(maxLineSpan) }, contentType = "header") {
+            item(key = "search-header", span = { GridItemSpan(maxLineSpan) }, contentType = "header") {
                 header()
             }
-            items(categories.orEmpty(), key = { it.key }, contentType = { "tile" }) { item ->
-                LaunchedEffect(item.key) { viewModel.loadArt(item) }
-                CategoryTile(
-                    title = item.title,
-                    color = Color(item.stripeColor),
-                    art = art[item.key],
-                ) {
-                    navController.navigate(youtubeBrowseRoute(item.endpoint.browseId, item.endpoint.params))
+            if (items.isNotEmpty()) {
+                item(key = "featured-heading", span = { GridItemSpan(maxLineSpan) }, contentType = "heading") {
+                    Text(
+                        "Moods & moments",
+                        style = SfStyle(22.sp, 28.sp, FontWeight.Bold, (-0.45).sp),
+                        color = Color.White,
+                        modifier = Modifier.padding(top = 8.dp, bottom = 2.dp),
+                    )
+                }
+                item(key = "featured-row", span = { GridItemSpan(maxLineSpan) }, contentType = "featured-row") {
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        contentPadding = PaddingValues(end = 4.dp),
+                    ) {
+                        rowItems(items.take(8), key = { "featured:${it.key}" }) { item ->
+                            LaunchedEffect(item.key) { viewModel.loadArt(item) }
+                            FeaturedMoodCard(
+                                title = item.title,
+                                art = art[item.key],
+                                modifier = Modifier.width(268.dp).height(158.dp),
+                                onClick = {
+                                    navController.navigate(youtubeBrowseRoute(item.endpoint.browseId, item.endpoint.params))
+                                },
+                            )
+                        }
+                    }
+                }
+                item(key = "browse-heading", span = { GridItemSpan(maxLineSpan) }, contentType = "heading") {
+                    Text(
+                        "Browse all",
+                        style = SfStyle(22.sp, 28.sp, FontWeight.Bold, (-0.45).sp),
+                        color = Color.White,
+                        modifier = Modifier.padding(top = 14.dp, bottom = 2.dp),
+                    )
+                }
+                items(items, key = { it.key }, contentType = { "category-tile" }) { item ->
+                    LaunchedEffect(item.key) { viewModel.loadArt(item) }
+                    val index = items.indexOf(item)
+                    CategoryTile(
+                        title = item.title,
+                        art = art[item.key],
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(if (index % 4 == 0 || index % 4 == 3) 182.dp else 150.dp),
+                        onPlay = {
+                            navController.navigate(youtubeBrowseRoute(item.endpoint.browseId, item.endpoint.params))
+                        },
+                        onClick = {
+                            navController.navigate(youtubeBrowseRoute(item.endpoint.browseId, item.endpoint.params))
+                        },
+                    )
+                }
+            } else {
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Box(Modifier.fillMaxWidth().height(220.dp), contentAlignment = Alignment.Center) {
+                        Text("Loading moods & genres…", color = SearchPalette.Secondary)
+                    }
                 }
             }
         }
     }
 }
 
-/**
- * Search category tile with a tinted grayscale image and a bottom-left white title.
- */
+/** Horizontal featured card: official cover, dark text-safe fade, compact source label. */
 @Composable
-internal fun CategoryTile(
+private fun FeaturedMoodCard(
     title: String,
-    color: Color,
     art: String?,
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
-    val ground = color.copy(alpha = 1f)
-    val shape = ContinuousRoundedRectangle(15.dp)
+    val shape = RoundedCornerShape(24.dp)
     Box(
-        modifier = modifier
-            .aspectRatio(181f / 105f)
-            .clip(shape)
-            .background(ground)
-            .border(0.25.dp, Color.Black.copy(alpha = 0.1f), shape)
-            .iosRowPress(onClick = onClick),
+        modifier.clip(shape)
+            .background(SearchPalette.Placeholder)
+            .clickable(onClick = onClick)
+            .semantics { contentDescription = "$title, mood playlist" },
     ) {
-        if (art != null) {
-            AsyncImage(
-                model = art,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                alignment = Alignment.TopCenter,
-                colorFilter = ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) }),
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .fillMaxHeight()
-                    .fillMaxWidth(0.72f)
-                    .graphicsLayer {
-                        compositingStrategy = CompositingStrategy.Offscreen
-                        blendMode = BlendMode.Multiply
-                    },
-            )
-            // Lifts the duotone's highlights back toward the tile colour.
-            Canvas(Modifier.fillMaxSize()) {
-                drawRect(ground.copy(alpha = 0.25f), blendMode = BlendMode.Screen)
-            }
-        }
-        // Keeps the name legible where the photo runs dark behind it.
+        CategoryCover(art = art, title = title, modifier = Modifier.fillMaxSize())
         Box(
-            Modifier
-                .fillMaxSize()
-                .background(Brush.verticalGradient(0.45f to Color.Transparent, 1f to Color.Black.copy(alpha = 0.28f))),
+            Modifier.fillMaxSize().background(
+                Brush.verticalGradient(
+                    0f to Color.Black.copy(alpha = .03f),
+                    .38f to Color.Black.copy(alpha = .08f),
+                    1f to Color.Black.copy(alpha = .88f),
+                ),
+            ),
         )
+        Column(
+            Modifier.align(Alignment.BottomStart).padding(horizontal = 18.dp, vertical = 16.dp),
+        ) {
+            Text(title, color = Color.White, fontSize = 22.sp, lineHeight = 26.sp, fontWeight = FontWeight.Bold, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Text("YouTube Music", color = Color.White.copy(alpha = .78f), fontSize = 13.sp)
+        }
         Text(
-            text = title,
-            style = SfStyle(15.sp, 20.sp, FontWeight.SemiBold, (-0.23).sp),
-            color = Color.White,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(start = 12.dp, end = 12.dp, bottom = 12.dp),
+            "MOOD",
+            color = Color.White.copy(alpha = .92f),
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.1.sp,
+            modifier = Modifier.align(Alignment.TopStart).padding(16.dp)
+                .clip(RoundedCornerShape(8.dp)).background(Color.Black.copy(alpha = .42f))
+                .padding(horizontal = 9.dp, vertical = 6.dp),
         )
     }
 }
+
+/** Two-column browse tile; play affordance is separate from the category-page tap. */
+@Composable
+internal fun CategoryTile(
+    title: String,
+    art: String?,
+    modifier: Modifier = Modifier,
+    onPlay: () -> Unit,
+    onClick: () -> Unit,
+) {
+    val shape = RoundedCornerShape(20.dp)
+    Box(
+        modifier = modifier.clip(shape).background(SearchPalette.Placeholder)
+            .clickable(onClick = onClick)
+            .semantics { contentDescription = "$title, mood playlist" },
+    ) {
+        CategoryCover(art = art, title = title, modifier = Modifier.fillMaxSize())
+        Box(
+            Modifier.fillMaxSize().background(
+                Brush.verticalGradient(
+                    0f to Color.Transparent,
+                    .36f to Color.Black.copy(alpha = .08f),
+                    1f to Color.Black.copy(alpha = .88f),
+                ),
+            ),
+        )
+        Text(
+            title,
+            color = Color.White,
+            fontSize = 17.sp,
+            lineHeight = 21.sp,
+            fontWeight = FontWeight.Bold,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.align(Alignment.BottomStart).padding(start = 14.dp, end = 48.dp, bottom = 14.dp),
+        )
+        Box(
+            Modifier.align(Alignment.TopEnd).padding(10.dp).size(34.dp).clip(CircleShape)
+                .background(Color.Black.copy(alpha = .48f))
+                .clickable(onClick = onPlay)
+                .semantics { contentDescription = "Play $title playlist" },
+            contentAlignment = Alignment.Center,
+        ) {
+            Canvas(Modifier.size(12.dp)) {
+                val path = androidx.compose.ui.graphics.Path().apply {
+                    moveTo(size.width * .12f, 0f)
+                    lineTo(size.width, size.height * .5f)
+                    lineTo(size.width * .12f, size.height)
+                    close()
+                }
+                drawPath(path, Color.White)
+            }
+        }
+    }
+}
+
+/** Cover images are never tinted or duotoned; dark neutral placeholder while loading/missing. */
+@Composable
+private fun CategoryCover(art: String?, title: String, modifier: Modifier = Modifier) {
+    val imageAlpha by animateFloatAsState(
+        targetValue = if (art.isNullOrBlank()) 0f else 1f,
+        animationSpec = tween(durationMillis = 220),
+        label = "search-cover-fade",
+    )
+    Box(modifier.background(
+        Brush.linearGradient(
+            colors = listOf(SearchPalette.Placeholder, SearchPalette.PlaceholderHighlight, SearchPalette.Placeholder),
+        ),
+    )) {
+        if (!art.isNullOrBlank()) {
+            AsyncImage(
+                model = art,
+                contentDescription = "$title cover",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize().graphicsLayer { alpha = imageAlpha },
+            )
+        }
+        if (art.isNullOrBlank()) {
+            Box(
+                Modifier.fillMaxSize().background(
+                    Brush.verticalGradient(
+                        0f to SearchPalette.PlaceholderHighlight,
+                        1f to SearchPalette.Placeholder,
+                    ),
+                ),
+            )
+        }
+    }
+}
+
+private object SearchPalette {
+    val Background = Color(0xFF000000)
+    val Secondary = Color(0xFFA1A1A6)
+    val Accent = Color(0xFFFF4B6B)
+    val Placeholder = Color(0xFF171719)
+    val PlaceholderHighlight = Color(0xFF29292D)
+}
+
