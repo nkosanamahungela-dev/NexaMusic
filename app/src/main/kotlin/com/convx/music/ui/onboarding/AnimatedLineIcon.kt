@@ -89,8 +89,6 @@ fun AnimatedLineIcon(
     Canvas(
         modifier = modifier.size(size).semantics { contentDescription = name },
     ) {
-        val scale = androidx.compose.ui.geometry.Size(width = this.size.width / 24f, height = this.size.height / 24f)
-        val scaleTransform = androidx.compose.ui.graphics.drawscope.DrawScope
         paths.forEach { source ->
             val nativePath = source.asAndroidPath()
             val measure = PathMeasure(nativePath, false)
