@@ -125,11 +125,12 @@ fun NexaOnboardingFlow(
             modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp),
         ) { target ->
             when (target) {
-                0 -> WelcomeScreen(reduceMotion)
-                1 -> LyricsScreen(reduceMotion)
-                2 -> OfflineScreen(reduceMotion)
+                0 -> WelcomeScreen(reduceMotion, play = target == page)
+                1 -> LyricsScreen(reduceMotion, play = target == page)
+                2 -> OfflineScreen(reduceMotion, play = target == page)
                 3 -> PermissionsScreen(
                     reduceMotion = reduceMotion,
+                    play = target == page,
                     notificationsEnabled = notificationEnabled,
                     installAllowed = installAllowed,
                     onNotificationToggle = { enabled ->
@@ -143,6 +144,7 @@ fun NexaOnboardingFlow(
                 )
                 else -> CommunityScreen(
                     reduceMotion = reduceMotion,
+                    play = target == page,
                     onGitHub = { openUrl(NexaIntroTokens.GITHUB_REPO_URL) },
                     onDiscord = { openUrl(NexaIntroTokens.DISCORD_INVITE_URL) },
                     onLicense = { openUrl(NexaIntroTokens.LICENSE_URL) },
@@ -200,7 +202,7 @@ fun NexaOnboardingFlow(
 }
 
 @Composable
-private fun WelcomeScreen(reduceMotion: Boolean) {
+private fun WelcomeScreen(reduceMotion: Boolean, play: Boolean) {
     val t = rememberInfiniteTransition(label = "welcome")
     val floatY by t.animateFloat(if (reduceMotion) 0f else -8f, if (reduceMotion) 0f else 8f,
         infiniteRepeatable(tween(2200, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "logo-float")
@@ -233,7 +235,7 @@ private fun WelcomeScreen(reduceMotion: Boolean) {
 }
 
 @Composable
-private fun LyricsScreen(reduceMotion: Boolean) {
+private fun LyricsScreen(reduceMotion: Boolean, play: Boolean) {
     val lines = listOf("Lights go down, the bass comes in", "Hold the moment, let it spin", "Every word is yours to sing", "Turn it up and let it ring")
     var line by remember { mutableIntStateOf(0) }
     var word by remember { mutableIntStateOf(0) }
@@ -245,7 +247,7 @@ private fun LyricsScreen(reduceMotion: Boolean) {
         }
     }
     Column(Modifier.fillMaxSize().padding(top = 86.dp, bottom = 112.dp), verticalArrangement = Arrangement.Center) {
-        DrawnIcon("lyrics", NexaIntroTokens.Cream, reduceMotion, Modifier.size(48.dp))
+        Box(Modifier.size(48.dp).clip(RoundedCornerShape(15.dp)).background(NexaIntroTokens.Cream.copy(alpha = .16f)).border(1.dp, NexaIntroTokens.Cream.copy(alpha = .35f), RoundedCornerShape(15.dp)), contentAlignment = Alignment.Center) { DrawnIcon("lyrics", NexaIntroTokens.Cream, reduceMotion, Modifier.size(26.dp), play) }
         Spacer(Modifier.height(22.dp))
         RichHeadline("Sing along.\nWord by word.", "Word by word.", NexaIntroTokens.Cream, NexaIntroTokens.Ink)
         Spacer(Modifier.height(14.dp))
@@ -273,16 +275,15 @@ private fun LyricsScreen(reduceMotion: Boolean) {
 }
 
 @Composable
-private fun OfflineScreen(reduceMotion: Boolean) {
+private fun OfflineScreen(reduceMotion: Boolean, play: Boolean) {
     val t = rememberInfiniteTransition(label = "offline")
     val progress by t.animateFloat(if(reduceMotion) 1f else 0f, 1f,
-        infiniteRepeatable(tween(2200, easing = FastOutSlowInEasing), RepeatMode.Restart), label = "download-ring")
+        infiniteRepeatable(tween(4500, easing = FastOutSlowInEasing), RepeatMode.Restart), label = "download-ring")
     val bounce by t.animateFloat(0f, if(reduceMotion) 0f else 6f,
         infiniteRepeatable(tween(650), RepeatMode.Reverse), label = "download-bob")
     val rows = listOf("Late Night Mix", "Road Trip", "Focus Flow")
     Column(Modifier.fillMaxSize().padding(top=78.dp, bottom=112.dp), verticalArrangement=Arrangement.Center) {
-        DrawnIcon("cloud-download", NexaIntroTokens.Mint, reduceMotion, Modifier.size(48.dp))
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(8.dp))
         RichHeadline("Your music.\nEven offline.", "Even offline.", NexaIntroTokens.OfflineText, NexaIntroTokens.Saffron)
         Spacer(Modifier.height(14.dp))
         Text("Download once, play anywhere, in premium quality.", color=NexaIntroTokens.OfflineText, fontSize=17.sp, lineHeight=24.sp)
@@ -292,7 +293,7 @@ private fun OfflineScreen(reduceMotion: Boolean) {
                 drawArc(NexaIntroTokens.Mint.copy(alpha=.2f), -90f, 360f, false, style=Stroke(7.dp.toPx(), cap=StrokeCap.Round))
                 drawArc(NexaIntroTokens.Mint, -90f, 360f*progress, false, style=Stroke(7.dp.toPx(), cap=StrokeCap.Round))
             }
-            Text("↓", color=NexaIntroTokens.Mint, fontSize=40.sp, modifier=Modifier.offset(y=bounce.dp))
+            DrawnIcon("cloud-download", NexaIntroTokens.Mint, reduceMotion, Modifier.size(54.dp).offset(y=bounce.dp), play)
             Box(Modifier.align(Alignment.BottomCenter).offset(x=52.dp, y=(-10).dp).clip(RoundedCornerShape(10.dp)).background(NexaIntroTokens.Saffron).padding(horizontal=12.dp, vertical=6.dp)) {
                 Text("HQ", color=NexaIntroTokens.Ink, fontWeight=FontWeight.ExtraBold, fontSize=13.sp)
             }
@@ -318,6 +319,7 @@ private fun OfflineScreen(reduceMotion: Boolean) {
 @Composable
 private fun PermissionsScreen(
     reduceMotion: Boolean,
+    play: Boolean,
     notificationsEnabled: Boolean,
     installAllowed: Boolean,
     onNotificationToggle: (Boolean) -> Unit,
@@ -333,7 +335,7 @@ private fun PermissionsScreen(
         Text("You can change these anytime in Settings.", color=NexaIntroTokens.PermissionsInk.copy(alpha=.78f), fontSize=17.sp)
         Spacer(Modifier.height(26.dp))
         Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(NexaIntroTokens.CardWhite).padding(18.dp), verticalAlignment=Alignment.CenterVertically) {
-            DrawnIcon("bell", NexaIntroTokens.PermissionsInk, reduceMotion, Modifier.size(34.dp).rotate(bellRotation))
+            Box(Modifier.size(52.dp).clip(RoundedCornerShape(14.dp)).background(NexaIntroTokens.PermissionsInk.copy(alpha = .08f)), contentAlignment = Alignment.Center) { DrawnIcon("bell", Color(0xFFB3331A), reduceMotion, Modifier.size(26.dp).rotate(bellRotation), play) }
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {
                 Text("Notifications", color=NexaIntroTokens.PermissionsInk, fontWeight=FontWeight.Bold, fontSize=18.sp)
@@ -344,7 +346,7 @@ private fun PermissionsScreen(
         }
         Spacer(Modifier.height(14.dp))
         Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(NexaIntroTokens.CardWhite).padding(18.dp), verticalAlignment=Alignment.CenterVertically) {
-            DrawnIcon("phone-download", NexaIntroTokens.PermissionsInk, reduceMotion, Modifier.size(34.dp))
+            Box(Modifier.size(52.dp).clip(RoundedCornerShape(14.dp)).background(NexaIntroTokens.PermissionsInk.copy(alpha = .08f)), contentAlignment = Alignment.Center) { DrawnIcon("phone-download", Color(0xFFB3331A), reduceMotion, Modifier.size(26.dp), play) }
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {
                 Text("App Installation", color=NexaIntroTokens.PermissionsInk, fontWeight=FontWeight.Bold, fontSize=18.sp)
@@ -359,7 +361,7 @@ private fun PermissionsScreen(
 }
 
 @Composable
-private fun CommunityScreen(reduceMotion: Boolean, onGitHub: () -> Unit, onDiscord: () -> Unit, onLicense: () -> Unit) {
+private fun CommunityScreen(reduceMotion: Boolean, play: Boolean, onGitHub: () -> Unit, onDiscord: () -> Unit, onLicense: () -> Unit) {
     val t = rememberInfiniteTransition(label="community")
     val float by t.animateFloat(0f, if(reduceMotion) 0f else 9f, infiniteRepeatable(tween(1900), RepeatMode.Reverse), label="community-float")
     Column(Modifier.fillMaxSize().padding(top=72.dp,bottom=112.dp), horizontalAlignment=Alignment.CenterHorizontally, verticalArrangement=Arrangement.Center) {
@@ -367,8 +369,8 @@ private fun CommunityScreen(reduceMotion: Boolean, onGitHub: () -> Unit, onDisco
         Spacer(Modifier.height(12.dp))
         Text("Built in the open by people who love music.", color=NexaIntroTokens.Ink, fontSize=17.sp, textAlign=TextAlign.Center, lineHeight=24.sp)
         Spacer(Modifier.height(24.dp))
-        Box(Modifier.size(124.dp).offset(y=float.dp).clip(RoundedCornerShape(30.dp)).background(NexaIntroTokens.Ink), contentAlignment=Alignment.Center) {
-            DrawnIcon("music-note", NexaIntroTokens.Mint, reduceMotion, Modifier.size(56.dp))
+        Box(Modifier.size(104.dp).offset(y=float.dp).clip(RoundedCornerShape(24.dp)).background(Color(0xFF1A120C)), contentAlignment=Alignment.Center) {
+            DrawnIcon("music-note", NexaIntroTokens.Mint, reduceMotion, Modifier.size(52.dp), play)
         }
         Spacer(Modifier.height(26.dp))
         Row(horizontalArrangement=Arrangement.spacedBy(8.dp), verticalAlignment=Alignment.CenterVertically) {
@@ -383,11 +385,11 @@ private fun CommunityScreen(reduceMotion: Boolean, onGitHub: () -> Unit, onDisco
         Spacer(Modifier.height(24.dp))
         Row(horizontalArrangement=Arrangement.spacedBy(12.dp)) {
             Button(onClick=onGitHub, shape=RoundedCornerShape(16.dp), colors=ButtonDefaults.buttonColors(containerColor=NexaIntroTokens.Ink,contentColor=NexaIntroTokens.Saffron)) {
-                DrawnIcon("star", NexaIntroTokens.Saffron, reduceMotion, Modifier.size(18.dp))
+                DrawnIcon("star", NexaIntroTokens.Saffron, reduceMotion, Modifier.size(20.dp), play)
                 Spacer(Modifier.width(6.dp)); Text("Star on GitHub", fontWeight=FontWeight.Bold)
             }
             Button(onClick=onDiscord, shape=RoundedCornerShape(16.dp), colors=ButtonDefaults.buttonColors(containerColor=NexaIntroTokens.Ink,contentColor=NexaIntroTokens.Saffron)) {
-                DrawnIcon("chat", NexaIntroTokens.Saffron, reduceMotion, Modifier.size(18.dp))
+                DrawnIcon("chat", NexaIntroTokens.Saffron, reduceMotion, Modifier.size(20.dp), play)
                 Spacer(Modifier.width(6.dp)); Text("Join Discord", fontWeight=FontWeight.Bold)
             }
         }
@@ -434,58 +436,21 @@ private fun EqualizerBars(color: Color, reduceMotion: Boolean, count: Int, modif
 }
 
 @Composable
-private fun DrawnIcon(name: String, color: Color, reduceMotion: Boolean, modifier: Modifier = Modifier) {
-    val progress by rememberInfiniteTransition(label="icon-draw").animateFloat(0f, if(reduceMotion) 1f else 1f,
-        infiniteRepeatable(tween(if(reduceMotion) 1 else 900), RepeatMode.Restart), label="stroke-progress")
-    Canvas(modifier.semantics { contentDescription = name }) {
-        val p = progress.coerceIn(0.15f,1f)
-        val sw = 1.9.dp.toPx()
-        val w = size.width; val h = size.height
-        val stroke = Stroke(sw, cap=StrokeCap.Round)
-        when(name) {
-            "lyrics" -> {
-                for(i in 0..2) {
-                    val y=h*(.25f+i*.25f)
-                    drawLine(color, androidx.compose.ui.geometry.Offset(w*.12f,y), androidx.compose.ui.geometry.Offset(w*(.12f+.76f*p),y), sw, StrokeCap.Round)
-                }
-                drawLine(color, androidx.compose.ui.geometry.Offset(w*.12f,h*.12f), androidx.compose.ui.geometry.Offset(w*.88f,h*.12f), sw, StrokeCap.Round)
-            }
-            "cloud-download" -> {
-                drawArc(color=color, startAngle=180f, sweepAngle=180f*p, useCenter=false, topLeft=androidx.compose.ui.geometry.Offset(w*.12f,h*.18f), size=androidx.compose.ui.geometry.Size(w*.76f,h*.62f), style=stroke)
-                drawLine(color, androidx.compose.ui.geometry.Offset(w*.5f,h*.42f), androidx.compose.ui.geometry.Offset(w*.5f,h*.86f*p), sw, StrokeCap.Round)
-                drawLine(color, androidx.compose.ui.geometry.Offset(w*.33f,h*.67f), androidx.compose.ui.geometry.Offset(w*.5f,h*.84f*p), sw, StrokeCap.Round)
-                drawLine(color, androidx.compose.ui.geometry.Offset(w*.67f,h*.67f), androidx.compose.ui.geometry.Offset(w*.5f,h*.84f*p), sw, StrokeCap.Round)
-            }
-            "bell" -> {
-                drawArc(color=color, startAngle=180f, sweepAngle=180f*p, useCenter=false, topLeft=androidx.compose.ui.geometry.Offset(w*.22f,h*.08f), size=androidx.compose.ui.geometry.Size(w*.56f,h*.72f), style=stroke)
-                drawLine(color, androidx.compose.ui.geometry.Offset(w*.2f,h*.77f), androidx.compose.ui.geometry.Offset(w*.8f,h*.77f), sw, StrokeCap.Round)
-                drawArc(color=color, startAngle=0f, sweepAngle=180f*p, useCenter=false, topLeft=androidx.compose.ui.geometry.Offset(w*.39f,h*.69f), size=androidx.compose.ui.geometry.Size(w*.22f,h*.22f), style=stroke)
-            }
-            "phone-download" -> {
-                drawRoundRect(color, androidx.compose.ui.geometry.Offset(w*.22f,h*.05f), androidx.compose.ui.geometry.Size(w*.56f,h*.9f), androidx.compose.ui.geometry.CornerRadius(w*.08f), style=stroke)
-                drawLine(color, androidx.compose.ui.geometry.Offset(w*.5f,h*.28f), androidx.compose.ui.geometry.Offset(w*.5f,h*.61f*p), sw, StrokeCap.Round)
-                drawLine(color, androidx.compose.ui.geometry.Offset(w*.35f,h*.48f), androidx.compose.ui.geometry.Offset(w*.5f,h*.63f*p), sw, StrokeCap.Round)
-                drawLine(color, androidx.compose.ui.geometry.Offset(w*.65f,h*.48f), androidx.compose.ui.geometry.Offset(w*.5f,h*.63f*p), sw, StrokeCap.Round)
-            }
-            "music-note" -> {
-                drawLine(color, androidx.compose.ui.geometry.Offset(w*.62f,h*.16f), androidx.compose.ui.geometry.Offset(w*.62f,h*.72f*p), sw*1.5f, StrokeCap.Round)
-                drawLine(color, androidx.compose.ui.geometry.Offset(w*.62f,h*.16f), androidx.compose.ui.geometry.Offset(w*.9f,h*.1f), sw*1.5f, StrokeCap.Round)
-                drawCircle(color, w*.15f, androidx.compose.ui.geometry.Offset(w*.38f,h*.75f), style=stroke)
-                drawCircle(color, w*.15f, androidx.compose.ui.geometry.Offset(w*.7f,h*.65f), style=stroke)
-            }
-            "star" -> {
-                val path=androidx.compose.ui.graphics.Path()
-                val pts=listOf(.5f to .08f,.62f to .38f,.94f to .4f,.69f to .61f,.78f to .92f,.5f to .73f,.22f to .92f,.31f to .61f,.06f to .4f,.38f to .38f)
-                path.moveTo(w*pts[0].first,h*pts[0].second)
-                pts.drop(1).forEach { path.lineTo(w*it.first,h*it.second) }; path.close()
-                drawPath(path,color,style=stroke)
-            }
-            "chat" -> {
-                drawRoundRect(color, androidx.compose.ui.geometry.Offset(w*.08f,h*.1f), androidx.compose.ui.geometry.Size(w*.84f,h*.65f), androidx.compose.ui.geometry.CornerRadius(w*.15f), style=stroke)
-                drawLine(color, androidx.compose.ui.geometry.Offset(w*.28f,h*.75f), androidx.compose.ui.geometry.Offset(w*.18f,h*.9f), sw, StrokeCap.Round)
-            }
-        }
-    }
+private fun DrawnIcon(
+    name: String,
+    color: Color,
+    reduceMotion: Boolean,
+    modifier: Modifier = Modifier,
+    play: Boolean = true,
+) {
+    AnimatedLineIcon(
+        name = name,
+        size = 24.dp,
+        colour = color,
+        play = play,
+        reduceMotion = reduceMotion,
+        modifier = modifier,
+    )
 }
 
 @Composable
