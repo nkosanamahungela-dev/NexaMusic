@@ -236,41 +236,96 @@ private fun WelcomeScreen(reduceMotion: Boolean, play: Boolean) {
 
 @Composable
 private fun LyricsScreen(reduceMotion: Boolean, play: Boolean) {
-    val lines = listOf("Lights go down, the bass comes in", "Hold the moment, let it spin", "Every word is yours to sing", "Turn it up and let it ring")
+    val lines = listOf(
+        "Lights go down, the bass comes in",
+        "Hold the moment, let it spin",
+        "Every word is yours to sing",
+        "Turn it up and let it ring",
+    )
     var line by remember { mutableIntStateOf(0) }
     var word by remember { mutableIntStateOf(0) }
-    LaunchedEffect(reduceMotion) {
-        if (!reduceMotion) while (true) {
+    LaunchedEffect(reduceMotion, play) {
+        if (!reduceMotion && play) while (true) {
             delay(NexaIntroTokens.LYRICS_LINE_MS / 5)
             val words = lines[line].split(" ")
-            if (word < words.lastIndex) word++ else { word = 0; line = (line + 1) % lines.size }
+            if (word < words.lastIndex) word++ else {
+                word = 0
+                line = (line + 1) % lines.size
+            }
         }
     }
-    Column(Modifier.fillMaxSize().padding(top = 86.dp, bottom = 112.dp), verticalArrangement = Arrangement.Center) {
-        Box(Modifier.size(48.dp).clip(RoundedCornerShape(15.dp)).background(NexaIntroTokens.Cream.copy(alpha = .16f)).border(1.dp, NexaIntroTokens.Cream.copy(alpha = .35f), RoundedCornerShape(15.dp)), contentAlignment = Alignment.Center) { DrawnIcon("lyrics", NexaIntroTokens.Cream, reduceMotion, Modifier, play, 26.dp) }
-        Spacer(Modifier.height(22.dp))
-        RichHeadline("Sing along.\nWord by word.", "Word by word.", NexaIntroTokens.Cream, NexaIntroTokens.Ink)
-        Spacer(Modifier.height(14.dp))
-        Text("Lyrics glide with every beat, so you never lose your place.", color = NexaIntroTokens.Cream, fontSize = 17.sp, lineHeight = 24.sp)
-        Spacer(Modifier.height(30.dp))
-        Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).background(NexaIntroTokens.Cream).padding(20.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
-            lines.forEachIndexed { index, text ->
-                val active = line == index
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                    text.split(" ").forEachIndexed { wi, token ->
-                        Text(token + if(wi == text.split(" ").lastIndex) "" else " ", color = if(active && wi <= word) NexaIntroTokens.Ink else NexaIntroTokens.Ink.copy(alpha = .38f),
-                            fontSize = 16.sp, fontWeight = if(active) FontWeight.Bold else FontWeight.Medium,
-                            modifier = Modifier.scale(if(active) 1.025f else 1f))
-                    }
+
+    Column(
+        Modifier.fillMaxSize().padding(top = 68.dp, bottom = 112.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        // Put the lyric preview first, as in the supplied visual reference.
+        Column(
+            Modifier.fillMaxWidth()
+                .weight(1f, fill = false)
+                .heightIn(min = 280.dp, max = 350.dp)
+                .clip(RoundedCornerShape(30.dp))
+                .background(NexaIntroTokens.Ink.copy(alpha = .16f))
+                .border(1.dp, NexaIntroTokens.Cream.copy(alpha = .24f), RoundedCornerShape(30.dp))
+                .padding(horizontal = 24.dp, vertical = 22.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Row(
+                Modifier.clip(CircleShape)
+                    .background(NexaIntroTokens.Ink.copy(alpha = .18f))
+                    .border(1.dp, NexaIntroTokens.Cream.copy(alpha = .28f), CircleShape)
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                EqualizerBars(NexaIntroTokens.Cream, reduceMotion, 3, Modifier.height(18.dp))
+                Spacer(Modifier.width(8.dp))
+                Text("Live synced", color = NexaIntroTokens.Cream, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+            }
+
+            Column(
+                Modifier.fillMaxWidth().weight(1f),
+                verticalArrangement = Arrangement.SpaceBetween,
+            ) {
+                lines.forEachIndexed { index, lyric ->
+                    val active = line == index
+                    Text(
+                        text = lyric,
+                        color = when {
+                            active -> NexaIntroTokens.Ink
+                            index == 3 -> NexaIntroTokens.Cream.copy(alpha = .82f)
+                            else -> NexaIntroTokens.Ink.copy(alpha = .62f)
+                        },
+                        fontSize = 22.sp,
+                        lineHeight = 29.sp,
+                        fontWeight = if (active) FontWeight.Bold else FontWeight.SemiBold,
+                    )
                 }
             }
         }
-        Spacer(Modifier.height(16.dp))
-        Row(Modifier.clip(CircleShape).background(NexaIntroTokens.Ink.copy(alpha=.16f)).padding(horizontal=12.dp, vertical=8.dp), verticalAlignment=Alignment.CenterVertically) {
-            EqualizerBars(NexaIntroTokens.Cream, reduceMotion, 3, Modifier.height(14.dp))
-            Spacer(Modifier.width(8.dp))
-            Text("Live synced", color=NexaIntroTokens.Cream, fontSize=13.sp, fontWeight=FontWeight.SemiBold)
+
+        Box(
+            Modifier.size(52.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(NexaIntroTokens.Cream.copy(alpha = .16f))
+                .border(1.dp, NexaIntroTokens.Cream.copy(alpha = .35f), RoundedCornerShape(16.dp)),
+            contentAlignment = Alignment.Center,
+        ) {
+            DrawnIcon("lyrics", NexaIntroTokens.Cream, reduceMotion, Modifier, play, 28.dp)
         }
+
+        RichHeadline(
+            "Sing along.\nWord by word.",
+            "Word by word.",
+            NexaIntroTokens.Cream,
+            NexaIntroTokens.Ink,
+        )
+
+        Text(
+            "Lyrics glide with every beat, so you never lose your place.",
+            color = NexaIntroTokens.Cream,
+            fontSize = 17.sp,
+            lineHeight = 24.sp,
+        )
     }
 }
 
