@@ -446,7 +446,7 @@ private fun DrawnIcon(
 ) {
     AnimatedLineIcon(
         name = name,
-        size = size,
+        iconSize = size,
         colour = color,
         play = play,
         reduceMotion = reduceMotion,
