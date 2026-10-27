@@ -217,15 +217,12 @@ val GoogleSansFlex = FontFamily(
     )
 )
 
-@OptIn(ExperimentalTextApi::class)
 @Composable
 fun WelcomePagerScreen(onFinished: () -> Unit) {
     val context = LocalContext.current
-    val uriHandler = LocalUriHandler.current
-    val scope = rememberCoroutineScope()
-    val animationSpec = tween<Float>(durationMillis = 360, easing = FastOutSlowInEasing)
 
-    // Keep permission state and all request/settings behaviour from the original onboarding.
+    // Keep the original permission state and activity-result handlers, but render
+    // the new five-screen Nexa onboarding instead of the legacy four-page pager.
     var hasNotificationPermission by remember {
         mutableStateOf(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -236,15 +233,13 @@ fun WelcomePagerScreen(onFinished: () -> Unit) {
             } else true
         )
     }
-
     var canInstallPackages by remember {
         mutableStateOf(
-            if (BuildConfig.FLAVOR.contains("gms") && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (BuildConfig.FLAVOR.contains("gms", ignoreCase = true) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 runCatching { context.packageManager.canRequestPackageInstalls() }.getOrDefault(false)
             } else true
         )
     }
-    var isLastPageScrolledToEnd by remember { mutableStateOf(true) }
 
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
@@ -269,9 +264,8 @@ fun WelcomePagerScreen(onFinished: () -> Unit) {
 
     val notificationLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
-        onResult = { isGranted -> hasNotificationPermission = isGranted }
+        onResult = { granted -> hasNotificationPermission = granted }
     )
-
     val installParamsLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) {
@@ -302,157 +296,20 @@ fun WelcomePagerScreen(onFinished: () -> Unit) {
         }
     }
 
-    val pages = listOf(
-        OnboardingPageInfo { _ ->
-            WelcomeIntroPage()
+    com.convx.music.ui.onboarding.NexaOnboardingFlow(
+        onFinished = onFinished,
+        notificationsGranted = { hasNotificationPermission },
+        requestNotifications = { onPermissionResult ->
+            requestOrOpenNotifications()
+            onPermissionResult()
         },
-        OnboardingPageInfo { _ ->
-            RequiredPermissionsIntroPage(
-                hasNotificationPermission = hasNotificationPermission,
-                canInstallPackages = canInstallPackages,
-                showInstallationPermission = BuildConfig.FLAVOR.contains("gms", ignoreCase = true),
-                onNotificationsClick = ::requestOrOpenNotifications,
-                onNotificationToggle = { enabled ->
-                    if (enabled != hasNotificationPermission) requestOrOpenNotifications()
-                },
-                onInstallClick = ::openInstallSettings,
-            )
+        canInstallPackages = {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                runCatching { context.packageManager.canRequestPackageInstalls() }.getOrDefault(false)
+            } else true
         },
-        OnboardingPageInfo { _ ->
-            CommunityIntroPage(
-                onGitHub = { uriHandler.safeOpenUri(context, NexaIntroLinks.GITHUB_REPO_URL) },
-                onDiscord = { uriHandler.safeOpenUri(context, NexaIntroLinks.DISCORD_INVITE_URL) },
-            )
-        },
-        OnboardingPageInfo { onUpdateScroll ->
-            FeaturesIntroPage(
-                onGitHub = { uriHandler.safeOpenUri(context, NexaIntroLinks.GITHUB_REPO_URL) },
-                onLicense = { uriHandler.safeOpenUri(context, NexaIntroLinks.LICENSE_URL) },
-                onScrollPositionChanged = onUpdateScroll,
-            )
-        }
+        requestInstallPermission = ::openInstallSettings,
     )
-
-    val pagerState = rememberPagerState(pageCount = { pages.size })
-    val isFirstPage = pagerState.currentPage == 0
-    val isLastPage = pagerState.currentPage == pages.lastIndex
-
-    BackHandler(enabled = !isFirstPage) {
-        scope.launch {
-            pagerState.animateScrollToPage(pagerState.currentPage - 1, animationSpec = animationSpec)
-        }
-    }
-
-    Box(Modifier.fillMaxSize().background(NexaIntroColors.background)) {
-        IntroAmbientBackground()
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .statusBarsPadding()
-                .navigationBarsPadding()
-                .padding(horizontal = 20.dp, vertical = 10.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            HorizontalPager(
-                state = pagerState,
-                userScrollEnabled = true, // Swiping and button navigation use the same pager state.
-                beyondViewportPageCount = pages.lastIndex,
-                modifier = Modifier.weight(1f).fillMaxWidth(),
-            ) { page ->
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .graphicsLayer {
-                            val offset = pagerState.getOffsetDistanceInPages(page)
-                            val distance = offset.absoluteValue.coerceIn(0f, 1f)
-                            alpha = 1f - distance * 0.15f
-                            translationX = offset * size.width * 0.12f
-                            scaleX = 1f - distance * 0.025f
-                            scaleY = 1f - distance * 0.025f
-                        }
-                ) {
-                    pages[page].content { scrolledToEnd ->
-                        if (page == pages.lastIndex) {
-                            isLastPageScrolledToEnd = scrolledToEnd
-                        }
-                    }
-                }
-            }
-
-            // The animated, stretched active pill remains above the fixed action row.
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 18.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                pages.indices.forEach { page ->
-                    val selected = page == pagerState.currentPage
-                    val dotWidth by animateDpAsState(
-                        targetValue = if (selected) 28.dp else 6.dp,
-                        animationSpec = tween(durationMillis = 260, easing = FastOutSlowInEasing),
-                        label = "introPageDotWidth",
-                    )
-                    Box(
-                        Modifier
-                            .padding(horizontal = 4.dp)
-                            .width(dotWidth)
-                            .height(6.dp)
-                            .clip(CircleShape)
-                            .background(
-                                if (selected) NexaIntroColors.accent
-                                else Color.White.copy(alpha = 0.28f)
-                            )
-                    )
-                }
-            }
-
-            // Keep both button slots stable so the primary pill never jumps between pages.
-            Row(
-                modifier = Modifier.fillMaxWidth().height(58.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Box(Modifier.weight(0.88f).fillMaxHeight()) {
-                    if (!isFirstPage) {
-                        IntroActionButton(
-                            text = stringResource(com.convx.music.R.string.back_button_desc),
-                            isPrimary = false,
-                            modifier = Modifier.fillMaxSize(),
-                            onClick = {
-                                scope.launch {
-                                    pagerState.animateScrollToPage(pagerState.currentPage - 1, animationSpec = animationSpec)
-                                }
-                            },
-                        )
-                    }
-                }
-
-                Box(Modifier.weight(1.12f).fillMaxHeight()) {
-                    val enabled = !isLastPage || isLastPageScrolledToEnd
-                    IntroActionButton(
-                        text = if (isLastPage) {
-                            stringResource(com.convx.music.R.string.get_started)
-                        } else {
-                            stringResource(com.convx.music.R.string.next)
-                        },
-                        isPrimary = true,
-                        enabled = enabled,
-                        modifier = Modifier.fillMaxSize(),
-                        onClick = {
-                            if (isLastPage) {
-                                if (isLastPageScrolledToEnd) onFinished()
-                            } else {
-                                scope.launch {
-                                    pagerState.animateScrollToPage(pagerState.currentPage + 1, animationSpec = animationSpec)
-                                }
-                            }
-                        },
-                    )
-                }
-            }
-        }
-    }
 }
 
 /** Brand palette for the intro only. Mint matches the existing logo vector fill (#C9E4C8). */
