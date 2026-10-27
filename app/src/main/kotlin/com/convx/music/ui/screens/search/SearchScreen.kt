@@ -211,7 +211,7 @@ fun SearchScreen(
     Box(
         Modifier
             .fillMaxSize()
-            .background(colors.systemBackground),
+            .background(Color.Black),
     ) {
         if (!searching) {
             // Frosted strip under the status bar once tiles scroll up into it.
@@ -231,7 +231,7 @@ fun SearchScreen(
                 heightOverride = titleTop + 16.dp,
             )
         } else {
-            val pageColor = colors.systemBackground
+            val pageColor = Color.Black
             val searchBackdrop = com.convx.music.ui.component.backdrop.backdrops.rememberLayerBackdrop(
                 onDraw = remember(pageColor) { { drawRect(pageColor); drawContent() } },
             )
@@ -473,7 +473,7 @@ private fun AppleSearchHeader(
         Text(
             text = stringResource(R.string.search),
             style = com.convx.music.ui.screens.library.apple.SfStyle(34.sp, 41.sp, FontWeight.Bold, 0.4.sp),
-            color = com.convx.music.ui.ios.foundation.IosTheme.colors.label,
+            color = Color.White,
             maxLines = 1,
             modifier = Modifier.weight(1f).height(41.dp),
         )
