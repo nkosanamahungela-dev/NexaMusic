@@ -21,6 +21,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -133,6 +134,8 @@ fun AppleSearchBrowse(
     navController: NavController,
     contentPadding: PaddingValues,
     header: @Composable () -> Unit,
+    recentSearches: List<String> = emptyList(),
+    onRecentSearchClick: (String) -> Unit = {},
     viewModel: AppleSearchViewModel = hiltViewModel(),
 ) {
     val categories by viewModel.categories.collectAsStateWithLifecycle()
@@ -156,6 +159,32 @@ fun AppleSearchBrowse(
         ) {
             item(key = "search-header", span = { GridItemSpan(maxLineSpan) }, contentType = "header") {
                 header()
+            }
+            if (recentSearches.isNotEmpty()) {
+                item(key = "recent-searches", span = { GridItemSpan(maxLineSpan) }, contentType = "recent-searches") {
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        contentPadding = PaddingValues(vertical = 4.dp),
+                    ) {
+                        rowItems(recentSearches, key = { it }) { query ->
+                            Row(
+                                Modifier.clip(CircleShape)
+                                    .background(Color(0xFF19191B))
+                                    .clickable { onRecentSearchClick(query) }
+                                    .padding(horizontal = 12.dp, vertical = 9.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(7.dp),
+                            ) {
+                                Canvas(Modifier.size(14.dp)) {
+                                    drawCircle(SearchPalette.Secondary, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.4.dp.toPx()))
+                                    drawLine(SearchPalette.Secondary, center, androidx.compose.ui.geometry.Offset(center.x, size.height * .25f), 1.4.dp.toPx())
+                                    drawLine(SearchPalette.Secondary, center, androidx.compose.ui.geometry.Offset(size.width * .7f, center.y), 1.4.dp.toPx())
+                                }
+                                Text(query, color = Color.White, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            }
+                        }
+                    }
+                }
             }
             if (items.isNotEmpty()) {
                 item(key = "featured-heading", span = { GridItemSpan(maxLineSpan) }, contentType = "heading") {
