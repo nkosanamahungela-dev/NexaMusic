@@ -33,7 +33,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import java.net.URLDecoder
 import com.convx.music.utils.PageCaches
-import com.convx.music.utils.withAppleMusicMetadata
 import javax.inject.Inject
 
 @HiltViewModel
@@ -70,14 +69,10 @@ constructor(
                     val hideExplicit = context.dataStore.get(HideExplicitKey, false)
                     val hideVideoSongs = context.dataStore.get(HideVideoSongsKey, false) || context.dataStore.get(DataSaverEnabledKey, false)
                     val hideYoutubeShorts = context.dataStore.get(HideYoutubeShortsKey, false)
-                    val filteredPage = it.filterExplicit(hideExplicit)
-                        .filterVideoSongs(hideVideoSongs)
-                        .filterYoutubeShorts(hideYoutubeShorts)
-                    summaryPage = filteredPage.copy(
-                        summaries = filteredPage.summaries.map { summary ->
-                            summary.copy(items = summary.items.withAppleMusicMetadata(query))
-                        }
-                    )
+                    summaryPage =
+                        it.filterExplicit(
+                            hideExplicit,
+                        ).filterVideoSongs(hideVideoSongs).filterYoutubeShorts(hideYoutubeShorts)
                 }
         } else {
             if (viewStateMap[filter.value] != null) return
@@ -88,15 +83,17 @@ constructor(
                     val hideExplicit = context.dataStore.get(HideExplicitKey, false)
                     val hideVideoSongs = context.dataStore.get(HideVideoSongsKey, false) || context.dataStore.get(DataSaverEnabledKey, false)
                     val hideYoutubeShorts = context.dataStore.get(HideYoutubeShortsKey, false)
-                    val filteredItems = result.items
-                        .distinctBy { it.id }
-                        .filterExplicit(hideExplicit)
-                        .filterVideoSongs(hideVideoSongs)
-                        .filterYoutubeShorts(hideYoutubeShorts)
-                    viewStateMap[filter.value] = ItemsPage(
-                        filteredItems.withAppleMusicMetadata(query),
-                        result.continuation,
-                    )
+                    viewStateMap[filter.value] =
+                        ItemsPage(
+                            result.items
+                                .distinctBy { it.id }
+                                .filterExplicit(
+                                    hideExplicit,
+                                )
+                                .filterVideoSongs(hideVideoSongs)
+                                .filterYoutubeShorts(hideYoutubeShorts),
+                            result.continuation,
+                        )
                 }
         }
     }
@@ -136,7 +133,6 @@ constructor(
                     .filterExplicit(hideExplicit)
                     .filterVideoSongs(hideVideoSongs)
                     .filterYoutubeShorts(hideYoutubeShorts)
-                    .withAppleMusicMetadata(query)
                 viewStateMap[filter] = ItemsPage(
                     (viewState.items + newItems).distinctBy { it.id },
                     searchResult.continuation
