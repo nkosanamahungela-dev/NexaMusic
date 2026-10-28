@@ -16,7 +16,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
@@ -726,7 +725,7 @@ private fun ThumbnailItem(
                 }
         ) {
             if (hidePlayerThumbnail) {
-                HiddenThumbnailPlaceholder()
+                HiddenThumbnailPlaceholder(textBackgroundColor = textBackgroundColor)
             } else {
                 val artworkUriToUse = if (item.mediaId == currentMediaId && !currentMediaThumbnail.isNullOrBlank()) {
                     currentMediaThumbnail
@@ -888,10 +887,11 @@ private fun ThumbnailItem(
 }
 
 /**
- * Branded placeholder shown when thumbnail art is hidden.
+ * Placeholder shown when thumbnail is hidden.
  */
 @Composable
 private fun HiddenThumbnailPlaceholder(
+    textBackgroundColor: Color,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -900,10 +900,10 @@ private fun HiddenThumbnailPlaceholder(
             .background(AppTheme.colorScheme.surfaceVariant),
         contentAlignment = Alignment.Center
     ) {
-        Image(
+        Icon(
             painter = painterResource(R.drawable.convx_logo),
             contentDescription = stringResource(R.string.hide_player_thumbnail),
-            contentScale = ContentScale.Fit,
+            tint = textBackgroundColor.copy(alpha = 0.7f),
             modifier = Modifier.size(120.dp)
         )
     }
@@ -1092,34 +1092,22 @@ internal fun ThumbnailImage(
         // The resting frame: a plain image respecting cropArtwork exactly like
         // before. The shader only ever draws on top of this during the brief
         // transition window below, so the steady state pays nothing extra.
-        if (currentUrl.isNullOrBlank()) {
-            Image(
-                painter = painterResource(R.drawable.convx_logo),
-                contentDescription = null,
-                contentScale = if (cropArtwork) ContentScale.Crop else ContentScale.Fit,
-                modifier = Modifier.fillMaxSize(),
-            )
-        } else {
-            AsyncImage(
-                model = ImageRequest.Builder(context)
-                    .data(currentUrl)
-                    .size(CoilSize.ORIGINAL)
-                    .memoryCachePolicy(CachePolicy.ENABLED)
-                    .diskCachePolicy(CachePolicy.ENABLED)
-                    .networkCachePolicy(CachePolicy.ENABLED)
-                    .build(),
-                onError = onError@{
-                    val fallback = nextThumbnailFallback(currentUrl) ?: return@onError
-                    currentUrl = fallback
-                },
-                contentDescription = null,
-                placeholder = painterResource(R.drawable.convx_logo),
-                error = painterResource(R.drawable.convx_logo),
-                fallback = painterResource(R.drawable.convx_logo),
-                contentScale = if (cropArtwork) ContentScale.Crop else ContentScale.Fit,
-                modifier = Modifier.fillMaxSize(),
-            )
-        }
+        AsyncImage(
+            model = ImageRequest.Builder(context)
+                .data(currentUrl)
+                .size(CoilSize.ORIGINAL)
+                .memoryCachePolicy(CachePolicy.ENABLED)
+                .diskCachePolicy(CachePolicy.ENABLED)
+                .networkCachePolicy(CachePolicy.ENABLED)
+                .build(),
+            onError = onError@{
+                val fallback = nextThumbnailFallback(currentUrl) ?: return@onError
+                currentUrl = fallback
+            },
+            contentDescription = null,
+            contentScale = if (cropArtwork) ContentScale.Crop else ContentScale.Fit,
+            modifier = Modifier.fillMaxSize(),
+        )
 
         val outgoingBitmap = outgoingUrl?.let { rawBitmaps[it] }
         val currentBitmap = currentUrl?.let { rawBitmaps[it] }
