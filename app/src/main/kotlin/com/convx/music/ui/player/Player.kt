@@ -1806,8 +1806,8 @@ fun BottomSheetPlayer(
                                         model = mediaMetadata.thumbnailUrl,
                                         contentDescription = null,
                                         contentScale = if (cropAlbumArt) ContentScale.Crop else ContentScale.Fit,
-                                        placeholder = painterResource(R.drawable.convx_logo),
-                                        error = painterResource(R.drawable.convx_logo),
+                                        placeholder = painterResource(R.drawable.thumbnail_fallback),
+                                        error = painterResource(R.drawable.thumbnail_fallback),
                                         modifier = Modifier.fillMaxSize()
                                     )
 
