@@ -303,11 +303,8 @@ object YTPlayerUtils {
      * and supports more formats when available.
      */
     private val STREAM_FALLBACK_CLIENTS: Array<YouTubeClient> = arrayOf(
-        // Playback logs show VISIONOS repeatedly returns UNPLAYABLE bot-check errors,
-        // while IOS returns a validated stream. Try the known-working guest client first
-        // to avoid a wasted request and reduce recovery churn on unauthenticated playback.
-        IOS,
         VISIONOS,
+        IOS,
         ANDROID_VR_1_61_48,
         ANDROID_VR_1_65_10,
         WEB_REMIX,
