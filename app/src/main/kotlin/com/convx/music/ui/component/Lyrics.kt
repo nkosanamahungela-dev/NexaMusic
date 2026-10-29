@@ -897,7 +897,6 @@ fun Lyrics(
                 listState = lazyListState,
                 fontSize = lyricsTextSize,
                 lineSpacing = lyricsLineSpacing,
-                wordGlowEnabled = lyricsGlowEffect,
                 onLineClick = { startMs ->
                     if (changeLyrics) playerConnection.player.seekTo(startMs.toLong())
                 },
