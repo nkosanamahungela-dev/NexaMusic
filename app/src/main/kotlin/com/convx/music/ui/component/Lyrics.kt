@@ -693,6 +693,7 @@ fun Lyrics(
     val hasProviderRow = isLyricsProviderShown && !usesArchiveTuneRenderer && !usesFlamingoRenderer && !usesCrawlRenderer
 
     val lazyListState = rememberLazyListState()
+    val rubber = rememberLyricRubber(lazyListState)
     
     var isAutoScrollEnabled by rememberSaveable { mutableStateOf(true) }
 
@@ -783,7 +784,7 @@ fun Lyrics(
 
     suspend fun performSmoothPageScroll(targetIndex: Int, animate: Boolean = true) {
         if (targetIndex < 0) return
-        lazyListState.followLyricLine(targetIndex + if (hasProviderRow) 1 else 0, animate)
+        lazyListState.followLyricLine(targetIndex + if (hasProviderRow) 1 else 0, animate, rubber)
     }
     LaunchedEffect(introKey) {
         if (introKey == 0) return@LaunchedEffect
@@ -836,21 +837,8 @@ fun Lyrics(
                 .padding(top = 56.dp),
         )
 
-        if (lyrics == LYRICS_NOT_FOUND) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    fontFamily = lyricsFontFamily,
-                    text = stringResource(R.string.lyrics_not_found),
-                    fontSize = 20.sp,
-                    color = AppTheme.colorScheme.secondary,
-                    textAlign = TextAlign.Center,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.alpha(0.5f)
-                )
-            }
+        if (lyrics == LYRICS_NOT_FOUND || (lyrics != null && lines.all { it.text.isBlank() })) {
+            LyricsEmptyNote(fontFamily = lyricsFontFamily, color = AppTheme.colorScheme.secondary)
         } else if (usesCrawlRenderer) {
             val lyricsOffset = currentSong?.song?.lyricsOffset?.toLong() ?: 0L
             StarCrawlLyrics(
@@ -1189,6 +1177,7 @@ fun Lyrics(
                             else Color.Transparent
                         )
                         .padding(horizontal = 32.dp, vertical = (8 * lyricsLineSpacing).dp)
+                        .lyricRubber(rubber, index + if (hasProviderRow) 1 else 0)
                     
                     // Match timestamps so main and background vocals highlight together.
                     val currentLineTime = if (displayedCurrentLineIndex >= 0 && displayedCurrentLineIndex < lines.size) {
@@ -1857,6 +1846,9 @@ fun Lyrics(
                         }
                     }
                 }
+            }
+            item(key = "lyrics_end") {
+                LyricsEndNote(fontFamily = lyricsFontFamily, color = textColor)
             }
         }
     }
