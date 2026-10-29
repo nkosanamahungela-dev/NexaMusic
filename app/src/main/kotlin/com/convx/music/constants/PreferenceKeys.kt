@@ -796,6 +796,9 @@ enum class LyricsAnimationStyle {
      * the depth-of-field falloff and duet (left/right) alignment all need.
      */
     ARCHIVE_TUNE,
+
+    /** Perspective-warped lyrics with a curved, fisheye-like field of view. */
+    FISHEYE,
 }
 
 val LyricsTextSizeKey = floatPreferencesKey("lyricsTextSize")
