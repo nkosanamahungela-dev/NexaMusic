@@ -88,27 +88,16 @@ fun StarCrawlLyrics(
     // The playhead, not the line change, drives the scroll, so the text creeps up a little every frame.
     LaunchedEffect(lines, isSynced, autoScrollEnabled, height) {
         if (!autoScrollEnabled || !isSynced || height == 0) return@LaunchedEffect
-        var previousIndex = -1
-        var previousFraction = 0f
         while (true) {
             withFrameNanos { }
             val index = current.intValue
             if (index < 0) continue
             val start = lines[index].time
             val span = (lines.getOrNull(index + 1)?.time ?: start) - start
-            val fraction = if (span > 0) {
-                ((positionMs() - start).toFloat() / span.coerceAtMost(CRAWL_SPAN_CAP_MS)).coerceIn(0f, 1f)
-            } else 0f
-            val item = listState.layoutInfo.visibleItemsInfo.firstOrNull { it.index == index }
-            if (previousIndex != index || item == null) {
-                listState.followLyricLine(index, animate = false)
-                previousIndex = index
-                previousFraction = fraction
-            } else {
-                val distance = item.size * (fraction - previousFraction)
-                if (abs(distance) > 0.1f) listState.scrollBy(distance)
-                previousFraction = fraction
-            }
+            val fraction = if (span > 0) (positionMs() - start).toFloat() / span.coerceAtMost(CRAWL_SPAN_CAP_MS) else 0f
+            val distance = listState.crawlDistance(index, fraction)
+            if (distance == null) listState.followLyricLine(index, animate = false)
+            else if (abs(distance) > 0.5f) listState.scrollBy(distance)
         }
     }
 
