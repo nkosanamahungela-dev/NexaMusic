@@ -1074,7 +1074,7 @@ fun Lyrics(
                             }
                         )
                         return@itemsIndexed
-                    } else if (lyricsAnimationStyle == LyricsAnimationStyle.FLAMINGO) {
+                    } else if (lyricsAnimationStyle == LyricsAnimationStyle.METRO_LYRICS) {
                         val currentLineTime = if (displayedCurrentLineIndex >= 0 && displayedCurrentLineIndex < lines.size) {
                             lines[displayedCurrentLineIndex].time
                         } else -1L
