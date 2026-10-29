@@ -766,4 +766,5 @@
     <string name="lyrics_centered_scroll_description">Smooth centered scrolling, with word animation when timing is available</string>
     <string name="lyrics_style_flamingo">NexaMusic Lyrics</string>
     <string name="lyrics_animation_fisheye">Fisheye</string>
+    <string name="lyrics_animation_star_crawl">Star Crawl</string>
 </resources>
