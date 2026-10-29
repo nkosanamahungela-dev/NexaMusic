@@ -65,13 +65,17 @@ fun FisheyeLyrics(
         }
     }
 
-    LaunchedEffect(activeIndex, autoScrollEnabled) {
+    val density = LocalDensity.current
+    LaunchedEffect(activeIndex, autoScrollEnabled, lines.size) {
         if (autoScrollEnabled && activeIndex >= 0 && activeIndex < lines.size) {
-            listState.animateScrollToItem(activeIndex)
+            // Keep the active lyric around the visual centre. animateScrollToItem(index)
+            // alone pins the line to the top, which breaks the fisheye perspective.
+            val viewportHeight = listState.layoutInfo.viewportSize.height
+            val estimatedLineHeight = with(density) { (fontSize * lineSpacing * 2f).sp.toPx() }
+            val centeredOffset = -((viewportHeight - estimatedLineHeight).coerceAtLeast(0) / 2)
+            listState.animateScrollToItem(activeIndex, scrollOffset = centeredOffset)
         }
     }
-
-    val density = LocalDensity.current
     LazyColumn(
         state = listState,
         modifier = modifier.fillMaxSize(),
@@ -129,7 +133,8 @@ fun FisheyeLyrics(
                 Text(
                     fontFamily = fontFamily,
                     text = line.text,
-                    fontSize = (fontSize * scale).sp,
+                    // Scale is applied by graphicsLayer below; don't multiply the font twice.
+                    fontSize = fontSize.sp,
                     fontWeight = if (index == activeIndex) FontWeight.ExtraBold else FontWeight.Bold,
                     lineHeight = (fontSize * lineSpacing).sp,
                     color = if (index == activeIndex) accent else accent.copy(alpha = 0.82f),
