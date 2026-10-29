@@ -685,7 +685,8 @@ fun Lyrics(
         lyricsAnimationStyle == LyricsAnimationStyle.ARCHIVE_TUNE &&
         lines.hasKaraokeTimings()
     val usesFlamingoRenderer = lyricsAnimationStyle == LyricsAnimationStyle.FLAMINGO && lines.isNotEmpty()
-    val hasProviderRow = isLyricsProviderShown && !usesArchiveTuneRenderer && !usesFlamingoRenderer
+    val usesCrawlRenderer = lyricsAnimationStyle == LyricsAnimationStyle.STAR_CRAWL && lines.isNotEmpty()
+    val hasProviderRow = isLyricsProviderShown && !usesArchiveTuneRenderer && !usesFlamingoRenderer && !usesCrawlRenderer
 
     val lazyListState = rememberLazyListState()
     
@@ -787,7 +788,7 @@ fun Lyrics(
         initialScrollDone = false
     }
     LaunchedEffect(currentLineIndex, lastPreviewTime, initialScrollDone, isAutoScrollEnabled, scrollLyrics, isSeeking, hasProviderRow, lines, lazyListState.layoutInfo.totalItemsCount) {
-        if (!isSynced || usesFlamingoRenderer || usesArchiveTuneRenderer || !scrollLyrics) return@LaunchedEffect
+        if (!isSynced || usesFlamingoRenderer || usesCrawlRenderer || usesArchiveTuneRenderer || !scrollLyrics) return@LaunchedEffect
         // The playhead-to-line lookup starts asynchronously. Don't interpret its
         // initial -1 as line zero and briefly jump to the start of the lyrics.
         if (currentLineIndex < 0) return@LaunchedEffect
@@ -846,6 +847,18 @@ fun Lyrics(
                     modifier = Modifier.alpha(0.5f)
                 )
             }
+        } else if (usesCrawlRenderer) {
+            val lyricsOffset = currentSong?.song?.lyricsOffset?.toLong() ?: 0L
+            StarCrawlLyrics(
+                lines = lines,
+                fontFamily = lyricsFontFamily,
+                fontSize = lyricsTextSize,
+                positionMs = { (sliderPositionProvider() ?: playerConnection.player.currentPosition) + lyricsOffset },
+                isSynced = isSynced,
+                autoScrollEnabled = scrollLyrics,
+                onSeek = { if (isSynced && changeLyrics && !isGuest) playerConnection.player.seekTo((it.toLong() - lyricsOffset).coerceAtLeast(0)) },
+                modifier = Modifier.fillMaxSize(),
+            )
         } else if (usesFlamingoRenderer) {
             val lyricsOffset = currentSong?.song?.lyricsOffset?.toLong() ?: 0L
             FlamingoLyrics(
