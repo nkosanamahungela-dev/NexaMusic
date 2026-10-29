@@ -684,7 +684,11 @@ fun Lyrics(
     val usesArchiveTuneRenderer = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
         lyricsAnimationStyle == LyricsAnimationStyle.ARCHIVE_TUNE &&
         lines.hasKaraokeTimings()
-    val usesFlamingoRenderer = lyricsAnimationStyle == LyricsAnimationStyle.FLAMINGO && lines.isNotEmpty()
+    val usesFlamingoRenderer = (
+        lyricsAnimationStyle == LyricsAnimationStyle.FLAMINGO ||
+            lyricsAnimationStyle == LyricsAnimationStyle.CONVX_1 ||
+            lyricsAnimationStyle == LyricsAnimationStyle.BITCHORD
+        ) && lines.isNotEmpty()
     val usesCrawlRenderer = lyricsAnimationStyle == LyricsAnimationStyle.STAR_CRAWL && lines.isNotEmpty()
     val hasProviderRow = isLyricsProviderShown && !usesArchiveTuneRenderer && !usesFlamingoRenderer && !usesCrawlRenderer
 
