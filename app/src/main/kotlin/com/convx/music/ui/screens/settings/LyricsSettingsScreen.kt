@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
@@ -28,26 +27,12 @@ import com.convx.music.ui.ios.compat.Text
 import com.convx.music.utils.rememberPreference
 import com.convx.music.utils.rememberEnumPreference
 import com.convx.music.constants.LyricsAnimationStyle
-import com.convx.music.constants.LyricsAnimationStyleKey
-import com.convx.music.ui.component.EnumDialog
 import com.convx.music.ui.component.lyricsStyleLabel
-import androidx.compose.runtime.saveable.rememberSaveable
 
 /** Lyrics look: glow and the two blur modes. Kept apart from the animation style and text layout. */
 @Composable
 fun LyricsSettingsScreen(navController: NavController) {
-    val (animationStyle, selectAnimationStyle) = rememberEnumPreference(LyricsAnimationStyleKey, LyricsAnimationStyle.FLAMINGO)
-    var showStyleDialog by rememberSaveable { mutableStateOf(false) }
-    if (showStyleDialog) {
-        EnumDialog(
-            onDismiss = { showStyleDialog = false },
-            onSelect = { selectAnimationStyle(it); showStyleDialog = false },
-            title = stringResource(R.string.lyrics_animation_style),
-            current = animationStyle,
-            values = LyricsAnimationStyle.entries,
-            valueText = { lyricsStyleLabel(it) },
-        )
-    }
+    val (animationStyle) = rememberEnumPreference(com.convx.music.constants.LyricsAnimationStyleKey, LyricsAnimationStyle.FLAMINGO)
     val context = androidx.compose.ui.platform.LocalContext.current
     val credentials = remember(context) { context.getSharedPreferences("lyrics_credentials", android.content.Context.MODE_PRIVATE) }
     var paxKey by remember { mutableStateOf(credentials.getString("paxsenix_api_key", "").orEmpty()) }
@@ -61,7 +46,7 @@ fun LyricsSettingsScreen(navController: NavController) {
                 icon = painterResource(R.drawable.lyrics),
                 title = { Text(lyricsStyleLabel(animationStyle)) },
                 description = { Text(stringResource(R.string.lyrics_centered_scroll_description)) },
-                onClick = { showStyleDialog = true },
+                onClick = { SettingsSheets.open = SettingsAction.LyricsStyle },
             ),
         ))
         LyricsFontSettings()
