@@ -863,7 +863,8 @@ fun Lyrics(
                 useBlur = lyricsStandardBlur,
                 isSynced = isSynced,
                 autoScrollEnabled = scrollLyrics,
-                wordGlowEnabled = lyricsGlowEffect,
+                glow = lyricsGlowEffect,
+                artistName = mediaMetadata?.artists?.joinToString { it.name },
                 onSeek = { if (isSynced && changeLyrics && !isGuest) playerConnection.player.seekTo((it.toLong() - lyricsOffset).coerceAtLeast(0)) },
                 modifier = Modifier.fillMaxSize().fadingEdge(vertical = 64.dp),
             )
