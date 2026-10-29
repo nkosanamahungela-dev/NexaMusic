@@ -925,11 +925,20 @@ fun ColumnScope.LyricsAnimationSheetContent() {
                             textAlign = align,
                             maxLines = 1,
                             modifier = Modifier.fillMaxWidth().graphicsLayer {
-                                if (selected == LyricsAnimationStyle.FISHEYE) {
-                                    rotationX = -18f
-                                    scaleX = 0.82f
-                                    scaleY = 0.82f
-                                    alpha = 0.58f
+                                when (selected) {
+                                    LyricsAnimationStyle.FISHEYE -> {
+                                        rotationX = -18f
+                                        scaleX = 0.82f
+                                        scaleY = 0.82f
+                                        alpha = 0.58f
+                                    }
+                                    LyricsAnimationStyle.STAR_CRAWL -> {
+                                        rotationX = 32f
+                                        scaleX = 0.72f
+                                        scaleY = 0.72f
+                                        alpha = 0.42f
+                                    }
+                                    else -> Unit
                                 }
                             },
                         )
@@ -968,6 +977,12 @@ fun ColumnScope.LyricsAnimationSheetContent() {
                                         scaleX = 1.04f + progress * 0.08f
                                         scaleY = 1.04f + progress * 0.08f
                                     }
+                                    LyricsAnimationStyle.STAR_CRAWL -> {
+                                        rotationX = -2f + progress * 4f
+                                        scaleX = 1.06f - progress * 0.08f
+                                        scaleY = 1.06f - progress * 0.08f
+                                        alpha = 0.9f - progress * 0.15f
+                                    }
                                     else -> {
                                         scaleX = 0.94f + progress * 0.06f
                                         scaleY = scaleX
@@ -990,11 +1005,20 @@ fun ColumnScope.LyricsAnimationSheetContent() {
                             textAlign = align,
                             maxLines = 1,
                             modifier = Modifier.fillMaxWidth().graphicsLayer {
-                                if (selected == LyricsAnimationStyle.FISHEYE) {
-                                    rotationX = 18f
-                                    scaleX = 0.82f
-                                    scaleY = 0.82f
-                                    alpha = 0.58f
+                                when (selected) {
+                                    LyricsAnimationStyle.FISHEYE -> {
+                                        rotationX = 18f
+                                        scaleX = 0.82f
+                                        scaleY = 0.82f
+                                        alpha = 0.58f
+                                    }
+                                    LyricsAnimationStyle.STAR_CRAWL -> {
+                                        rotationX = -32f
+                                        scaleX = 0.72f
+                                        scaleY = 0.72f
+                                        alpha = 0.42f
+                                    }
+                                    else -> Unit
                                 }
                             },
                         )
