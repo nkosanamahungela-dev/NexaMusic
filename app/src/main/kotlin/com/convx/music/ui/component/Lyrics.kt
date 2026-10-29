@@ -1002,6 +1002,7 @@ fun Lyrics(
                         val isActiveByIndex = index == displayedCurrentLineIndex
                         val isActiveByTime = isLineAtSameTime && displayedCurrentLineIndex >= 0
 
+                        Box(Modifier.lyricRubber(rubber, index + if (hasProviderRow) 1 else 0)) {
                         ConvxLyricsLine(
                 fontFamily = lyricsFontFamily,
                             entry = item,
@@ -1061,6 +1062,7 @@ fun Lyrics(
                                 }
                             }
                         )
+                        }
                         return@itemsIndexed
                     } else if (lyricsAnimationStyle == LyricsAnimationStyle.METRO_LYRICS) {
                         val currentLineTime = if (displayedCurrentLineIndex >= 0 && displayedCurrentLineIndex < lines.size) {
@@ -1070,6 +1072,7 @@ fun Lyrics(
                         val isActiveByIndex = index == displayedCurrentLineIndex
                         val isActiveByTime = isLineAtSameTime && displayedCurrentLineIndex >= 0
 
+                        Box(Modifier.lyricRubber(rubber, index + if (hasProviderRow) 1 else 0)) {
                         MetroLyricsLine(
                 fontFamily = lyricsFontFamily,
                             entry = item,
@@ -1128,6 +1131,7 @@ fun Lyrics(
                                 }
                             }
                         )
+                        }
                         return@itemsIndexed
                     }
                     val itemModifier = Modifier
