@@ -33,7 +33,7 @@ import com.convx.music.ui.component.lyricsStyleLabel
 /** Lyrics look: glow and the two blur modes. Kept apart from the animation style and text layout. */
 @Composable
 fun LyricsSettingsScreen(navController: NavController) {
-    val (animationStyle) = rememberEnumPreference(com.convx.music.constants.LyricsAnimationStyleKey, LyricsAnimationStyle.FLAMINGO)
+    val animationStyle = rememberEnumPreference(com.convx.music.constants.LyricsAnimationStyleKey, LyricsAnimationStyle.FLAMINGO).first
     val context = androidx.compose.ui.platform.LocalContext.current
     val credentials = remember(context) { context.getSharedPreferences("lyrics_credentials", android.content.Context.MODE_PRIVATE) }
     var paxKey by remember { mutableStateOf(credentials.getString("paxsenix_api_key", "").orEmpty()) }
