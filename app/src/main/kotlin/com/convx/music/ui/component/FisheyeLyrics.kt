@@ -72,7 +72,7 @@ fun FisheyeLyrics(
             // alone pins the line to the top, which breaks the fisheye perspective.
             val viewportHeight = listState.layoutInfo.viewportSize.height
             val estimatedLineHeight = with(density) { (fontSize * lineSpacing * 2f).sp.toPx() }
-            val centeredOffset = -((viewportHeight - estimatedLineHeight).coerceAtLeast(0) / 2)
+            val centeredOffset = -((viewportHeight - estimatedLineHeight.toInt()).coerceAtLeast(0) / 2)
             listState.animateScrollToItem(activeIndex, scrollOffset = centeredOffset)
         }
     }
