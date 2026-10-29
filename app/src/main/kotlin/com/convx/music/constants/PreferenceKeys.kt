@@ -799,6 +799,9 @@ enum class LyricsAnimationStyle {
 
     /** Perspective-warped lyrics with a curved, fisheye-like field of view. */
     FISHEYE,
+
+    /** Lines on a tilted plane that recedes into a starfield, like an opening crawl. */
+    STAR_CRAWL,
 }
 
 val LyricsTextSizeKey = floatPreferencesKey("lyricsTextSize")
