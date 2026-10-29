@@ -924,7 +924,14 @@ fun ColumnScope.LyricsAnimationSheetContent() {
                             style = IosTheme.typography.subheadline,
                             textAlign = align,
                             maxLines = 1,
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth().graphicsLayer {
+                                if (selected == LyricsAnimationStyle.FISHEYE) {
+                                    rotationX = -18f
+                                    scaleX = 0.82f
+                                    scaleY = 0.82f
+                                    alpha = 0.58f
+                                }
+                            },
                         )
                         Text(
                             "We find our way back home",
@@ -956,6 +963,11 @@ fun ColumnScope.LyricsAnimationSheetContent() {
                                         translationX = (1f - progress) * 28.dp.toPx() * if (position == LyricsPosition.RIGHT) -1f else 1f
                                         alpha = 0.5f + progress * 0.5f
                                     }
+                                    LyricsAnimationStyle.FISHEYE -> {
+                                        rotationX = 10f - progress * 20f
+                                        scaleX = 1.04f + progress * 0.08f
+                                        scaleY = 1.04f + progress * 0.08f
+                                    }
                                     else -> {
                                         scaleX = 0.94f + progress * 0.06f
                                         scaleY = scaleX
@@ -977,7 +989,14 @@ fun ColumnScope.LyricsAnimationSheetContent() {
                             style = IosTheme.typography.subheadline,
                             textAlign = align,
                             maxLines = 1,
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth().graphicsLayer {
+                                if (selected == LyricsAnimationStyle.FISHEYE) {
+                                    rotationX = 18f
+                                    scaleX = 0.82f
+                                    scaleY = 0.82f
+                                    alpha = 0.58f
+                                }
+                            },
                         )
                     }
                     Text(
