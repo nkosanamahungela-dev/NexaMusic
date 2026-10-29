@@ -862,6 +862,20 @@ fun Lyrics(
                 onSeek = { if (isSynced && changeLyrics && !isGuest) playerConnection.player.seekTo((it.toLong() - lyricsOffset).coerceAtLeast(0)) },
                 modifier = Modifier.fillMaxSize().fadingEdge(vertical = 64.dp),
             )
+        } else if (lyricsAnimationStyle == LyricsAnimationStyle.FISHEYE) {
+            val lyricsOffset = currentSong?.song?.lyricsOffset?.toLong() ?: 0L
+            FisheyeLyrics(
+                lines = lines,
+                fontFamily = lyricsFontFamily,
+                fontSize = lyricsTextSize,
+                lineSpacing = lyricsLineSpacing,
+                positionMs = { currentPlaybackPosition + lyricsOffset },
+                isSynced = isSynced,
+                autoScrollEnabled = scrollLyrics && isAutoScrollEnabled,
+                accent = expressiveAccent,
+                modifier = Modifier.fillMaxSize().fadingEdge(vertical = 64.dp),
+                onSeek = { if (isSynced && changeLyrics && !isGuest) playerConnection.player.seekTo((it.toLong() - lyricsOffset).coerceAtLeast(0)) },
+            )
         } else if (
             // This renderer needs API 29; older devices use the regular list below.
             usesArchiveTuneRenderer
