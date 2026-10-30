@@ -868,7 +868,17 @@ class SyncUtils @Inject constructor(
         }.onSuccess { result ->
             result.onSuccess { page ->
                 try {
-                    val remotePlaylists = page.items.filterIsInstance<PlaylistItem>()
+                    // YouTube separates playlists created by this account from playlists
+                    // saved to the library. Fetch both collections so playlists created in
+                    // Convx/YouTube Music are restored when the user signs into NexaMusic.
+                    val ownedPlaylists = withRetry {
+                        YouTube.library("FEmusic_library_privately_owned_playlists").completed()
+                    }.getOrNull()?.getOrNull()?.items
+                        ?.filterIsInstance<PlaylistItem>()
+                        .orEmpty()
+
+                    val remotePlaylists = (ownedPlaylists + page.items.filterIsInstance<PlaylistItem>())
+                        .distinctBy { it.id }
                         .filterNot { it.id == "LM" || it.id == "SE" }
                         .reversed()
                     val remoteIds = remotePlaylists.mapTo(mutableSetOf()) { it.id }
