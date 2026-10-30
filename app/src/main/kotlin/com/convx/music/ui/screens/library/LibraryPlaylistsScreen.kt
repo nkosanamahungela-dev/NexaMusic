@@ -243,8 +243,10 @@ fun LibraryPlaylistsScreen(
 
     val (ytmSync) = rememberPreference(YtmSyncKey, true)
 
-    LaunchedEffect(Unit) {
-        if (ytmSync) {
+    // Re-sync when the YouTube cookie changes (for example, after the user signs in).
+    // LaunchedEffect(Unit) missed this when the screen stayed in the back stack during login.
+    LaunchedEffect(innerTubeCookie, ytmSync) {
+        if (ytmSync && isLoggedIn) {
             withContext(Dispatchers.IO) {
                 viewModel.sync()
             }
