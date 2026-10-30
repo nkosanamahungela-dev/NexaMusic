@@ -868,19 +868,14 @@ class SyncUtils @Inject constructor(
         }.onSuccess { result ->
             result.onSuccess { page ->
                 try {
-                    // YouTube separates playlists created by this account from playlists
-                    // saved to the library. Fetch both collections so playlists created in
-                    // Convx/YouTube Music are restored when the user signs into NexaMusic.
-                    val ownedPlaylists = withRetry {
-                        YouTube.library("FEmusic_library_privately_owned_playlists").completed()
-                    }.getOrNull()?.getOrNull()?.items
-                        ?.filterIsInstance<PlaylistItem>()
-                        .orEmpty()
-
-                    val remotePlaylists = (ownedPlaylists + page.items.filterIsInstance<PlaylistItem>())
+                    // Use the exact same playlist collection as AccountViewModel.
+                    // Account already proves this endpoint returns the signed-in user's
+                    // YouTube Music playlists; keep sync on that single source of truth.
+                    val remotePlaylists = page.items.filterIsInstance<PlaylistItem>()
                         .distinctBy { it.id }
                         .filterNot { it.id == "LM" || it.id == "SE" }
                         .reversed()
+                    Timber.i("syncSavedPlaylists: YouTube returned ${page.items.size} items, ${remotePlaylists.size} playlists")
                     val remoteIds = remotePlaylists.mapTo(mutableSetOf()) { it.id }
 
                     // Retry pending remote deletes and keep them out of the import list.
@@ -914,7 +909,11 @@ class SyncUtils @Inject constructor(
 
                     for (playlist in remotePlaylistsToSync) {
                         try {
-                            var playlistEntity = localPlaylists.find { it.playlist.browseId == playlist.id }?.playlist
+                            // Look up by remote browseId across ALL local playlists, not only
+                            // bookmarked rows. The sorted Library flow filters bookmarkedAt,
+                            // so using it here could miss an existing unbookmarked row.
+                            var playlistEntity = database.playlistByBrowseId(playlist.id).firstOrNull()?.playlist
+                                ?: localPlaylists.find { it.playlist.browseId == playlist.id }?.playlist
 
                             if (playlistEntity == null) {
                                 playlistEntity = PlaylistEntity(
@@ -935,6 +934,10 @@ class SyncUtils @Inject constructor(
                                 executeSyncPlaylist(playlist.id, playlistEntity.id)
                             } else {
                                 database.update(playlistEntity, playlist)
+                                if (playlistEntity.bookmarkedAt == null) {
+                                    database.update(playlistEntity.copy(bookmarkedAt = LocalDateTime.now()))
+                                    Timber.d("syncSavedPlaylists: Re-bookmarked existing playlist ${playlist.title} (${playlist.id})")
+                                }
                                 Timber.d("syncSavedPlaylists: Updated existing playlist ${playlist.title} (${playlist.id})")
                                 if (playlistEntity.isAutoSync) {
                                     executeSyncPlaylist(playlist.id, playlistEntity.id)
