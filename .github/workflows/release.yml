@@ -1,4 +1,4 @@
-name: Stable Release Build
+name: NexaMusic Pre-release Build
 
 on:
   push:
@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   build_stable:
-    name: Build Universal GMS Stable Release
+    name: Build Universal GMS Release
     runs-on: ubuntu-latest
 
     steps:
