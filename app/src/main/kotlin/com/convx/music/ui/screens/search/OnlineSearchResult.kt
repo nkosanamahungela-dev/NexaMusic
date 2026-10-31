@@ -33,6 +33,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import com.convx.music.ui.ios.compat.Icon
 import com.convx.music.ui.ios.compat.IconButton
 import com.convx.music.ui.ios.compat.AppTheme
+import com.convx.music.ui.ios.foundation.IosTheme
 import androidx.compose.ui.graphics.Brush
 import com.convx.music.ui.ios.compat.Text
 import androidx.compose.runtime.Composable
@@ -284,7 +285,10 @@ fun OnlineSearchResult(
             .fillMaxSize()
             .background(com.convx.music.ui.ios.foundation.IosTheme.colors.systemBackground)
     ) {
-        if (hasCustomHomeBackground()) {
+        if (!IosTheme.colors.isDark) {
+            // Search results share the same flat light surface as browse and Home.
+            // Keep artwork blur and the dark treatment exclusive to dark appearance.
+        } else if (hasCustomHomeBackground()) {
             // Matches Home/Library: the user's own picture, not this screen's
             // auto-generated hero blur, once a custom background is set.
             HomeImageBackground(withGradient = true)
