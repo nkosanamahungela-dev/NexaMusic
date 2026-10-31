@@ -86,7 +86,7 @@ jobs:
             -keystore app/keystore/release.keystore \
             -storetype JKS \
             -storepass "$STORE_PASSWORD" \
-            -alias "$KEY_ALIAS" >/dev/null
+            -alias "$KEY_ALIAS"
           echo "Release keystore format and alias validated."
 
       - name: Build Universal GMS Release APK
