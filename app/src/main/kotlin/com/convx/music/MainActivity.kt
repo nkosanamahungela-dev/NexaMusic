@@ -39,12 +39,13 @@ import com.convx.music.playback.PlaybackServiceConnector
 import com.convx.music.playback.PlayerConnection
 import com.convx.music.utils.SyncUtils
 import com.convx.music.utils.dataStore
-import com.convx.music.utils.get
+import com.convx.music.utils.cachedPreferenceSnapshot
 import com.convx.music.utils.setAppLocale
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.util.Locale
 import javax.inject.Inject
@@ -117,7 +118,7 @@ class MainActivity : ComponentActivity() {
     override fun onDestroy() {
         super.onDestroy()
         // Handle back navigation here; swiping the task away is handled by the service.
-        if (dataStore.get(StopMusicOnTaskClearKey, false) &&
+        if (dataStore.cachedPreferenceSnapshot()?.get(StopMusicOnTaskClearKey) == true &&
             playerConnection?.isPlaying?.value == true &&
             isFinishing
         ) {
@@ -156,11 +157,16 @@ class MainActivity : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            val locale = dataStore[AppLanguageKey]
-                ?.takeUnless { it == SYSTEM_DEFAULT }
-                ?.let { Locale.forLanguageTag(it) }
-                ?: Locale.getDefault()
-            setAppLocale(this, locale)
+            lifecycleScope.launch {
+                val appLanguage = dataStore.data
+                    .map { it[AppLanguageKey] }
+                    .first()
+                val locale = appLanguage
+                    ?.takeUnless { it == SYSTEM_DEFAULT }
+                    ?.let { Locale.forLanguageTag(it) }
+                    ?: Locale.getDefault()
+                setAppLocale(this@MainActivity, locale)
+            }
         }
 
         lifecycleScope.launch {
