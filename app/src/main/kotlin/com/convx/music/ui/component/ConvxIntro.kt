@@ -144,12 +144,15 @@ fun ConvxIntro(onFinished: () -> Unit) {
                         scale(logoScale, logoScale, Offset(centerX, logoTop + logoHeight / 2f))
                     }) {
                         withTransform({
+                            // Place the viewport first, then scale its contents.
+                            // Reversing these operations scales the translation too,
+                            // shifting the visible mark toward the left edge.
+                            translate(logoLeft, logoTop)
                             scale(
                                 logoWidth / logoViewportWidth,
                                 logoHeight / logoViewportHeight,
                                 Offset.Zero,
                             )
-                            translate(logoLeft, logoTop)
                         }) {
                             drawPath(logoPath, SolidColor(LogoInk))
                         }
@@ -234,8 +237,8 @@ private const val LETTER_DURATION_MS = 800f
 private const val LETTER_STAGGER_MS = 55f
 private const val TAGLINE_START_MS = 2_200f
 private const val TAGLINE_DURATION_MS = 800f
-private const val MIN_HOLD_MS = 4_200f
-private const val EXIT_MS = 700f
+private const val MIN_HOLD_MS = 3_200f
+private const val EXIT_MS = 500f
 private const val TOTAL_MS = MIN_HOLD_MS + EXIT_MS
 private const val REDUCED_HOLD_MS = 1_000f
 private const val MAX_FRAME_STEP_MS = 34f
