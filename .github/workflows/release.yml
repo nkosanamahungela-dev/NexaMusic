@@ -76,6 +76,19 @@ jobs:
           printf '%s' "$KEYSTORE_BASE64" | base64 --decode > app/keystore/release.keystore
           test -s app/keystore/release.keystore
 
+      - name: Validate decoded JKS keystore
+        env:
+          STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: |
+          set -euo pipefail
+          keytool -list \
+            -keystore app/keystore/release.keystore \
+            -storetype JKS \
+            -storepass "$STORE_PASSWORD" \
+            -alias "$KEY_ALIAS" >/dev/null
+          echo "Release keystore format and alias validated."
+
       - name: Build Universal GMS Release APK
         env:
           LASTFM_API_KEY: ${{ secrets.LASTFM_API_KEY }}
