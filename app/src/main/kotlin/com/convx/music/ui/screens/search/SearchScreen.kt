@@ -200,9 +200,8 @@ fun SearchScreen(
     // Keep the browse page and results page on the same system background.
     val colors = com.convx.music.ui.ios.foundation.IosTheme.colors
     val statusTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-    val tabletLayout = androidx.compose.ui.platform.LocalConfiguration.current.screenWidthDp >= 600
-    // The phone reference reserves 62 points above its title; retain larger cutouts.
-    val titleTop = if (tabletLayout) statusTop + 10.dp else maxOf(statusTop, 62.dp)
+    // Respect the real status-bar/cutout inset on every device, with 8dp breathing room.
+    val titleTop = statusTop + 8.dp
     val bottomPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues().calculateBottomPadding()
     val sideInset = LocalPlayerAwareWindowInsets.current
         .asPaddingValues()
@@ -212,7 +211,7 @@ fun SearchScreen(
     Box(
         Modifier
             .fillMaxSize()
-            .background(Color.Black),
+            .background(colors.systemBackground),
     ) {
         if (!searching) {
             // Frosted strip under the status bar once tiles scroll up into it.
@@ -230,15 +229,16 @@ fun SearchScreen(
             TopFadeBlur(
                 hazeState = browseHaze,
                 pageColor = colors.systemBackground,
+                scrimColor = colors.systemBackground.copy(alpha = 0.9f),
                 modifier = Modifier.align(Alignment.TopCenter),
-                heightOverride = titleTop + 16.dp,
+                heightOverride = statusTop,
             )
         } else {
-            val pageColor = Color.Black
+            val pageColor = colors.systemBackground
             val searchBackdrop = com.convx.music.ui.component.backdrop.backdrops.rememberLayerBackdrop(
                 onDraw = remember(pageColor) { { drawRect(pageColor); drawContent() } },
             )
-            val focusedTop = if (tabletLayout) statusTop + 10.dp else maxOf(statusTop, 58.dp)
+            val focusedTop = statusTop + 8.dp
             Column(Modifier.fillMaxSize().padding(top = focusedTop)) {
                 if (navSearch.canToggleSource) {
                     SourceSwitch(
@@ -476,7 +476,7 @@ private fun AppleSearchHeader(
         Text(
             text = stringResource(R.string.search),
             style = com.convx.music.ui.screens.library.apple.SfStyle(34.sp, 41.sp, FontWeight.Bold, 0.4.sp),
-            color = Color.White,
+            color = com.convx.music.ui.ios.foundation.IosTheme.colors.label,
             maxLines = 1,
             modifier = Modifier.weight(1f).height(41.dp),
         )
