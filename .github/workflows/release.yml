@@ -73,8 +73,14 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p app/keystore
-          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > app/keystore/release.keystore
-          test -s app/keystore/release.keystore
+          # Remove accidental whitespace/newlines before decoding the one-line GitHub secret.
+          printf '%s' "$KEYSTORE_BASE64" | tr -d '[:space:]' | base64 --decode > app/keystore/release.keystore
+          if [[ ! -s app/keystore/release.keystore ]]; then
+            echo "::error::Decoded release keystore is empty."
+            exit 1
+          fi
+          echo "Decoded keystore size: $(wc -c < app/keystore/release.keystore | tr -d ' ') bytes"
+          file app/keystore/release.keystore
 
       - name: Validate decoded JKS keystore
         env:
