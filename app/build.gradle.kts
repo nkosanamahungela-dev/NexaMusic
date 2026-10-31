@@ -117,6 +117,7 @@ android {
             // Set STORE_PASSWORD / KEY_ALIAS / KEY_PASSWORD before a release build.
             // local.properties is gitignored, so it is a safe place to keep them.
             storeFile = file("keystore/release.keystore")
+            storeType = "JKS"
             storePassword = localProperties.getProperty("STORE_PASSWORD") ?: System.getenv("STORE_PASSWORD")
             keyAlias = localProperties.getProperty("KEY_ALIAS") ?: System.getenv("KEY_ALIAS")
             keyPassword = localProperties.getProperty("KEY_PASSWORD") ?: System.getenv("KEY_PASSWORD")
