@@ -88,15 +88,20 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         activityStarted = true
-        if (MusicService.isRunning) {
-            bindPlaybackService()
-        } else {
-            val bind = Runnable {
-                pendingPlaybackBind = null
-                if (activityStarted) bindPlaybackService()
+        lifecycleScope.launch {
+            // Do not create the playback service until Application has restored preferences.
+            (application as App).awaitStartupPreferences()
+            if (!activityStarted) return@launch
+            if (MusicService.isRunning) {
+                bindPlaybackService()
+            } else {
+                val bind = Runnable {
+                    pendingPlaybackBind = null
+                    if (activityStarted) bindPlaybackService()
+                }
+                pendingPlaybackBind = bind
+                window.decorView.postDelayed(bind, 32L)
             }
-            pendingPlaybackBind = bind
-            window.decorView.postDelayed(bind, 32L)
         }
     }
 
