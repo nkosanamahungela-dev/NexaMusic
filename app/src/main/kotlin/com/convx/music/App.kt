@@ -42,7 +42,7 @@ import com.convx.music.utils.CrashHandler
 import com.convx.music.utils.DebugLogs
 import com.convx.music.utils.cipher.CipherDeobfuscator
 import com.convx.music.utils.dataStore
-import com.convx.music.utils.get
+import com.convx.music.utils.cachedPreferenceSnapshot
 import com.convx.music.utils.migrateSharedPreferencesToMMKV
 import com.convx.music.utils.warmPreferenceMirror
 import com.convx.music.utils.reportException
@@ -113,6 +113,8 @@ class App : Application(), SingletonImageLoader.Factory {
 
         // Initialize MMKV before migrating preferences or restoring session state.
         MMKV.initialize(this)
+        // Start loading DataStore preferences immediately, without blocking the launcher thread.
+        applicationScope.launch(Dispatchers.IO) { dataStore.warmPreferenceMirror() }
         com.convx.music.ui.theme.colorengine.ColorEngine.init(this)
         // Avoid per-artwork diagnostic work in release builds.
         com.convx.music.ui.theme.colorengine.ColorEngine.setDebugEnabled(BuildConfig.DEBUG)
@@ -121,15 +123,13 @@ class App : Application(), SingletonImageLoader.Factory {
         migrateSharedPreferencesToMMKV(this, "vivi_eq_prefs")
         migrateSharedPreferencesToMMKV(this, "settings")
 
-        // Seed auth before DataStore emits. MusicService can start playback first; a null
-        // cookie would trigger guest fallback and overwrite the saved visitorData.
-        // authSeed() provides this synchronous read.
+        // Seed auth from the already-loaded MMKV/preference cache only. A cold DataStore
+        // read here used runBlocking on the main thread and could hold the launch screen
+        // for several seconds. DataStore collectors below hydrate missing cache entries.
         YouTube.cookie = authSeed(InnerTubeCookieKey)
         YouTube.visitorData = authSeed(VisitorDataKey)
         YouTube.dataSyncId = authSeed(DataSyncIdKey)
 
-        // Warm the preference mirror off Main so the first composition avoids its blocking read.
-        applicationScope.launch(Dispatchers.IO) { dataStore.warmPreferenceMirror() }
         // Spotify's native engine: report whether it loaded, without ever failing startup over it.
         applicationScope.launch(Dispatchers.IO) {
             val loaded = runCatching { com.music.spotify.nativecore.NativeBridge.initContext(this@App) }
@@ -162,12 +162,14 @@ class App : Application(), SingletonImageLoader.Factory {
     /** Mirrors session keys in MMKV to avoid a blocking DataStore read during startup. */
     private val authCache: MMKV by lazy { MMKV.mmkvWithID(AUTH_CACHE_ID) }
 
-    /** Reads DataStore once when the MMKV mirror has no value yet, such as after an upgrade. */
+    /** Non-blocking startup seed; DataStore observers fill this cache when its first snapshot arrives. */
     private fun authSeed(key: Preferences.Key<String>): String? {
         val raw = if (authCache.containsKey(key.name)) {
             authCache.decodeString(key.name, "").orEmpty()
         } else {
-            dataStore.get(key, "").also { authCache.encode(key.name, it) }
+            dataStore.cachedPreferenceSnapshot()?.get(key).orEmpty().also { value ->
+                if (value.isNotEmpty()) authCache.encode(key.name, value)
+            }
         }
         // A blank or literal "null" is a broken value, not a session — same test the
         // collectors apply, kept identical so a restore and a live update agree.
