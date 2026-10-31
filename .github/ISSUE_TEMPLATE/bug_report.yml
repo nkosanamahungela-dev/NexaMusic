@@ -1,19 +1,19 @@
 name: Bug report
-description: Something in Convx is broken
+description: Report a problem with NexaMusic
 title: "[Bug]: "
 labels: ["bug"]
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for reporting. A clear report gets fixed faster. The maintainer will add severity and area labels.
+        Thanks for helping improve NexaMusic. Please provide as much detail as you can so the issue can be reproduced and fixed.
 
   - type: checkboxes
     id: checklist
     attributes:
       label: Before you submit
       options:
-        - label: I'm using the [latest nightly build](https://github.com/cosmictaserdev-creator/Convx/releases/tag/2.0.0-nightly) (or the problem also happens on stable).
+        - label: I'm using the latest available NexaMusic release, or the problem also happens on the latest beta.
           required: true
         - label: I searched the existing issues and this isn't a duplicate.
           required: true
@@ -24,15 +24,15 @@ body:
       label: Where does it happen?
       options:
         - Player (now playing, mini player, queue)
-        - Playback (audio, streaming, crossfade, Automix)
+        - Playback (audio, streaming, crossfade)
         - Lyrics
         - Library, playlists or downloads
         - Search
         - Settings
-        - Look and animations (glass, themes)
-        - Accounts (YouTube Music, Spotify, Discord, Last.fm)
+        - Appearance and animations (Liquid Glass, themes)
+        - Accounts and integrations
         - Listen Together
-        - Network storage
+        - Radio
         - Widgets or notifications
         - Other
     validations:
@@ -55,7 +55,7 @@ body:
     attributes:
       label: Steps to reproduce
       placeholder: |
-        1. Open ...
+        1. Open NexaMusic
         2. Tap ...
         3. See the problem
     validations:
@@ -64,30 +64,30 @@ body:
   - type: textarea
     id: expected-actual
     attributes:
-      label: What you expected and what happened
+      label: What did you expect, and what happened?
       placeholder: |
         Expected: the song starts playing.
-        Actual: the app closes.
+        Actual: playback does not start.
     validations:
       required: true
 
   - type: input
     id: app-version
     attributes:
-      label: Convx version
-      description: Settings → Help & About → About. For a nightly, give the date you installed it.
-      placeholder: "2.0.0 nightly"
+      label: NexaMusic version
+      description: Enter the version shown in the app's About screen or on the release you installed.
+      placeholder: "0.1.0-beta.2"
     validations:
       required: true
 
   - type: dropdown
     id: build
     attributes:
-      label: Which build?
+      label: Which build are you using?
       options:
-        - Nightly
-        - Stable
-        - Debug build I made myself
+        - Beta
+        - Stable release
+        - Debug build
     validations:
       required: true
 
@@ -95,13 +95,13 @@ body:
     id: android-version
     attributes:
       label: Android version and device
-      placeholder: "Android 15, Pixel 8"
+      placeholder: "Android 15, Samsung Galaxy ..."
     validations:
       required: true
 
   - type: textarea
     id: logs
     attributes:
-      label: Logs, screenshots or a recording
-      description: For a crash, paste the report from Settings → Help & About → Crash report, or `adb logcat` output. Drag screenshots or a screen recording here.
+      label: Logs, screenshots or a screen recording
+      description: Attach screenshots or a recording if they help explain the issue. Remove personal information before sharing logs.
       render: shell
