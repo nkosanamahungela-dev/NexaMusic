@@ -226,6 +226,7 @@ fun OnlineSearchResult(
             },
             isPlaying = isPlaying,
             flat = true,
+            subtitleColor = if (com.convx.music.ui.ios.foundation.IosTheme.colors.isDark) null else Color(0xFF6E6E73),
             shape = listItemShape(index, size),
             trailingContent = {
                 IconButton(
@@ -281,7 +282,7 @@ fun OnlineSearchResult(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppTheme.colorScheme.background)
+            .background(com.convx.music.ui.ios.foundation.IosTheme.colors.systemBackground)
     ) {
         if (hasCustomHomeBackground()) {
             // Matches Home/Library: the user's own picture, not this screen's
@@ -312,7 +313,7 @@ fun OnlineSearchResult(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.45f))
+                    .background(com.convx.music.ui.ios.foundation.IosTheme.colors.systemBackground.copy(alpha = 0.45f))
             )
         }
 
