@@ -47,6 +47,7 @@ import com.convx.music.ui.ios.compat.Text
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -60,6 +61,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -199,7 +202,38 @@ fun SearchScreen(
 
     // Keep the browse page and results page on the same system background.
     val colors = com.convx.music.ui.ios.foundation.IosTheme.colors
-    val statusTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val context = LocalContext.current
+    val view = LocalView.current
+    val window = (context as? android.app.Activity)?.window
+    val statusTop = WindowInsets.safeDrawing.only(WindowInsetsSides.Top)
+        .asPaddingValues().calculateTopPadding()
+
+    // Search uses the app's resolved appearance, even when it differs from Android's setting.
+    DisposableEffect(window, view) {
+        val controller = window?.let { androidx.core.view.WindowCompat.getInsetsController(it, view) }
+        val previousLightStatus = controller?.isAppearanceLightStatusBars
+        val previousLightNavigation = controller?.isAppearanceLightNavigationBars
+        val previousStatusColor = window?.statusBarColor
+        val previousNavigationColor = window?.navigationBarColor
+        onDispose {
+            if (controller != null) {
+                previousLightStatus?.let { controller.isAppearanceLightStatusBars = it }
+                previousLightNavigation?.let { controller.isAppearanceLightNavigationBars = it }
+            }
+            previousStatusColor?.let { window?.statusBarColor = it }
+            previousNavigationColor?.let { window?.navigationBarColor = it }
+        }
+    }
+    SideEffect {
+        window?.let {
+            androidx.core.view.WindowCompat.getInsetsController(it, view).apply {
+                isAppearanceLightStatusBars = !colors.isDark
+                isAppearanceLightNavigationBars = !colors.isDark
+            }
+            it.statusBarColor = android.graphics.Color.TRANSPARENT
+            it.navigationBarColor = android.graphics.Color.TRANSPARENT
+        }
+    }
     // Respect the real status-bar/cutout inset on every device, with 8dp breathing room.
     val titleTop = statusTop + 8.dp
     val bottomPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues().calculateBottomPadding()
