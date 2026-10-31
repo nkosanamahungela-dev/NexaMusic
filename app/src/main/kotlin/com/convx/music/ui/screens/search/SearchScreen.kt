@@ -263,7 +263,8 @@ fun SearchScreen(
             TopFadeBlur(
                 hazeState = browseHaze,
                 pageColor = colors.systemBackground,
-                scrimColor = colors.systemBackground.copy(alpha = 0.9f),
+                scrimColor = colors.systemBackground,
+                scrimOpacity = 0.9f,
                 modifier = Modifier.align(Alignment.TopCenter),
                 heightOverride = statusTop,
             )
@@ -575,7 +576,7 @@ private fun SourceSwitch(
                     style = com.convx.music.ui.screens.library.apple.SfStyle(
                         14.sp, 18.sp, FontWeight.SemiBold, (-0.1).sp,
                     ),
-                    color = if (selected) colors.label else colors.secondaryLabel,
+                    color = if (colors.isDark || selected) colors.label else colors.secondaryLabel,
                     maxLines = 1,
                 )
             }
