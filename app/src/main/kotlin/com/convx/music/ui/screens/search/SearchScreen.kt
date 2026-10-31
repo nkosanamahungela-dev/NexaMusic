@@ -507,6 +507,7 @@ private fun SourceSwitch(
         modifier = modifier
             .fillMaxWidth()
             .height(50.dp)
+            .then(if (colors.isDark) Modifier else Modifier.background(Color(0xFFE5E5EA), CircleShape))
             .iosGlass(shape = CircleShape,
                 spec = com.convx.music.ui.ios.foundation.IosGlassSpec.Control,
                 interactive = true, backdrop = backdrop,
@@ -540,7 +541,7 @@ private fun SourceSwitch(
                     style = com.convx.music.ui.screens.library.apple.SfStyle(
                         14.sp, 18.sp, FontWeight.SemiBold, (-0.1).sp,
                     ),
-                    color = colors.label,
+                    color = if (selected) colors.label else colors.secondaryLabel,
                     maxLines = 1,
                 )
             }
