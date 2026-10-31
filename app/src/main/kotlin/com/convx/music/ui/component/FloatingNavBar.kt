@@ -446,7 +446,8 @@ private fun SearchBarPlaceholder(
     useGlass: Boolean = true,
 ) {
     // Plus-blend chrome only reads on dark: added to a light surface it disappears.
-    val additiveOk = glassUsesDarkAppearance()
+    val isDark = glassUsesDarkAppearance()
+    val additiveOk = isDark
     // Same finger-tracking glow as the keyboard-active pill (NavBarSearchInputBar)
     // and the normal search circle (ExpandedStandaloneTab/InlineStandaloneTab).
     val glowScope = rememberCoroutineScope()
@@ -483,7 +484,7 @@ private fun SearchBarPlaceholder(
             } else {
                 DynamicSearchPlaceholder(
                     searchSource = state.searchSource,
-                    style = TextStyle(color = contentColor.copy(alpha = 0.6f), fontSize = 17.sp),
+                    style = TextStyle(color = if (isDark) contentColor.copy(alpha = 0.6f) else Color(0xFF6E6E73), fontSize = 17.sp),
                 )
             }
         }
@@ -581,9 +582,9 @@ fun NavBarSearchInputBar(
                     Modifier.background(onTint.copy(alpha = 0.15f))
                 } else {
                     Modifier.background(Color(0xFFF2F2F7))
-                        .border(1.dp, IosTheme.colors.separator, pillShape)
                 }
             )
+            .then(if (isDark) Modifier else Modifier.border(1.dp, IosTheme.colors.separator, pillShape))
             .then(pillGlow.gestureModifier)
             .then(pillGlow.modifier)
             .padding(start = 11.dp, end = 10.dp)
