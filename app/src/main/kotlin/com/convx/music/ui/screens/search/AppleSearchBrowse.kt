@@ -141,6 +141,7 @@ fun AppleSearchBrowse(
 ) {
     val categories by viewModel.categories.collectAsStateWithLifecycle()
     val art by viewModel.art.collectAsStateWithLifecycle()
+    val themeColors = com.convx.music.ui.ios.foundation.IosTheme.colors
     val items = categories.orEmpty()
 
     BoxWithConstraints(Modifier.fillMaxSize()) {
@@ -170,18 +171,18 @@ fun AppleSearchBrowse(
                         rowItems(recentSearches, key = { it }) { query ->
                             Row(
                                 Modifier.clip(CircleShape)
-                                    .background(Color(0xFF19191B))
+                                    .background(themeColors.secondarySystemBackground)
                                     .clickable { onRecentSearchClick(query) }
                                     .padding(horizontal = 12.dp, vertical = 9.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(7.dp),
                             ) {
                                 Canvas(Modifier.size(14.dp)) {
-                                    drawCircle(SearchPalette.Secondary, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.4.dp.toPx()))
-                                    drawLine(SearchPalette.Secondary, center, androidx.compose.ui.geometry.Offset(center.x, size.height * .25f), 1.4.dp.toPx())
-                                    drawLine(SearchPalette.Secondary, center, androidx.compose.ui.geometry.Offset(size.width * .7f, center.y), 1.4.dp.toPx())
+                                    drawCircle(themeColors.secondaryLabel, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.4.dp.toPx()))
+                                    drawLine(themeColors.secondaryLabel, center, androidx.compose.ui.geometry.Offset(center.x, size.height * .25f), 1.4.dp.toPx())
+                                    drawLine(themeColors.secondaryLabel, center, androidx.compose.ui.geometry.Offset(size.width * .7f, center.y), 1.4.dp.toPx())
                                 }
-                                Text(query, color = Color.White, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                Text(query, color = themeColors.label, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                             }
                         }
                     }
@@ -192,7 +193,7 @@ fun AppleSearchBrowse(
                     Text(
                         "Moods & moments",
                         style = SfStyle(22.sp, 28.sp, FontWeight.Bold, (-0.45).sp),
-                        color = Color.White,
+                        color = themeColors.label,
                         modifier = Modifier.padding(top = 8.dp, bottom = 2.dp),
                     )
                 }
@@ -218,7 +219,7 @@ fun AppleSearchBrowse(
                     Text(
                         "Browse all",
                         style = SfStyle(22.sp, 28.sp, FontWeight.Bold, (-0.45).sp),
-                        color = Color.White,
+                        color = themeColors.label,
                         modifier = Modifier.padding(top = 14.dp, bottom = 2.dp),
                     )
                 }
@@ -242,7 +243,7 @@ fun AppleSearchBrowse(
             } else {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Box(Modifier.fillMaxWidth().height(220.dp), contentAlignment = Alignment.Center) {
-                        Text("Loading moods & genres…", color = SearchPalette.Secondary)
+                        Text("Loading moods & genres…", color = themeColors.secondaryLabel)
                     }
                 }
             }
