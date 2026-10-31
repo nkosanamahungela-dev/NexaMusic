@@ -171,15 +171,15 @@ fun AppleSearchBrowse(
                         rowItems(recentSearches, key = { it }) { query ->
                             Row(
                                 Modifier.clip(CircleShape)
-                                    .background(themeColors.secondarySystemBackground)
+                                    .background(if (themeColors.isDark) Color(0xFF19191B) else themeColors.secondarySystemBackground)
                                     .clickable { onRecentSearchClick(query) }
                                     .padding(horizontal = 12.dp, vertical = 9.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(7.dp),
                             ) {
                                 Canvas(Modifier.size(14.dp)) {
-                                    drawCircle(themeColors.secondaryLabel, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.4.dp.toPx()))
-                                    drawLine(themeColors.secondaryLabel, center, androidx.compose.ui.geometry.Offset(center.x, size.height * .25f), 1.4.dp.toPx())
+                                    drawCircle(if (themeColors.isDark) SearchPalette.Secondary else Color(0xFF6E6E73), style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.4.dp.toPx()))
+                                    drawLine(if (themeColors.isDark) SearchPalette.Secondary else Color(0xFF6E6E73), center, androidx.compose.ui.geometry.Offset(center.x, size.height * .25f), 1.4.dp.toPx())
                                     drawLine(themeColors.secondaryLabel, center, androidx.compose.ui.geometry.Offset(size.width * .7f, center.y), 1.4.dp.toPx())
                                 }
                                 Text(query, color = themeColors.label, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
