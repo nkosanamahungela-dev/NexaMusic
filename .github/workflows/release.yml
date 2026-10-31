@@ -1,4 +1,4 @@
-name: Stable Release Build
+name: NexaMusic Pre-release Build
 
 on:
   push:
@@ -16,12 +16,13 @@ permissions:
 
 jobs:
   build_stable:
-    name: Build Universal GMS Stable Release
+    name: Build Universal GMS Release
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
           submodules: recursive
 
       - name: Set up JDK 21
@@ -34,9 +35,6 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           cache-disabled: true
-
-      - name: Setup FFTW for Android
-        uses: ./.github/actions/setup-fftw
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -54,12 +52,29 @@ jobs:
             -validity 10000 \
             -dname "CN=Android Debug,O=Android,C=US"
 
+      - name: Validate release signing secrets
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE }}
+          STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          for name in KEYSTORE_BASE64 STORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
+            if [[ -z "${!name}" ]]; then
+              echo "::error::Required GitHub Actions secret $name is missing."
+              exit 1
+            fi
+          done
+
       - name: Decode release keystore
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE }}
         run: |
+          set -euo pipefail
           mkdir -p app/keystore
-          echo "$KEYSTORE_BASE64" | base64 -d > app/keystore/release.keystore
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > app/keystore/release.keystore
+          test -s app/keystore/release.keystore
 
       - name: Build Universal GMS Release APK
         env:
@@ -71,11 +86,47 @@ jobs:
         run: |
           ./gradlew assembleUniversalGmsRelease --no-configuration-cache --console=plain --warning-mode summary -x lint
 
-      - name: Upload APK to Release
+      - name: Create pre-release and upload signed APK
         env:
           GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
         run: |
-          TAG="${{ github.event.inputs.tag || github.ref_name }}"
-          APK_PATH=$(find app/build/outputs/apk -name '*.apk' | head -n 1)
-          mv "$APK_PATH" "convx-${TAG}.apk"
-          gh release upload "$TAG" "convx-${TAG}.apk" --repo "${{ github.repository }}" --clobber
+          set -euo pipefail
+
+          VERSION_NAME=$(grep -E '^VERSION_(MAJOR|MINOR|PATCH)=' version.properties | awk -F= '
+            /^VERSION_MAJOR=/ { major=$2 }
+            /^VERSION_MINOR=/ { minor=$2 }
+            /^VERSION_PATCH=/ { patch=$2 }
+            END { printf "%s.%s.%s", major, minor, patch }
+          ')
+          if [[ "$RELEASE_TAG" != "v${VERSION_NAME}"* ]]; then
+            echo "::error::Tag $RELEASE_TAG does not match app version $VERSION_NAME."
+            exit 1
+          fi
+
+          APK_PATH="app/build/outputs/apk/universalGms/release/app-universal-gms-release.apk"
+          if [[ ! -s "$APK_PATH" ]]; then
+            echo "::error::Expected signed Release APK was not produced at $APK_PATH."
+            find app/build/outputs/apk -type f -name '*.apk' -print
+            exit 1
+          fi
+
+          APK_NAME="nexamusic-${RELEASE_TAG}.apk"
+          cp "$APK_PATH" "$APK_NAME"
+
+          if gh release view "$RELEASE_TAG" --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            IS_PRERELEASE=$(gh release view "$RELEASE_TAG" --repo "${{ github.repository }}" --json isPrerelease --jq '.isPrerelease')
+            if [[ "$IS_PRERELEASE" != "true" ]]; then
+              echo "::error::Refusing to upload a beta APK to an existing non-prerelease release."
+              exit 1
+            fi
+          else
+            gh release create "$RELEASE_TAG" "$APK_NAME" \
+              --repo "${{ github.repository }}" \
+              --title "NexaMusic ${RELEASE_TAG}" \
+              --notes "NexaMusic pre-release build. Please report bugs and device compatibility issues." \
+              --prerelease
+            exit 0
+          fi
+
+          gh release upload "$RELEASE_TAG" "$APK_NAME" --repo "${{ github.repository }}" --clobber

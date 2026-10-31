@@ -42,13 +42,13 @@ import com.convx.music.utils.CrashHandler
 import com.convx.music.utils.DebugLogs
 import com.convx.music.utils.cipher.CipherDeobfuscator
 import com.convx.music.utils.dataStore
-import com.convx.music.utils.get
 import com.convx.music.utils.migrateSharedPreferencesToMMKV
 import com.convx.music.utils.warmPreferenceMirror
 import com.convx.music.utils.reportException
 import com.tencent.mmkv.MMKV
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
@@ -72,6 +72,10 @@ class App : Application(), SingletonImageLoader.Factory {
 
     @Inject
     lateinit var networkRepository: dagger.Lazy<com.convx.storage.data.NetworkMusicRepository>
+
+    private val startupPreferencesReady = CompletableDeferred<Unit>()
+
+    suspend fun awaitStartupPreferences() = startupPreferencesReady.await()
 
     override fun onCreate() {
         super.onCreate()
@@ -113,6 +117,8 @@ class App : Application(), SingletonImageLoader.Factory {
 
         // Initialize MMKV before migrating preferences or restoring session state.
         MMKV.initialize(this)
+        // Start loading DataStore preferences immediately, without blocking the launcher thread.
+        applicationScope.launch(Dispatchers.IO) { dataStore.warmPreferenceMirror() }
         com.convx.music.ui.theme.colorengine.ColorEngine.init(this)
         // Avoid per-artwork diagnostic work in release builds.
         com.convx.music.ui.theme.colorengine.ColorEngine.setDebugEnabled(BuildConfig.DEBUG)
@@ -121,15 +127,6 @@ class App : Application(), SingletonImageLoader.Factory {
         migrateSharedPreferencesToMMKV(this, "vivi_eq_prefs")
         migrateSharedPreferencesToMMKV(this, "settings")
 
-        // Seed auth before DataStore emits. MusicService can start playback first; a null
-        // cookie would trigger guest fallback and overwrite the saved visitorData.
-        // authSeed() provides this synchronous read.
-        YouTube.cookie = authSeed(InnerTubeCookieKey)
-        YouTube.visitorData = authSeed(VisitorDataKey)
-        YouTube.dataSyncId = authSeed(DataSyncIdKey)
-
-        // Warm the preference mirror off Main so the first composition avoids its blocking read.
-        applicationScope.launch(Dispatchers.IO) { dataStore.warmPreferenceMirror() }
         // Spotify's native engine: report whether it loaded, without ever failing startup over it.
         applicationScope.launch(Dispatchers.IO) {
             val loaded = runCatching { com.music.spotify.nativecore.NativeBridge.initContext(this@App) }
@@ -154,33 +151,26 @@ class App : Application(), SingletonImageLoader.Factory {
         }
 
         applicationScope.launch {
-            initializeSettings()
-            observeSettingsChanges()
+            try {
+                initializeSettings()
+                observeSettingsChanges()
+            } finally {
+                // Activities can wait without blocking Main, so playback never starts
+                // against an unhydrated account/session state.
+                startupPreferencesReady.complete(Unit)
+            }
         }
-    }
-
-    /** Mirrors session keys in MMKV to avoid a blocking DataStore read during startup. */
-    private val authCache: MMKV by lazy { MMKV.mmkvWithID(AUTH_CACHE_ID) }
-
-    /** Reads DataStore once when the MMKV mirror has no value yet, such as after an upgrade. */
-    private fun authSeed(key: Preferences.Key<String>): String? {
-        val raw = if (authCache.containsKey(key.name)) {
-            authCache.decodeString(key.name, "").orEmpty()
-        } else {
-            dataStore.get(key, "").also { authCache.encode(key.name, it) }
-        }
-        // A blank or literal "null" is a broken value, not a session — same test the
-        // collectors apply, kept identical so a restore and a live update agree.
-        return raw.takeIf { it.isNotBlank() && it != "null" }
-    }
-
-    /** Mirrors one session key into [authCache]. Called from the collectors. */
-    private fun cacheAuthValue(key: Preferences.Key<String>, value: String?) {
-        authCache.encode(key.name, value.orEmpty())
     }
 
     private suspend fun initializeSettings() {
         val settings = dataStore.data.first()
+
+        // Restore authentication from the first DataStore snapshot off the launcher
+        // thread, before the UI is allowed to start playback.
+        YouTube.cookie = settings[InnerTubeCookieKey]?.takeIf { it.isNotBlank() && it != "null" }
+        YouTube.visitorData = settings[VisitorDataKey]?.takeIf { it.isNotBlank() && it != "null" }
+        YouTube.dataSyncId = settings[DataSyncIdKey]
+
         val locale = Locale.getDefault()
         val languageTag = locale.language
 
@@ -259,7 +249,6 @@ class App : Application(), SingletonImageLoader.Factory {
                                 settings[VisitorDataKey] = newVisitorData
                             }
                         }
-                    cacheAuthValue(VisitorDataKey, YouTube.visitorData)
                 }
         }
 
@@ -270,7 +259,6 @@ class App : Application(), SingletonImageLoader.Factory {
                 .collect { dataSyncId ->
                     // Keep the full sync ID; truncating it resets channel selection.
                     YouTube.dataSyncId = dataSyncId
-                    cacheAuthValue(DataSyncIdKey, dataSyncId)
                 }
         }
 
@@ -281,7 +269,6 @@ class App : Application(), SingletonImageLoader.Factory {
                 .collect { cookie ->
                     try {
                         YouTube.cookie = cookie?.takeIf { it.isNotBlank() && it != "null" }
-                        cacheAuthValue(InnerTubeCookieKey, cookie)
                     } catch (e: Exception) {
                         Timber.e(e, "Could not parse cookie. Clearing existing cookie.")
                         forgetAccount(this@App)
@@ -405,9 +392,6 @@ class App : Application(), SingletonImageLoader.Factory {
     }
 
     companion object {
-        /** MMKV file backing [authSeed]. Cache only — DataStore owns these values. */
-        private const val AUTH_CACHE_ID = "auth_seed"
-
         suspend fun forgetAccount(context: Context) {
             Timber.d("forgetAccount: Starting logout process")
 

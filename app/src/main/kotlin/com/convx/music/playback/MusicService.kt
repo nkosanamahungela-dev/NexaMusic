@@ -590,8 +590,11 @@ class MusicService :
             } == true
 
             if (hasBluetooth) {
-                if (dataStore.get(ResumeOnBluetoothConnectKey, false)) {
-                    if (player.playbackState == Player.STATE_READY && !player.isPlaying) {
+                scope.launch {
+                    val shouldResume = dataStore.data
+                        .map { it[ResumeOnBluetoothConnectKey] ?: false }
+                        .first()
+                    if (shouldResume && player.playbackState == Player.STATE_READY && !player.isPlaying) {
                         player.play()
                     }
                 }
@@ -707,13 +710,25 @@ class MusicService :
         audioManager.registerAudioDeviceCallback(audioDeviceCallback, null)
         onOutputChanged()
 
-        audioQuality = dataStore.get(AudioQualityKey).toEnum(com.convx.music.constants.AudioQuality.AUTO)
-        ipVersion = dataStore.get(IpVersionKey).toEnum(IpVersion.AUTO)
-        // A saved volume of ~0 would come back silent on every launch with no on-screen way to tell
-        // (the system volume does not touch this one), so only an audible value is restored.
-        playerVolume = MutableStateFlow(
-            dataStore.get(PlayerVolumeKey, 1f).coerceIn(0f, 1f).takeIf { it >= MIN_AUDIBLE_VOLUME } ?: 1f,
-        )
+        // Start with safe defaults; restore persisted values asynchronously so a cold
+        // service start never blocks Main while DataStore opens its first snapshot.
+        audioQuality = com.convx.music.constants.AudioQuality.AUTO
+        ipVersion = IpVersion.IPV4
+        playerVolume = MutableStateFlow(1f)
+        scope.launch {
+            val preferences = dataStore.data.first()
+            audioQuality = preferences[AudioQualityKey].toEnum(com.convx.music.constants.AudioQuality.AUTO)
+            ipVersion = preferences[IpVersionKey].toEnum(IpVersion.AUTO)
+            // Ignore an accidentally persisted near-zero volume; it would make playback
+            // appear silent with no visible indication to the user.
+            playerVolume.value = (preferences[PlayerVolumeKey] ?: 1f)
+                .coerceIn(0f, 1f)
+                .takeIf { it >= MIN_AUDIBLE_VOLUME } ?: 1f
+            player.repeatMode = preferences[RepeatModeKey] ?: REPEAT_MODE_OFF
+            if (preferences[RememberShuffleAndRepeatKey] ?: true) {
+                player.shuffleModeEnabled = preferences[ShuffleModeKey] ?: false
+            }
+        }
 
         // Defer Cast initialization until after startup; it can block the main thread.
         scope.launch {
@@ -1088,27 +1103,32 @@ class MusicService :
     }
 
     private fun restorePersistentPlaybackState() {
-        if (!dataStore.get(PersistentQueueKey, true)) return
+        scope.launch {
+            val shouldRestore = dataStore.data
+                .map { it[PersistentQueueKey] ?: true }
+                .first()
+            if (!shouldRestore) return@launch
 
-        persistenceScope.launch {
-            val snapshot = readPersistedPlaybackSnapshot() ?: return@launch
-            scope.launch {
-                snapshot.automix?.let { savedAutomix ->
-                    automixItems.value = savedAutomix.items.map { it.toMediaItem() }
-                }
-
-                snapshot.playerState?.let { savedState ->
-                    // A muted or ducked snapshot contains the effective player volume.
-                    if (savedState.volume > 0f) playerVolume.value = savedState.volume
-                }
-
-                val savedQueue = snapshot.queue ?: return@launch
-                playerInitialized.first { it }
-                if (isActive) {
-                    val restoredQueue = withContext(Dispatchers.IO) {
-                        savedQueue.toQueue(database)
+            persistenceScope.launch {
+                val snapshot = readPersistedPlaybackSnapshot() ?: return@launch
+                scope.launch {
+                    snapshot.automix?.let { savedAutomix ->
+                        automixItems.value = savedAutomix.items.map { it.toMediaItem() }
                     }
-                    playQueue(queue = restoredQueue, playWhenReady = false)
+
+                    snapshot.playerState?.let { savedState ->
+                        // A muted or ducked snapshot contains the effective player volume.
+                        if (savedState.volume > 0f) playerVolume.value = savedState.volume
+                    }
+
+                    val savedQueue = snapshot.queue ?: return@launch
+                    playerInitialized.first { it }
+                    if (isActive) {
+                        val restoredQueue = withContext(Dispatchers.IO) {
+                            savedQueue.toQueue(database)
+                        }
+                        playQueue(queue = restoredQueue, playWhenReady = false)
+                    }
                 }
             }
         }
@@ -1336,11 +1356,7 @@ class MusicService :
                     ),
                 ).setBitmapLoader(CoilBitmapLoader(this, scope))
                 .build()
-        player.repeatMode = dataStore.get(RepeatModeKey, REPEAT_MODE_OFF)
-
-        if (dataStore.get(RememberShuffleAndRepeatKey, true)) {
-            player.shuffleModeEnabled = dataStore.get(ShuffleModeKey, false)
-        }
+        // Repeat and shuffle preferences are restored asynchronously after service creation.
 
         val sessionToken = SessionToken(this, ComponentName(this, MusicService::class.java))
         val controllerFuture = MediaController.Builder(this, sessionToken).buildAsync()

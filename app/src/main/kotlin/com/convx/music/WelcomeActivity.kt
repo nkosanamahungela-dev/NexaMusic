@@ -149,7 +149,7 @@ import com.convx.music.constants.IsFirstRunKey
 import com.convx.music.ui.theme.ConvxTheme
 import com.convx.music.ui.utils.safeOpenUri
 import com.convx.music.utils.dataStore
-import com.convx.music.utils.get
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
@@ -164,31 +164,38 @@ class WelcomeActivity : ComponentActivity() {
         installSplashScreen()
         super.onCreate(savedInstanceState)
 
-        val isFirstRun = dataStore.get(IsFirstRunKey, true)
         val forceShow = intent.getBooleanExtra("FORCE_SHOW", false)
 
-        if (!isFirstRun && !forceShow) {
-            finishOnboarding()
-            return
-        }
+        // Read onboarding state asynchronously; the synchronous DataStore helper can
+        // block the main thread on a cold launch while its first snapshot is loading.
+        lifecycleScope.launch {
+            val isFirstRun = dataStore.data
+                .map { it[IsFirstRunKey] ?: true }
+                .first()
 
-        enableEdgeToEdge()
-        setContent {
-            ConvxTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = AppTheme.colorScheme.background
-                ) {
-                    WelcomePagerScreen(onFinished = {
-                        lifecycleScope.launch {
-                            dataStore.edit { it[IsFirstRunKey] = false }
-                            if (forceShow) {
-                                finish()
-                            } else {
-                                finishOnboarding()
+            if (!isFirstRun && !forceShow) {
+                finishOnboarding()
+                return@launch
+            }
+
+            enableEdgeToEdge()
+            setContent {
+                ConvxTheme {
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = AppTheme.colorScheme.background
+                    ) {
+                        WelcomePagerScreen(onFinished = {
+                            lifecycleScope.launch {
+                                dataStore.edit { it[IsFirstRunKey] = false }
+                                if (forceShow) {
+                                    finish()
+                                } else {
+                                    finishOnboarding()
+                                }
                             }
-                        }
-                    })
+                        })
+                    }
                 }
             }
         }
