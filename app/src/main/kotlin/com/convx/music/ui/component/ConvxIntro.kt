@@ -21,6 +21,9 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.VectorPath
@@ -52,7 +55,7 @@ fun ConvxIntro(onFinished: () -> Unit) {
 
     LaunchedEffect(reducedMotion) {
         if (reducedMotion) {
-            // Show the finished brand state briefly for users who prefer reduced motion.
+            // Reduced motion: show the finished composition, hold for one second, then fade.
             var elapsed = 0f
             var last = withFrameNanos { it }
             while (elapsed < REDUCED_HOLD_MS) {
@@ -60,14 +63,14 @@ fun ConvxIntro(onFinished: () -> Unit) {
                 elapsed += ((now - last) / 1_000_000f).coerceAtMost(MAX_FRAME_STEP_MS)
                 last = now
             }
-        } else {
-            var last = withFrameNanos { it }
-            while (clock.floatValue < TOTAL_MS) {
-                val now = withFrameNanos { it }
-                val delta = ((now - last) / 1_000_000f).coerceAtMost(MAX_FRAME_STEP_MS)
-                last = now
-                clock.floatValue = (clock.floatValue + delta).coerceAtMost(TOTAL_MS)
-            }
+            clock.floatValue = MIN_HOLD_MS
+        }
+        var last = withFrameNanos { it }
+        while (clock.floatValue < TOTAL_MS) {
+            val now = withFrameNanos { it }
+            val delta = ((now - last) / 1_000_000f).coerceAtMost(MAX_FRAME_STEP_MS)
+            last = now
+            clock.floatValue = (clock.floatValue + delta).coerceAtMost(TOTAL_MS)
         }
         onFinished()
     }
@@ -96,11 +99,14 @@ fun ConvxIntro(onFinished: () -> Unit) {
         }
     }
 
-    Canvas(Modifier.fillMaxSize()) {
+    Canvas(
+        Modifier.fillMaxSize().graphicsLayer {
+            alpha = 1f - easeIn(phase(clock.floatValue, MIN_HOLD_MS, TOTAL_MS))
+        },
+    ) {
         drawRect(Mint)
 
         val t = if (reducedMotion) TOTAL_MS - EXIT_MS else clock.floatValue
-        val density = density
         val logoWidth = minOf(size.width * 0.48f, 200.dp.toPx())
         val logoHeight = logoWidth * (logoViewportHeight / logoViewportWidth)
         val wordSize = 46.sp.toPx()
@@ -206,16 +212,8 @@ fun ConvxIntro(onFinished: () -> Unit) {
                 )
             }
 
-            // Fade the entire intro during its final 700 ms.
-            if (exit < 1f) {
-                drawRect(Color.Transparent)
-            }
         }
 
-        // Apply the exit fade as a flat mint veil, keeping the first app screen underneath.
-        if (exit > 0f) {
-            drawRect(Mint.copy(alpha = easeIn(exit)))
-        }
     }
 }
 
