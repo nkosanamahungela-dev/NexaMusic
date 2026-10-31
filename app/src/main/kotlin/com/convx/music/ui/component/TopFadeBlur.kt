@@ -73,6 +73,7 @@ fun TopFadeBlur(
     pageColor: Color,
     modifier: Modifier = Modifier,
     scrimColor: Color = pageColor,
+    scrimOpacity: Float = SCRIM_PEAK,
     // Use this for strips that do not include the status bar.
     heightOverride: Dp? = null,
     /** Optional app backdrop. Use only when this strip is outside its recorded subtree. */
@@ -112,7 +113,7 @@ fun TopFadeBlur(
             preferPerformance = true,
         )
     }
-    val scrim = remember(scrimColor) { scrimBrush(scrimColor) }
+    val scrim = remember(scrimColor, scrimOpacity) { scrimBrush(scrimColor, scrimOpacity) }
     val sideFade = if (startFade > 0.dp) {
         Modifier
             .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
@@ -136,7 +137,7 @@ fun TopFadeBlur(
         if (blurStyle == TopBarBlurStyle.SINGLE_PASS && backdrop != null &&
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
         ) {
-            DirectTopFadeBlur(backdrop, pageColor, scrimColor, height, solid, Modifier.graphicsLayer())
+            DirectTopFadeBlur(backdrop, pageColor, scrimColor, scrimOpacity, height, solid, Modifier.graphicsLayer())
         } else {
             Box(
                 Modifier
@@ -158,10 +159,10 @@ fun TopFadeBlur(
     }
 }
 
-private fun scrimBrush(scrimColor: Color) = Brush.verticalGradient(
+private fun scrimBrush(scrimColor: Color, opacity: Float = SCRIM_PEAK) = Brush.verticalGradient(
     colorStops = Array(SCRIM_STOPS) { i ->
         val t = i / (SCRIM_STOPS - 1f)
-        t to scrimColor.copy(alpha = SCRIM_PEAK * (1f - EaseOutCubic.transform(t)))
+        t to scrimColor.copy(alpha = opacity * (1f - EaseOutCubic.transform(t)))
     },
 )
 
@@ -172,6 +173,7 @@ private fun DirectTopFadeBlur(
     backdrop: Backdrop,
     pageColor: Color,
     scrimColor: Color,
+    scrimOpacity: Float,
     height: Dp,
     solid: Float,
     modifier: Modifier,
@@ -200,7 +202,7 @@ private fun DirectTopFadeBlur(
             },
         )
     }
-    val scrim = remember(scrimColor) { scrimBrush(scrimColor) }
+    val scrim = remember(scrimColor, scrimOpacity) { scrimBrush(scrimColor, scrimOpacity) }
     // Vary the blur radius by vertical position, then fade to the sharp page at the bottom.
     Box(
         modifier = modifier
