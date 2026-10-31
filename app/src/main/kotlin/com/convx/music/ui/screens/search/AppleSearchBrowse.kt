@@ -180,7 +180,7 @@ fun AppleSearchBrowse(
                                 Canvas(Modifier.size(14.dp)) {
                                     drawCircle(if (themeColors.isDark) SearchPalette.Secondary else Color(0xFF6E6E73), style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.4.dp.toPx()))
                                     drawLine(if (themeColors.isDark) SearchPalette.Secondary else Color(0xFF6E6E73), center, androidx.compose.ui.geometry.Offset(center.x, size.height * .25f), 1.4.dp.toPx())
-                                    drawLine(themeColors.secondaryLabel, center, androidx.compose.ui.geometry.Offset(size.width * .7f, center.y), 1.4.dp.toPx())
+                                    drawLine(if (themeColors.isDark) SearchPalette.Secondary else Color(0xFF6E6E73), center, androidx.compose.ui.geometry.Offset(size.width * .7f, center.y), 1.4.dp.toPx())
                                 }
                                 Text(query, color = themeColors.label, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                             }
@@ -243,7 +243,7 @@ fun AppleSearchBrowse(
             } else {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Box(Modifier.fillMaxWidth().height(220.dp), contentAlignment = Alignment.Center) {
-                        Text("Loading moods & genres…", color = themeColors.secondaryLabel)
+                        Text("Loading moods & genres…", color = if (themeColors.isDark) SearchPalette.Secondary else Color(0xFF6E6E73))
                     }
                 }
             }
