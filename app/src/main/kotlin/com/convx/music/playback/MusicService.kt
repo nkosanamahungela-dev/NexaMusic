@@ -590,8 +590,11 @@ class MusicService :
             } == true
 
             if (hasBluetooth) {
-                if (dataStore.get(ResumeOnBluetoothConnectKey, false)) {
-                    if (player.playbackState == Player.STATE_READY && !player.isPlaying) {
+                scope.launch {
+                    val shouldResume = dataStore.data
+                        .map { it[ResumeOnBluetoothConnectKey] ?: false }
+                        .first()
+                    if (shouldResume && player.playbackState == Player.STATE_READY && !player.isPlaying) {
                         player.play()
                     }
                 }
