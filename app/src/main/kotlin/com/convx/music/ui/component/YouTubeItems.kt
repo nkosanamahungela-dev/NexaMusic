@@ -259,7 +259,7 @@ fun YouTubeGridItem(
                 style = AppTheme.typography.bodySmall,
                 fontSize = 15.sp,
                 lineHeight = 20.sp,
-                color = AppTheme.colorScheme.onSurfaceVariant,
+                color = AppleTokens.Metadata,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
