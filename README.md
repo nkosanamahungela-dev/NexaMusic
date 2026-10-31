@@ -3,7 +3,12 @@
   <h1>NexaMusic</h1>
   <p><strong>An open-source Android music player with a calm, glass-inspired interface.</strong></p>
   <p>
-    <img src="https://img.shields.io/badge/Release-Coming%20Soon-5268D8?style=for-the-badge&logo=android&logoColor=white" alt="NexaMusic release coming soon">
+    <a href="https://github.com/nkosanamahungela-dev/NexaMusic/releases">
+      <img src="https://img.shields.io/github/v/release/nkosanamahungela-dev/NexaMusic?include_prereleases&display_name=tag&style=for-the-badge&logo=android&logoColor=white" alt="View the latest NexaMusic release">
+    </a>
+    <a href="https://github.com/nkosanamahungela-dev/NexaMusic/releases">
+      <img src="https://img.shields.io/github/downloads/nkosanamahungela-dev/NexaMusic/total?label=Downloads&style=for-the-badge&logo=github&logoColor=white" alt="Total NexaMusic release asset downloads">
+    </a>
   </p>
   <p>
     <a href="https://discord.gg/D8fYQKUEzw">
@@ -46,9 +51,13 @@ NexaMusic brings music discovery, playback, lyrics, and your library together in
 - Cupertino-style controls built for NexaMusic's interface and Android interaction patterns.
 - Adaptive themes and layouts for phones and wider screens.
 
-## Release status
+## Download NexaMusic
 
-**NexaMusic is coming soon.** Download links will be added here when a release is ready.
+**[View all NexaMusic releases and download the latest APK](https://github.com/nkosanamahungela-dev/NexaMusic/releases)**
+
+Open the Releases page, choose the newest version, and download the APK from its **Assets** section.
+
+The download badge above shows the total number of release-asset downloads reported by GitHub. It counts downloads, not unique people.
 
 NexaMusic is intended to support Android 8.0 (API 26) and later. Install APKs only from sources you trust. Android may ask you to allow installation from the app you used to download an APK.
 
@@ -108,4 +117,4 @@ NexaMusic is intended to be distributed under the GNU General Public License v3.
 ---
 
 Maintained by **Smelokuhle (Mahungela)**.
-Made with "❤️" 
+Made with "❤️"
