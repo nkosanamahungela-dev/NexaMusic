@@ -267,13 +267,15 @@ fun OnlineSearchResult(
             itemsPage?.items?.firstOrNull()?.thumbnail
         }
     }
-    val tint = rememberHeroTint(heroUrl)
+    val heroTint = rememberHeroTint(heroUrl)
+    val tint = if (IosTheme.colors.isDark) heroTint else IosTheme.colors.systemBackground
     val onTint = AppleTokens.onColor(tint)
 
     // The suggestions/"hint" overlay below (shown while re-typing on this results
     // page) tints from the app's home background image, not this page's own
     // search-result hero — matching the initial SearchScreen's header tint.
-    val hintTint = rememberAppBackgroundColor(AppTheme.colorScheme.background)
+    val appHintTint = rememberAppBackgroundColor(AppTheme.colorScheme.background)
+    val hintTint = if (IosTheme.colors.isDark) appHintTint else IosTheme.colors.systemBackground
     val hintOnTint = AppleTokens.onColor(hintTint)
 
     val heroBackdrop = rememberLayerBackdrop()
