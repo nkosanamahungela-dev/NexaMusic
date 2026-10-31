@@ -29,6 +29,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -570,14 +571,17 @@ fun NavBarSearchInputBar(
                 if (useGlass) {
                     Modifier.liquidGlass(
                         config = glassConfig.copy(
-                            surfaceOpacity = if (ambientColor.isSpecified) 0.36f else 0.12f,
+                            surfaceOpacity = if (ambientColor.isSpecified) 0.36f else if (isDark) 0.12f else 0.82f,
                         ),
                         shape = pillShape,
                         highlightAlpha = searchHighlightAlpha,
                         rimTintColor = searchRimTint,
                     )
-                } else {
+                } else if (isDark) {
                     Modifier.background(onTint.copy(alpha = 0.15f))
+                } else {
+                    Modifier.background(Color(0xFFF2F2F7))
+                        .border(1.dp, IosTheme.colors.separator, pillShape)
                 }
             )
             .then(pillGlow.gestureModifier)
@@ -596,7 +600,7 @@ fun NavBarSearchInputBar(
             if (state.query.text.isEmpty()) {
                 DynamicSearchPlaceholder(
                     searchSource = state.searchSource,
-                    style = TextStyle(color = onTint.copy(alpha = 0.6f), fontSize = 17.sp),
+                    style = TextStyle(color = if (isDark) onTint.copy(alpha = 0.6f) else Color(0xFF6E6E73), fontSize = 17.sp),
                 )
             }
             BasicTextField(
