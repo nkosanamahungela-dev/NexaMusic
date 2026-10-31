@@ -39,7 +39,6 @@ import com.convx.music.playback.PlaybackServiceConnector
 import com.convx.music.playback.PlayerConnection
 import com.convx.music.utils.SyncUtils
 import com.convx.music.utils.dataStore
-import com.convx.music.utils.cachedPreferenceSnapshot
 import com.convx.music.utils.setAppLocale
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
@@ -83,6 +82,7 @@ class MainActivity : ComponentActivity() {
 
     private var playerConnection by mutableStateOf<PlayerConnection?>(null)
     private var activityStarted = false
+    private var stopMusicOnTaskClear = false
     private var pendingPlaybackBind: Runnable? = null
 
     override fun onStart() {
@@ -118,7 +118,7 @@ class MainActivity : ComponentActivity() {
     override fun onDestroy() {
         super.onDestroy()
         // Handle back navigation here; swiping the task away is handled by the service.
-        if (dataStore.cachedPreferenceSnapshot()?.get(StopMusicOnTaskClearKey) == true &&
+        if (stopMusicOnTaskClear &&
             playerConnection?.isPlaying?.value == true &&
             isFinishing
         ) {
@@ -156,20 +156,21 @@ class MainActivity : ComponentActivity() {
         window.decorView.layoutDirection = View.LAYOUT_DIRECTION_LTR
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            lifecycleScope.launch {
-                val appLanguage = dataStore.data
-                    .map { it[AppLanguageKey] }
-                    .first()
-                val locale = appLanguage
+        lifecycleScope.launch {
+            // Wait for Application's first DataStore snapshot and account hydration.
+            // This is suspendable IO, not a blocking read on the launcher thread.
+            (application as App).awaitStartupPreferences()
+            val settings = dataStore.data.first()
+            stopMusicOnTaskClear = settings[StopMusicOnTaskClearKey] ?: false
+
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                val locale = settings[AppLanguageKey]
                     ?.takeUnless { it == SYSTEM_DEFAULT }
                     ?.let { Locale.forLanguageTag(it) }
                     ?: Locale.getDefault()
                 setAppLocale(this@MainActivity, locale)
             }
-        }
 
-        lifecycleScope.launch {
             dataStore.data
                 .map { it[DisableScreenshotKey] ?: false }
                 .distinctUntilChanged()
@@ -188,19 +189,22 @@ class MainActivity : ComponentActivity() {
         // Cold launch from the launcher only (WelcomeActivity hands off with this extra);
         // notification/deep-link opens go straight to the app.
         val playIntro = savedInstanceState == null && intent.getBooleanExtra(EXTRA_PLAY_INTRO, false)
-        setContent {
-            var showIntro by rememberSaveable { mutableStateOf(playIntro) }
-            Box(Modifier.fillMaxSize()) {
-                AppRootContent(
-                    activity = this@MainActivity,
-                    intentRouter = deepLinkRouter,
-                    playerConnection = playerConnection,
-                    database = database,
-                    downloadUtil = downloadUtil,
-                    syncUtils = syncUtils,
-                    historyDataSource = historyDataSource,
-                )
-                if (showIntro) com.convx.music.ui.component.ConvxIntro(onFinished = { showIntro = false })
+        lifecycleScope.launch {
+            (application as App).awaitStartupPreferences()
+            setContent {
+                var showIntro by rememberSaveable { mutableStateOf(playIntro) }
+                Box(Modifier.fillMaxSize()) {
+                    AppRootContent(
+                        activity = this@MainActivity,
+                        intentRouter = deepLinkRouter,
+                        playerConnection = playerConnection,
+                        database = database,
+                        downloadUtil = downloadUtil,
+                        syncUtils = syncUtils,
+                        historyDataSource = historyDataSource,
+                    )
+                    if (showIntro) com.convx.music.ui.component.ConvxIntro(onFinished = { showIntro = false })
+                }
             }
         }
     }
