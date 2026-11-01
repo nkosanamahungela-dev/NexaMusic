@@ -51,6 +51,14 @@ NexaMusic brings music discovery, playback, lyrics, and your library together in
 - Cupertino-style controls built for NexaMusic's interface and Android interaction patterns.
 - Adaptive themes and layouts for phones and wider screens.
 
+## Screenshots
+
+<div align="center">
+  <img src="https://raw.githubusercontent.com/nkosanamahungela-dev/NexaMusic/main/screenshots/HomeUI.png" width="30%" alt="NexaMusic Home screen">
+  <img src="https://raw.githubusercontent.com/nkosanamahungela-dev/NexaMusic/main/screenshots/AlbumUI.png" width="30%" alt="NexaMusic Album screen">
+  <img src="https://raw.githubusercontent.com/nkosanamahungela-dev/NexaMusic/main/screenshots/PlayingUI.png" width="30%" alt="NexaMusic Now Playing screen">
+</div>
+
 ## Download NexaMusic
 
 **[View all NexaMusic releases and download the latest APK](https://github.com/nkosanamahungela-dev/NexaMusic/releases)**
