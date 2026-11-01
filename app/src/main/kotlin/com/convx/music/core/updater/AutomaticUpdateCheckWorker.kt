@@ -76,6 +76,9 @@ class AutomaticUpdateCheckWorker(
             saveLastNotifiedUpdateTag(update.tag)
         }
 
+        // Do not download the same release again after a successful background download.
+        if (getLastAutoDownloadedTag() == update.tag) return Result.success()
+
         // Auto-check also downloads eligible updates in the background. Android
         // still displays its package installer and requires the user to approve.
         val apkUrl = update.apkUrl?.takeIf(String::isNotBlank) ?: return Result.success()
@@ -84,7 +87,8 @@ class AutomaticUpdateCheckWorker(
                 workDataOf(
                     "apk_url" to apkUrl,
                     "version" to update.tag,
-                    "file_size" to update.size
+                    "file_size" to update.size,
+                    "automatic" to true
                 )
             )
             .addTag("update_download")
