@@ -863,89 +863,79 @@ class SyncUtils @Inject constructor(
 
         updateState { copy(playlists = SyncStatus.Syncing, currentOperation = "Syncing saved playlists") }
 
+        // Unwrap the Result inside withRetry so a failed continuation retries the
+        // complete library fetch instead of being reported as a successful partial sync.
         withRetry {
-            YouTube.library("FEmusic_liked_playlists").completed()
-        }.onSuccess { result ->
-            result.onSuccess { page ->
-                try {
-                    val remotePlaylists = page.items.filterIsInstance<PlaylistItem>()
-                        .filterNot { it.id == "LM" || it.id == "SE" }
-                        .reversed()
-                    val remoteIds = remotePlaylists.mapTo(mutableSetOf()) { it.id }
+            YouTube.library("FEmusic_liked_playlists").completed().getOrThrow()
+        }.onSuccess { page ->
+            try {
+                val remotePlaylists = page.items.filterIsInstance<PlaylistItem>()
+                    .filterNot { it.id == "LM" || it.id == "SE" }
+                    .reversed()
+                val remoteIds = remotePlaylists.mapTo(mutableSetOf()) { it.id }
 
-                    // Retry pending remote deletes and keep them out of the import list.
-                    // Once an ID disappears remotely, it no longer needs tracking.
-                    val pendingDeletes = context.dataStore.get(PendingPlaylistDeletesKey, emptySet())
-                    val stillPendingRemotely = pendingDeletes intersect remoteIds
-                    stillPendingRemotely.forEach { browseId ->
-                        Timber.d("syncSavedPlaylists: retrying delete for pending browseId=$browseId")
-                        YouTube.deletePlaylist(browseId)
-                    }
-                    if (pendingDeletes != stillPendingRemotely) {
-                        context.dataStore.edit { it[PendingPlaylistDeletesKey] = stillPendingRemotely }
-                    }
-                    val remotePlaylistsToSync = remotePlaylists.filterNot { it.id in pendingDeletes }
+                val pendingDeletes = context.dataStore.get(PendingPlaylistDeletesKey, emptySet())
+                val stillPendingRemotely = pendingDeletes intersect remoteIds
+                stillPendingRemotely.forEach { browseId ->
+                    Timber.d("syncSavedPlaylists: retrying delete for pending browseId=$browseId")
+                    YouTube.deletePlaylist(browseId)
+                }
+                if (pendingDeletes != stillPendingRemotely) {
+                    context.dataStore.edit { it[PendingPlaylistDeletesKey] = stillPendingRemotely }
+                }
+                val remotePlaylistsToSync = remotePlaylists.filterNot { it.id in pendingDeletes }
+                val localPlaylists = database.playlistsByNameAsc().first()
 
-                    val localPlaylists = database.playlistsByNameAsc().first()
-                    // Gone from the account: unbookmark once. Toggling here flipped an already
-                    // unbookmarked playlist back on, so it came and went on every other sync.
-                    localPlaylists.filterNot { it.playlist.browseId in remoteIds }
-                        .filterNot { it.playlist.browseId == null }
-                        // YouTube's library list lags behind a playlist created a moment ago.
-                        .filter { it.playlist.bookmarkedAt?.isBefore(LocalDateTime.now().minusMinutes(10)) == true }
-                        .forEach { playlist ->
-                            try {
-                                database.update(playlist.playlist.copy(bookmarkedAt = null))
-                                delay(DB_OPERATION_DELAY_MS)
-                            } catch (e: Exception) {
-                                Timber.e(e, "Failed to update playlist: ${playlist.id}")
-                            }
-                        }
-
-                    for (playlist in remotePlaylistsToSync) {
+                localPlaylists.filterNot { it.playlist.browseId in remoteIds }
+                    .filterNot { it.playlist.browseId == null }
+                    .filter { it.playlist.bookmarkedAt?.isBefore(LocalDateTime.now().minusMinutes(10)) == true }
+                    .forEach { playlist ->
                         try {
-                            var playlistEntity = localPlaylists.find { it.playlist.browseId == playlist.id }?.playlist
-
-                            if (playlistEntity == null) {
-                                playlistEntity = PlaylistEntity(
-                                    name = playlist.title,
-                                    browseId = playlist.id,
-                                    thumbnailUrl = playlist.thumbnail,
-                                    isEditable = playlist.isEditable,
-                                    bookmarkedAt = LocalDateTime.now(),
-                                    remoteSongCount = playlist.songCountText?.let {
-                                        Regex("""\d+""").find(it)?.value?.toIntOrNull()
-                                    },
-                                    playEndpointParams = playlist.playEndpoint?.params,
-                                    shuffleEndpointParams = playlist.shuffleEndpoint?.params,
-                                    radioEndpointParams = playlist.radioEndpoint?.params
-                                )
-                                database.insert(playlistEntity)
-                                Timber.d("syncSavedPlaylists: Created new playlist ${playlist.title} (${playlist.id})")
-                                executeSyncPlaylist(playlist.id, playlistEntity.id)
-                            } else {
-                                database.update(playlistEntity, playlist)
-                                Timber.d("syncSavedPlaylists: Updated existing playlist ${playlist.title} (${playlist.id})")
-                                if (playlistEntity.isAutoSync) {
-                                    executeSyncPlaylist(playlist.id, playlistEntity.id)
-                                } else {
-                                    Timber.d("syncSavedPlaylists: Skipping full sync for cached playlist ${playlist.title} (isAutoSync=false)")
-                                }
-                            }
+                            database.update(playlist.playlist.copy(bookmarkedAt = null))
                             delay(DB_OPERATION_DELAY_MS)
                         } catch (e: Exception) {
-                            Timber.e(e, "Failed to sync playlist ${playlist.title}")
+                            Timber.e(e, "Failed to update playlist: ${playlist.id}")
                         }
                     }
 
-                    updateState { copy(playlists = SyncStatus.Completed) }
-                    Timber.d("Synced ${remotePlaylists.size} saved playlists")
-                } catch (e: Exception) {
-                    Timber.e(e, "Error processing saved playlists")
-                    updateState { copy(playlists = SyncStatus.Error(e.message ?: "Unknown error")) }
+                for (playlist in remotePlaylistsToSync) {
+                    try {
+                        var playlistEntity = localPlaylists.find { it.playlist.browseId == playlist.id }?.playlist
+                        if (playlistEntity == null) {
+                            playlistEntity = PlaylistEntity(
+                                name = playlist.title,
+                                browseId = playlist.id,
+                                thumbnailUrl = playlist.thumbnail,
+                                isEditable = playlist.isEditable,
+                                bookmarkedAt = LocalDateTime.now(),
+                                remoteSongCount = playlist.songCountText?.let {
+                                    Regex("""\\d+""").find(it)?.value?.toIntOrNull()
+                                },
+                                playEndpointParams = playlist.playEndpoint?.params,
+                                shuffleEndpointParams = playlist.shuffleEndpoint?.params,
+                                radioEndpointParams = playlist.radioEndpoint?.params
+                            )
+                            database.insert(playlistEntity)
+                            Timber.d("syncSavedPlaylists: Created new playlist ${playlist.title} (${playlist.id})")
+                        } else {
+                            database.update(playlistEntity, playlist)
+                            Timber.d("syncSavedPlaylists: Updated existing playlist ${playlist.title} (${playlist.id})")
+                        }
+
+                        // Always refresh every saved playlist's songs. The old isAutoSync
+                        // gate left existing playlists permanently stale unless users enabled
+                        // a separate per-playlist option.
+                        executeSyncPlaylist(playlist.id, playlistEntity.id)
+                        delay(DB_OPERATION_DELAY_MS)
+                    } catch (e: Exception) {
+                        Timber.e(e, "Failed to sync playlist ${playlist.title}")
+                    }
                 }
-            }.onFailure { e ->
-                Timber.e(e, "syncSavedPlaylists: Failed to fetch playlists from YouTube")
+
+                updateState { copy(playlists = SyncStatus.Completed) }
+                Timber.d("Synced ${remotePlaylistsToSync.size} saved playlists and refreshed their tracks")
+            } catch (e: Exception) {
+                Timber.e(e, "Error processing saved playlists")
                 updateState { copy(playlists = SyncStatus.Error(e.message ?: "Unknown error")) }
             }
         }.onFailure { e ->
