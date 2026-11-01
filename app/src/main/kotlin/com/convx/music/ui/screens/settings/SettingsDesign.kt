@@ -59,6 +59,8 @@ object SettingsDesign {
     private val forestInk = Color(0xFFE8F3E6)
     private val cream = Color(0xFFE8DFCB)
     private val creamInk = Color(0xFF1A120C)
+    val appearanceTile = terracotta
+    val appearanceIcon = terracottaInk
 
     private fun group(title: String): Int = when (title) {
         "Listen Together" -> 0
