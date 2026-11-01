@@ -17,7 +17,7 @@ import androidx.compose.material.icons.rounded.Mic
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material.icons.rounded.Sunny
+import androidx.compose.material.icons.rounded.WbSunny
 import androidx.compose.material.icons.rounded.Umbrella
 import androidx.compose.ui.graphics.vector.ImageVector
 
@@ -30,7 +30,7 @@ internal object SearchIcons {
     val party = Icons.Rounded.Celebration
     val chill = Icons.Rounded.LocalCafe
     val energise = Icons.Rounded.Bolt
-    val feelGood = Icons.Rounded.Sunny
+    val feelGood = Icons.Rounded.WbSunny
     val romance = Icons.Rounded.Favorite
     val sad = Icons.Rounded.Umbrella
     val christmas = Icons.Rounded.AcUnit
