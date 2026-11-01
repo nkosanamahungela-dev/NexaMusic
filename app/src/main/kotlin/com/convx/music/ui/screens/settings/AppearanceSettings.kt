@@ -360,7 +360,7 @@ fun AppearanceSettings(
     ) {
         item(key = "all_appearance_settings") {
             Column {
-        IosSettingsGroup(
+        SettingsAppearanceGroup(
             title = "Theme & colors",
             items = listOf(
                 IosSettingsItem(
@@ -385,7 +385,7 @@ fun AppearanceSettings(
 
         Spacer(modifier = Modifier.height(27.dp))
 
-        IosSettingsGroup(
+        SettingsAppearanceGroup(
             title = "App identity",
             items = listOf(
                 IosSettingsItem(
@@ -415,7 +415,7 @@ fun AppearanceSettings(
 
         Spacer(modifier = Modifier.height(27.dp))
 
-        IosSettingsGroup(
+        SettingsAppearanceGroup(
             title = stringResource(R.string.liquid_glass),
             items = listOf(
                 IosSettingsItem(
@@ -441,7 +441,7 @@ fun AppearanceSettings(
 
         Spacer(modifier = Modifier.height(27.dp))
 
-        IosSettingsGroup(
+        SettingsAppearanceGroup(
             title = "Display",
             items = buildList {
                 add(
@@ -463,7 +463,7 @@ fun AppearanceSettings(
 
         Spacer(modifier = Modifier.height(27.dp))
 
-        IosSettingsGroup(
+        SettingsAppearanceGroup(
             title = "Player & canvas",
             items = listOfNotNull(
                 IosSettingsItem(
@@ -537,7 +537,7 @@ fun AppearanceSettings(
 
         Spacer(modifier = Modifier.height(27.dp))
 
-        IosSettingsGroup(
+        SettingsAppearanceGroup(
             title = "Lyrics layout",
             items = listOfNotNull(
                 IosSettingsItem(
@@ -604,7 +604,7 @@ fun AppearanceSettings(
 
         Spacer(modifier = Modifier.height(27.dp))
 
-        IosSettingsGroup(
+        SettingsAppearanceGroup(
             title = "More",
             items = listOf(
                 IosSettingsItem(
@@ -673,7 +673,7 @@ fun AppearanceSettings(
 
         Spacer(modifier = Modifier.height(27.dp))
 
-        IosSettingsGroup(
+        SettingsAppearanceGroup(
             title = stringResource(R.string.grid_and_cards),
             items = listOf(
                 IosSettingsItem(
@@ -705,7 +705,7 @@ fun AppearanceSettings(
 
         Spacer(modifier = Modifier.height(27.dp))
 
-        IosSettingsGroup(
+        SettingsAppearanceGroup(
             title = stringResource(R.string.auto_playlists),
             items = listOf(
                 IosSettingsItem(
@@ -768,7 +768,7 @@ fun AppearanceSettings(
 
         Spacer(modifier = Modifier.height(27.dp))
 
-        IosSettingsGroup(
+        SettingsAppearanceGroup(
             title = stringResource(R.string.advanced),
             items = listOf(
                 IosSettingsItem(
@@ -1153,4 +1153,14 @@ private fun LyricsSheetSwitch(title: String, checked: Boolean, onChange: (Boolea
         Text(title, style = IosTheme.typography.body, color = IosTheme.colors.label, modifier = Modifier.weight(1f))
         Switch(checked = checked, onCheckedChange = onChange)
     }
+}
+
+
+/** Appearance-only wrapper: the shared component keeps its original default everywhere else. */
+@Composable
+private fun SettingsAppearanceGroup(
+    title: String? = null,
+    items: List<IosSettingsItem>,
+) {
+    IosSettingsGroup(title = title, items = items, settingsRedesign = true)
 }
