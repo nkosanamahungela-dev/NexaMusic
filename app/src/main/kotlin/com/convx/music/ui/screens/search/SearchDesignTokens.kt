@@ -47,6 +47,12 @@ internal object SearchDesignTokens {
     val sectionGap = 12.dp
     val tileCorner = 22.dp
     val featureCorner = 26.dp
+    val titleSize = 40.sp
+    val sectionTitleSize = 22.sp
+    val tileLabelSize = 17.sp
+    val bodyTextSize = 16.sp
+    val playBadgeFill = Color.White
+    val playBadgeContent = Color(0xFF1A120C)
     val pressScale = 0.97f
     const val pressDurationMs = 120
     const val browseFadeMs = 150
