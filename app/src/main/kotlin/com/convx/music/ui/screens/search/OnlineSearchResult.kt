@@ -447,7 +447,7 @@ fun OnlineSearchResult(
                             .fillMaxSize()
                             .background(hintTint)
                     ) {
-                        HomeImageBackground()
+                        if (IosTheme.colors.isDark) HomeImageBackground()
                         OnlineSearchScreen(
                             query = navSearch.query.text,
                             onQueryChange = navSearch.onQueryChange,
