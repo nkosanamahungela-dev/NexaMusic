@@ -102,8 +102,32 @@ jobs:
           STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
         run: |
-          ./gradlew assembleUniversalGmsRelease --no-configuration-cache --console=plain --warning-mode summary -x lint
+          set -euo pipefail
+          RELEASE_VERSION_NAME="${RELEASE_TAG#v}"
+          BASE_VERSION="${RELEASE_VERSION_NAME%%-*}"
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$BASE_VERSION"
+          if [[ ! "$MAJOR" =~ ^[0-9]+$ || ! "$MINOR" =~ ^[0-9]+$ || ! "$PATCH" =~ ^[0-9]+$ ]]; then
+            echo "::error::Release tag must use vMAJOR.MINOR.PATCH with an optional prerelease suffix."
+            exit 1
+          fi
+          BASE_VERSION_CODE=$((MAJOR * 10000 + MINOR * 100 + PATCH))
+          if [[ "$RELEASE_VERSION_NAME" == *-* ]]; then
+            PRERELEASE_NUMBER="${RELEASE_VERSION_NAME##*.}"
+            if [[ ! "$PRERELEASE_NUMBER" =~ ^[0-9]+$ ]] || (( PRERELEASE_NUMBER < 1 || PRERELEASE_NUMBER > 98 )); then
+              echo "::error::Beta/preview tags must end in a sequence number from 1 to 98 (for example -beta.2)."
+              exit 1
+            fi
+            RELEASE_VERSION_CODE=$((BASE_VERSION_CODE * 100 + PRERELEASE_NUMBER))
+          else
+            # Stable release sorts after all prereleases for the same base version.
+            RELEASE_VERSION_CODE=$((BASE_VERSION_CODE * 100 + 99))
+          fi
+          ./gradlew assembleUniversalGmsRelease \
+            -PreleaseVersionName="$RELEASE_VERSION_NAME" \
+            -PreleaseVersionCode="$RELEASE_VERSION_CODE" \
+            --no-configuration-cache --console=plain --warning-mode summary -x lint
 
       - name: Create release and upload APK + changelog
         env:
