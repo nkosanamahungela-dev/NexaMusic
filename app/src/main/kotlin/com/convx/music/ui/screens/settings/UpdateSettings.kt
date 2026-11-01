@@ -54,6 +54,7 @@ import com.convx.music.core.updater.clearDownloadedApks
 import com.convx.music.core.updater.getBetaUpdatesSetting
 import com.convx.music.core.updater.saveBetaUpdatesSetting
 import com.convx.music.core.updater.autoClearOldApks
+import com.convx.music.core.updater.scheduleAutomaticUpdateChecks
 import com.convx.music.ui.ios.compat.AppTheme
 import com.convx.music.BuildConfig
 
@@ -83,6 +84,8 @@ fun UpdateSettings(
     LaunchedEffect(Unit) {
         autoClearOldApks(context)
         apkCount = getDownloadedApkCount(context)
+        // Migrate users who already enabled automatic checks before periodic scheduling existed.
+        if (autoUpdateEnabled) scheduleAutomaticUpdateChecks(context)
     }
 
     if (showInfoDialog) {
