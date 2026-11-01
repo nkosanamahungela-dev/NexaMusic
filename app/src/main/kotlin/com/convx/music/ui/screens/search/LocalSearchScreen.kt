@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
@@ -152,8 +153,13 @@ fun LocalSearchScreen(
         staticArt = heroUrl,
         songs = result.map[LocalFilter.SONG]?.filterIsInstance<Song>()?.map { it.song.thumbnailUrl to false } ?: emptyList()
     )
-    // Use the theme background unless pure-black mode is enabled.
-    val tint = if (pureBlack) Color.Black else rememberAppBackgroundColor(AppTheme.colorScheme.background)
+    // Search follows the app appearance first; pure-black is a dark-mode option only.
+    val tint = when {
+        !com.convx.music.ui.ios.foundation.IosTheme.colors.isDark ->
+            com.convx.music.ui.ios.foundation.IosTheme.colors.systemBackground
+        pureBlack -> Color.Black
+        else -> rememberAppBackgroundColor(AppTheme.colorScheme.background)
+    }
     val onTint = AppleTokens.onColor(tint)
 
     // Keep top-bar glass fixed; the global preference controls the nav bar and mini player.
@@ -180,10 +186,11 @@ fun LocalSearchScreen(
             .fillMaxSize()
             .background(tint),
     ) {
-      // Matches Home/Library/OnlineSearchResult: the user's own picture/color
-      // background, drawn unconditionally like SearchScreen.kt — HomeImageBackground
-      // already no-ops when no custom image is set.
-      HomeImageBackground(withGradient = true)
+      // Keep custom artwork backdrops in dark appearance; light Search uses the
+      // same flat system surface as the browse and online-results pages.
+      if (com.convx.music.ui.ios.foundation.IosTheme.colors.isDark) {
+          HomeImageBackground(withGradient = true)
+      }
       HeroTintedContent(tint = tint, backdrop = heroBackdrop) {
         val chromeShape = ContinuousRoundedRectangle(percent = 50)
         val chromeBackgroundModifier = if (useGlass) {
@@ -199,6 +206,7 @@ fun LocalSearchScreen(
                 .asPaddingValues(),
             modifier = Modifier
                 .fillMaxSize()
+                .imePadding()
                 .let { base ->
                     if (isLandscape) {
                         base.windowInsetsPadding(
