@@ -341,7 +341,7 @@ fun SettingsLinkCard(
                 .fillMaxWidth()
                 .clip(ContinuousRoundedRectangle(22.dp))
                 .background(IosTheme.colors.secondarySystemGroupedBackground)
-                .then(Modifier.border(1.dp, SettingsDesign.cardBorder, ContinuousRoundedRectangle(22.dp))),
+                .then(Modifier.border(1.dp, SettingsDesign.cardBorder(), ContinuousRoundedRectangle(22.dp))),
         ) {
             links.forEachIndexed { i, link ->
                 if (i > 0) HorizontalDivider(
