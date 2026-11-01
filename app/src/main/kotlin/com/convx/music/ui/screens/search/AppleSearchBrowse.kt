@@ -244,8 +244,13 @@ private fun SectionTitle(title: String, action: String?, t: SearchDesignTokens.T
     Row(Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 1.dp), verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween) {
         Text(title, color = t.text, fontSize = 22.sp, fontWeight = FontWeight.Bold, maxLines = 1)
-        if (action != null && onAction != null) Text(action, color = t.accent, fontSize = 15.sp,
-            fontWeight = FontWeight.SemiBold, modifier = Modifier.clickable(onClick = onAction).padding(vertical = 4.dp))
+        if (action != null && onAction != null) {
+            Row(Modifier.clickable(onClick = onAction).padding(vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(action, color = t.accent, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                if (action == "See all") Icon(SearchIcons.chevron, null, tint = t.accent, modifier = Modifier.size(16.dp))
+            }
+        }
     }
 }
 
