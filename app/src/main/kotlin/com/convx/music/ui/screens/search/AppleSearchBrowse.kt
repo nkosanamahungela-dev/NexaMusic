@@ -243,7 +243,7 @@ private fun ScopeSwitch(scope: SearchSource, onSelect: (SearchSource) -> Unit, t
 private fun SectionTitle(title: String, action: String?, t: SearchDesignTokens.Theme, onAction: (() -> Unit)?) {
     Row(Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 1.dp), verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(title, color = t.text, fontSize = 22.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+        Text(title, color = t.text, fontSize = SearchDesignTokens.sectionTitleSize, fontWeight = FontWeight.Bold, maxLines = 1)
         if (action != null && onAction != null) {
             Row(Modifier.clickable(onClick = onAction).padding(vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -265,9 +265,9 @@ private fun FeaturedTile(title: String, art: String?, palette: SearchDesignToken
         }
         if (!art.isNullOrBlank()) AsyncImage(model = art, contentDescription = "$title official cover", contentScale = ContentScale.Fit,
             modifier = Modifier.align(Alignment.BottomEnd).fillMaxWidth(.58f).height(142.dp).graphicsLayer { rotationZ = 12f })
-        Box(Modifier.align(Alignment.BottomStart).padding(12.dp).size(30.dp).clip(CircleShape).background(Color.White),
+        Box(Modifier.align(Alignment.BottomStart).padding(12.dp).size(30.dp).clip(CircleShape).background(SearchDesignTokens.playBadgeFill),
             contentAlignment = Alignment.Center) {
-            Icon(SearchIcons.play, null, tint = Color(0xFF1A120C), modifier = Modifier.size(17.dp))
+            Icon(SearchIcons.play, null, tint = SearchDesignTokens.playBadgeContent, modifier = Modifier.size(17.dp))
         }
     }
 }
@@ -278,7 +278,7 @@ private fun ActivityTile(name: String, icon: androidx.compose.ui.graphics.vector
     Box(modifier.clip(RoundedCornerShape(22.dp)).background(palette.fill).clickable(onClick = onClick)
         .padding(14.dp).semantics { contentDescription = name }) {
         Icon(icon, null, tint = palette.content, modifier = Modifier.align(Alignment.TopStart).size(28.dp))
-        Text(name, color = palette.content, fontSize = 17.sp, fontWeight = FontWeight.Bold, maxLines = 2,
+        Text(name, color = palette.content, fontSize = SearchDesignTokens.tileLabelSize, fontWeight = FontWeight.Bold, maxLines = 2,
             overflow = TextOverflow.Ellipsis, modifier = Modifier.align(Alignment.BottomStart))
     }
 }
@@ -287,13 +287,13 @@ private fun ActivityTile(name: String, icon: androidx.compose.ui.graphics.vector
 private fun GenreTile(title: String, art: String?, palette: SearchDesignTokens.TileColor, modifier: Modifier, onClick: () -> Unit) {
     Box(modifier.clip(RoundedCornerShape(22.dp)).background(palette.fill).clickable(onClick = onClick)
         .semantics { contentDescription = "$title genre" }) {
-        Text(title, color = palette.content, fontSize = 17.sp, fontWeight = FontWeight.Bold, maxLines = 2,
+        Text(title, color = palette.content, fontSize = SearchDesignTokens.tileLabelSize, fontWeight = FontWeight.Bold, maxLines = 2,
             overflow = TextOverflow.Ellipsis, modifier = Modifier.align(Alignment.TopStart).padding(12.dp).width(110.dp))
         if (!art.isNullOrBlank()) AsyncImage(model = art, contentDescription = "$title official cover", contentScale = ContentScale.Fit,
             modifier = Modifier.align(Alignment.BottomEnd).fillMaxWidth(.58f).height(92.dp).graphicsLayer { rotationZ = 12f })
-        Box(Modifier.align(Alignment.BottomStart).padding(9.dp).size(24.dp).clip(CircleShape).background(Color.White),
+        Box(Modifier.align(Alignment.BottomStart).padding(9.dp).size(24.dp).clip(CircleShape).background(SearchDesignTokens.playBadgeFill),
             contentAlignment = Alignment.Center) {
-            Icon(SearchIcons.play, null, tint = Color(0xFF1A120C), modifier = Modifier.size(14.dp))
+            Icon(SearchIcons.play, null, tint = SearchDesignTokens.playBadgeContent, modifier = Modifier.size(14.dp))
         }
     }
 }
@@ -315,7 +315,7 @@ private fun MoreMoodRow(name: String, icon: androidx.compose.ui.graphics.vector.
         Box(Modifier.size(32.dp).clip(RoundedCornerShape(9.dp)).background(palette.fill), contentAlignment = Alignment.Center) {
             Icon(icon, null, tint = palette.content, modifier = Modifier.size(19.dp))
         }
-        Text(name, color = t.text, fontSize = 16.sp, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
+        Text(name, color = t.text, fontSize = SearchDesignTokens.bodyTextSize, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
         Icon(SearchIcons.chevron, null, tint = t.secondary, modifier = Modifier.size(18.dp))
     }
 }
