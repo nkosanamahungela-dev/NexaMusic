@@ -56,7 +56,7 @@ internal object SearchDesignTokens {
 
     /** Stable across process launches; resolves adjacent collisions deterministically. */
     fun colorFor(name: String, position: Int, previous: TileColor? = null): TileColor {
-        val start = (name.lowercase().hashCode().ushr(1)) % tilePalette.size
+        val start = (name.lowercase().hashCode().ushr(1) + position) % tilePalette.size
         for (step in tilePalette.indices) {
             val candidate = tilePalette[(start + step) % tilePalette.size]
             if (candidate != previous) return candidate
