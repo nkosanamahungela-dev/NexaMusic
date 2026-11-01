@@ -455,7 +455,7 @@ fun Lyrics(
     val romanizeChineseLyrics by rememberPreference(LyricsRomanizeChineseKey, true)
     val romanizeHindiLyrics by rememberPreference(LyricsRomanizeHindiKey, true)
     val romanizePunjabiLyrics by rememberPreference(LyricsRomanizePunjabiKey, true)
-    val lyricsGlowEffect by rememberPreference(LyricsGlowEffectKey, true)
+    val lyricsGlowEffect by rememberPreference(LyricsGlowEffectKey, false)
     val lyricsAnimationStyle by rememberEnumPreference(LyricsAnimationStyleKey, LyricsAnimationStyle.FLAMINGO)
     val lyricsFontSelection by rememberPreference(com.convx.music.constants.LyricsFontKey, "default")
     val lyricsFontFamily = com.convx.music.lyrics.rememberLyricsFont(lyricsFontSelection)
@@ -756,7 +756,7 @@ fun Lyrics(
             return@LaunchedEffect
         }
         while (isActive) {
-            delay(100) // Line positions only need ~10Hz; word animation reads this position
+            delay(33) // Sample playback at ~30Hz to keep lyric highlighting close to the playhead.
             val sliderPosition = sliderPositionProvider()
             isSeeking = sliderPosition != null
             val position = sliderPosition ?: playerConnection.player.currentPosition
@@ -1392,9 +1392,9 @@ fun Lyrics(
                                         else -> FontWeight.Medium
                                     }
                                     val wordShadow = if (isWordActive && glowIntensity > 0.05f) {
-                                        Shadow(color = expressiveAccent.copy(alpha = 0.5f + (0.3f * glowIntensity)), offset = Offset.Zero, blurRadius = 16f + (12f * glowIntensity))
+                                        Shadow(color = expressiveAccent.copy(alpha = 0.22f + (0.18f * glowIntensity)), offset = Offset.Zero, blurRadius = 5f + (4f * glowIntensity))
                                     } else if (hasWordPassed) {
-                                        Shadow(color = expressiveAccent.copy(alpha = 0.25f), offset = Offset.Zero, blurRadius = 8f)
+                                        Shadow(color = expressiveAccent.copy(alpha = 0.12f), offset = Offset.Zero, blurRadius = 4f)
                                     } else null
 
                                     withStyle(style = SpanStyle(color = wordColor, fontWeight = wordWeight, shadow = wordShadow)) {
@@ -1439,7 +1439,7 @@ fun Lyrics(
                                         withStyle(style = SpanStyle(
                                             brush = slideBrush,
                                             fontWeight = FontWeight.ExtraBold,
-                                            shadow = Shadow(color = expressiveAccent.copy(alpha = (0.4f * glowIntensity).coerceIn(0f, 1f)), offset = Offset(0f, 0f), blurRadius = 14f + (4f * fillProgress))
+                                            shadow = Shadow(color = expressiveAccent.copy(alpha = (0.16f * glowIntensity).coerceIn(0f, 1f)), offset = Offset(0f, 0f), blurRadius = 5f + (2f * fillProgress))
                                         )) {
                                             append(word.text)
                                         }
@@ -1447,7 +1447,7 @@ fun Lyrics(
                                         withStyle(style = SpanStyle(
                                             color = expressiveAccent,
                                             fontWeight = FontWeight.Bold,
-                                            shadow = Shadow(color = expressiveAccent.copy(alpha = 0.4f), offset = Offset(0f, 0f), blurRadius = 12f)
+                                            shadow = Shadow(color = expressiveAccent.copy(alpha = 0.12f), offset = Offset(0f, 0f), blurRadius = 4f)
                                         )) {
                                             append(word.text)
                                         }
@@ -1489,9 +1489,9 @@ fun Lyrics(
                                         )
 
                                         val wordShadow = if (lyricsGlowEffect) Shadow(
-                                            color = expressiveAccent.copy(alpha = 0.5f + (0.3f * glowIntensity)),
+                                            color = expressiveAccent.copy(alpha = 0.22f + (0.18f * glowIntensity)),
                                             offset = Offset.Zero,
-                                            blurRadius = 16f + (12f * glowIntensity)
+                                            blurRadius = 5f + (4f * glowIntensity)
                                         ) else null
 
                                         withStyle(style = SpanStyle(
@@ -1506,9 +1506,9 @@ fun Lyrics(
                                             color = expressiveAccent,
                                             fontWeight = FontWeight.Bold,
                                             shadow = if (lyricsGlowEffect) Shadow(
-                                                color = expressiveAccent.copy(alpha = 0.25f),
+                                                color = expressiveAccent.copy(alpha = 0.12f),
                                                 offset = Offset.Zero,
-                                                blurRadius = 8f
+                                                blurRadius = 4f
                                             ) else null
                                         )) {
                                             append(word.text)
@@ -1557,14 +1557,14 @@ fun Lyrics(
                                     val wordShadow = when {
                                         !lyricsGlowEffect -> null
                                         isWordActive -> Shadow(
-                                            color = expressiveAccent.copy(alpha = 0.2f + (0.4f * glowIntensity)),
+                                            color = expressiveAccent.copy(alpha = 0.12f + (0.16f * glowIntensity)),
                                             offset = Offset.Zero,
-                                            blurRadius = 10f + (12f * glowIntensity)
+                                            blurRadius = 4f + (3f * glowIntensity)
                                         )
                                         hasWordPassed && isActiveLine -> Shadow(
-                                            color = expressiveAccent.copy(alpha = 0.2f),
+                                            color = expressiveAccent.copy(alpha = 0.1f),
                                             offset = Offset.Zero,
-                                            blurRadius = 8f
+                                            blurRadius = 3f
                                         )
                                         else -> null
                                     }
@@ -1747,9 +1747,9 @@ fun Lyrics(
                                 withStyle(
                                     style = SpanStyle(
                                         shadow = Shadow(
-                                            color = expressiveAccent.copy(alpha = 0.8f * glowIntensity),
+                                            color = expressiveAccent.copy(alpha = 0.2f * glowIntensity),
                                             offset = Offset(0f, 0f),
-                                            blurRadius = 28f * (1f + pulseEffect)
+                                            blurRadius = 6f * (1f + pulseEffect)
                                         ),
                                         brush = glowBrush
                                     )
