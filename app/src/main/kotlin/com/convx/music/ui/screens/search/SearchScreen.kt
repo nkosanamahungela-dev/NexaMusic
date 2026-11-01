@@ -272,6 +272,15 @@ fun SearchScreen(
                         horizontalInset = 0.dp, bottomInset = 2.dp) },
                     recentSearches = recentSearches.map { it.query }.distinct().take(12),
                     onRecentSearchClick = onSearchFromSuggestion,
+                    onClearRecent = {
+                        coroutineScope.launch(Dispatchers.IO) {
+                            database.query { clearSearchHistory() }
+                        }
+                    },
+                    scope = navSearch.searchSource,
+                    onScopeChange = { selected ->
+                        if (selected != navSearch.searchSource) navSearch.onToggleSource()
+                    },
                 )
             }
             TopFadeBlur(
