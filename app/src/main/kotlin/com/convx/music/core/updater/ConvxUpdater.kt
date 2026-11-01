@@ -572,6 +572,15 @@ fun saveLastNotifiedUpdateTag(tag: String) {
     updatePrefs().encode(KEY_LAST_NOTIFIED_TAG, tag)
 }
 
+private const val KEY_LAST_AUTO_DOWNLOADED_TAG = "last_auto_downloaded_update_tag"
+
+fun getLastAutoDownloadedTag(): String =
+    updatePrefs().decodeString(KEY_LAST_AUTO_DOWNLOADED_TAG, "") ?: ""
+
+fun saveLastAutoDownloadedTag(tag: String) {
+    updatePrefs().encode(KEY_LAST_AUTO_DOWNLOADED_TAG, tag)
+}
+
 private fun updatePrefs(): MMKV = MMKV.mmkvWithID(PREFS_NAME)
 
 fun getUpdateAvailableState(context: Context): Boolean =
