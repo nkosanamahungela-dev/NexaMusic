@@ -211,8 +211,9 @@ fun AppleSearchBrowse(
                 Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(t.surface)
                     .border(1.dp, t.border, RoundedCornerShape(22.dp))) {
                     moodItems.forEachIndexed { index, pair ->
+                        val matchedItem = pair.second
                         MoreMoodRow(pair.first.title, pair.first.icon, SearchDesignTokens.colorFor(pair.first.title, index), t) {
-                            if (pair.second != null) navController.navigate(youtubeBrowseRoute(pair.second.endpoint.browseId, pair.second.endpoint.params))
+                            if (matchedItem != null) navController.navigate(youtubeBrowseRoute(matchedItem.endpoint.browseId, matchedItem.endpoint.params))
                             else navController.openSearchResults(pair.first.title + " music")
                         }
                         if (index < moodItems.lastIndex) Spacer(Modifier.fillMaxWidth().padding(start = 56.dp).height(1.dp).background(t.border))
