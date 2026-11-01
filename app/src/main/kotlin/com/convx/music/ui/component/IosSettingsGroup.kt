@@ -67,9 +67,10 @@ fun IosSettingsGroup(
         title?.let {
             IosText(
                 text = it,
-                style = IosTheme.typography.subheadline,
-                fontWeight = if (settingsRedesign) androidx.compose.ui.text.font.FontWeight.Bold else androidx.compose.ui.text.font.FontWeight.SemiBold,
-                letterSpacing = if (settingsRedesign) 1.3.sp else 0.sp,
+                style = IosTheme.typography.subheadline.copy(
+                    fontWeight = if (settingsRedesign) androidx.compose.ui.text.font.FontWeight.Bold else androidx.compose.ui.text.font.FontWeight.SemiBold,
+                    letterSpacing = if (settingsRedesign) 1.3.sp else 0.sp,
+                ),
                 color = colors.secondaryLabel,
                 modifier = Modifier.padding(start = if (settingsRedesign) 14.dp else 20.dp, end = 20.dp, top = 12.dp, bottom = 8.dp),
             )
