@@ -533,10 +533,10 @@ private fun AppleSearchHeader(
     ) {
         Text(
             text = stringResource(R.string.search),
-            style = com.convx.music.ui.screens.library.apple.SfStyle(34.sp, 41.sp, FontWeight.Bold, 0.4.sp),
+            style = com.convx.music.ui.screens.library.apple.SfStyle(40.sp, 46.sp, FontWeight.ExtraBold, (-1.6).sp),
             color = com.convx.music.ui.ios.foundation.IosTheme.colors.label,
             maxLines = 1,
-            modifier = Modifier.weight(1f).height(41.dp),
+            modifier = Modifier.weight(1f).height(46.dp),
         )
         Box(
             Modifier.size(44.dp).clip(CircleShape)
@@ -560,62 +560,43 @@ private fun SourceSwitch(
     modifier: Modifier = Modifier,
 ) {
     val colors = com.convx.music.ui.ios.foundation.IosTheme.colors
-    val thumb = if (colors.isDark) Color(0xFF1C1C1C) else Color.White
+    val tokens = if (colors.isDark) SearchDesignTokens.dark else SearchDesignTokens.light
+    val thumb = tokens.selectedScope
     androidx.compose.foundation.layout.BoxWithConstraints(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(50.dp)
-            .then(
-                if (colors.isDark) {
-                    Modifier.iosGlass(
-                        shape = CircleShape,
-                        spec = com.convx.music.ui.ios.foundation.IosGlassSpec.Control,
-                        interactive = true,
-                        backdrop = backdrop,
-                        wash = Color.Black.copy(alpha = 0.75f),
-                    )
-                } else {
-                    // A flat semantic track in light mode avoids the dark glass band.
-                    Modifier.background(Color(0xFFE5E5EA), CircleShape)
-                }
-            ),
+        modifier = modifier.fillMaxWidth().height(44.dp)
+            .clip(CircleShape).background(tokens.surface)
+            .border(1.dp, tokens.border, CircleShape),
     ) {
-        val thumbWidth = (maxWidth - 20.dp) / 2 + 12.dp
+        val thumbWidth = (maxWidth - 8.dp) / 2
         val selectionOffset = animateDpAsState(
             if (source == SearchSource.ONLINE) 4.dp else maxWidth - thumbWidth - 4.dp,
-            animationSpec = androidx.compose.animation.core.spring(dampingRatio = 0.86f, stiffness = 400f),
+            animationSpec = androidx.compose.animation.core.tween(180),
             label = "searchSourceSelection",
         )
-        Box(Modifier.align(Alignment.CenterStart).width(thumbWidth).height(42.dp)
-            .graphicsLayer { translationX = selectionOffset.value.toPx() }
+        Box(Modifier.align(Alignment.CenterStart).padding(horizontal = 4.dp)
+            .width(thumbWidth).height(36.dp)
+            .graphicsLayer { translationX = selectionOffset.value.toPx() - 4.dp.toPx() }
             .clip(CircleShape).background(thumb))
-        Row(Modifier.fillMaxSize().padding(horizontal = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-        listOf(
-            SearchSource.ONLINE to stringResource(R.string.apple_search_catalog),
-            SearchSource.LOCAL to stringResource(R.string.apple_search_library),
-        ).forEach { (value, label) ->
-            val selected = value == source
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .weight(1f)
-                    .height(42.dp)
-                    .iosRowPress(onClick = { onSelect(value) })
-                    .semantics { this.selected = selected; role = androidx.compose.ui.semantics.Role.Tab },
-            ) {
-                Text(
-                    text = label,
-                    style = com.convx.music.ui.screens.library.apple.SfStyle(
-                        14.sp, 18.sp, FontWeight.SemiBold, (-0.1).sp,
-                    ),
-                    color = when {
-                        colors.isDark || selected -> colors.label
-                        else -> Color(0xFF6E6E73)
-                    },
-                    maxLines = 1,
-                )
+        Row(Modifier.fillMaxSize().padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+            listOf(
+                SearchSource.ONLINE to stringResource(R.string.apple_search_catalog),
+                SearchSource.LOCAL to stringResource(R.string.apple_search_library),
+            ).forEach { (value, label) ->
+                val selected = value == source
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.weight(1f).height(36.dp)
+                        .iosRowPress(onClick = { onSelect(value) })
+                        .semantics { this.selected = selected; role = androidx.compose.ui.semantics.Role.Tab },
+                ) {
+                    Text(
+                        text = label,
+                        style = com.convx.music.ui.screens.library.apple.SfStyle(14.sp, 18.sp, FontWeight.SemiBold, (-0.1).sp),
+                        color = if (selected) tokens.selectedScopeText else tokens.secondary,
+                        maxLines = 1,
+                    )
+                }
             }
-        }
         }
     }
 }
