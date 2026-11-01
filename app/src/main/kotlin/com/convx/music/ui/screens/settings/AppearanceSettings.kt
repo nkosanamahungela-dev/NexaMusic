@@ -886,8 +886,8 @@ fun ColumnScope.LyricsAnimationSheetContent() {
                 Box(
                     Modifier
                         .fillMaxWidth()
-                        .height(262.dp)
-                        .clip(ContinuousRoundedRectangle(26.dp)),
+                        .height(360.dp)
+                        .clip(ContinuousRoundedRectangle(24.dp)),
                 ) {
                     com.convx.music.ui.player.NowPlayingBackground(
                         artworkUrl = lyricsTrack?.thumbnailUrl,
@@ -913,8 +913,8 @@ fun ColumnScope.LyricsAnimationSheetContent() {
                     Modifier
                         .fillMaxWidth()
                         .height(168.dp)
-                        .clip(ContinuousRoundedRectangle(26.dp))
-                        .background(selectedColor.copy(alpha = 0.28f).compositeOver(SettingsDesign.previewFallback)),
+                        .clip(ContinuousRoundedRectangle(24.dp))
+                        .background(androidx.compose.ui.graphics.Brush.verticalGradient(listOf(selectedColor.copy(alpha = 0.38f).compositeOver(Color(0xFF111217)), Color(0xFF111217)))),
                 ) {
                     Column(
                         Modifier.fillMaxSize().padding(horizontal = 22.dp),
@@ -1047,46 +1047,20 @@ fun ColumnScope.LyricsAnimationSheetContent() {
             ) {
                 items(LyricsAnimationStyle.entries) { style ->
                     val active = style == selected
-                    Column(
+                    Text(
+                        text = com.convx.music.ui.component.lyricsStyleLabel(style),
+                        color = if (active) Color.White else IosTheme.colors.label,
+                        style = IosTheme.typography.subheadline,
+                        fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal,
+                        maxLines = 1,
                         modifier = Modifier
-                            .width(112.dp)
-                            .height(96.dp)
-                            .clip(ContinuousRoundedRectangle(20.dp))
-                            .background(IosTheme.colors.secondarySystemGroupedBackground)
-                            .border(
-                                width = if (active) 2.dp else 1.dp,
-                                color = if (active) selectedColor else SettingsDesign.cardBorder(),
-                                shape = ContinuousRoundedRectangle(20.dp),
-                            )
+                            .clip(ContinuousCapsule())
+                            .background(if (active) selectedColor else IosTheme.colors.secondarySystemFill)
                             .clickable { onSelect(style) }
-                            .padding(horizontal = 12.dp, vertical = 9.dp),
-                        verticalArrangement = Arrangement.SpaceBetween,
-                    ) {
-                        Box(Modifier.fillMaxWidth()) {
-                            Text(
-                                "Aa",
-                                color = if (active) selectedColor else IosTheme.colors.label,
-                                style = IosTheme.typography.title2,
-                                fontWeight = FontWeight.ExtraBold,
-                                modifier = Modifier.align(Alignment.CenterStart),
-                            )
-                            if (active) {
-                                Text(
-                                    "✓",
-                                    color = selectedColor,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.align(Alignment.TopEnd),
-                                )
-                            }
-                        }
-                        Text(
-                            text = com.convx.music.ui.component.lyricsStyleLabel(style),
-                            color = IosTheme.colors.label,
-                            style = IosTheme.typography.footnote,
-                            fontWeight = if (active) FontWeight.Bold else FontWeight.Medium,
-                            maxLines = 2,
-                        )
-                    }
+                            .defaultMinSize(minHeight = 40.dp)
+                            .wrapContentHeight(Alignment.CenterVertically)
+                            .padding(horizontal = 16.dp),
+                    )
                 }
             }
 
