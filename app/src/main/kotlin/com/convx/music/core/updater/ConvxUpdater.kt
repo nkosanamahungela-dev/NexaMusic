@@ -58,6 +58,12 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.navigation.NavHostController
 import androidx.work.ExistingWorkPolicy
+import androidx.work.BackoffPolicy
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequestBuilder
+import java.util.concurrent.TimeUnit
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
@@ -578,8 +584,56 @@ fun saveUpdateAvailableState(context: Context, available: Boolean) {
 fun getAutoUpdateCheckSetting(context: Context): Boolean =
     !AUTOMATIC_UPDATE_ALERTS_PAUSED && updatePrefs().decodeBool(KEY_AUTO_UPDATE_CHECK, false)
 
+private const val AUTO_UPDATE_CHECK_WORK = "nexamusic_automatic_update_check"
+private const val AUTO_UPDATE_CHECK_NOW_WORK = "nexamusic_automatic_update_check_now"
+
+fun scheduleAutomaticUpdateChecks(context: Context) {
+    val appContext = context.applicationContext
+    val constraints = Constraints.Builder()
+        .setRequiredNetworkType(NetworkType.CONNECTED)
+        .build()
+
+    val periodicRequest = PeriodicWorkRequestBuilder<AutomaticUpdateCheckWorker>(6, TimeUnit.HOURS)
+        .setConstraints(constraints)
+        .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.MINUTES)
+        .build()
+
+    val workManager = WorkManager.getInstance(appContext)
+    workManager.enqueueUniquePeriodicWork(
+        AUTO_UPDATE_CHECK_WORK,
+        ExistingPeriodicWorkPolicy.UPDATE,
+        periodicRequest
+    )
+
+    enqueueImmediateAutomaticUpdateCheck(appContext)
+}
+
+private fun enqueueImmediateAutomaticUpdateCheck(context: Context) {
+    if (!getAutoUpdateCheckSetting(context)) return
+    val request = OneTimeWorkRequestBuilder<AutomaticUpdateCheckWorker>()
+        .setConstraints(
+            Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build()
+        )
+        .build()
+
+    WorkManager.getInstance(context.applicationContext).enqueueUniqueWork(
+        AUTO_UPDATE_CHECK_NOW_WORK,
+        ExistingWorkPolicy.REPLACE,
+        request
+    )
+}
+
 fun saveAutoUpdateCheckSetting(context: Context, enabled: Boolean) {
     updatePrefs().encode(KEY_AUTO_UPDATE_CHECK, enabled)
+    if (enabled) {
+        scheduleAutomaticUpdateChecks(context)
+    } else {
+        WorkManager.getInstance(context.applicationContext).cancelUniqueWork(AUTO_UPDATE_CHECK_WORK)
+        WorkManager.getInstance(context.applicationContext).cancelUniqueWork(AUTO_UPDATE_CHECK_NOW_WORK)
+        saveUpdateAvailableState(context, false)
+    }
 }
 
 const val KEY_UPDATE_NOTIFICATIONS = "update_notifications"
@@ -589,6 +643,7 @@ fun getUpdateNotificationsSetting(context: Context): Boolean =
 
 fun saveUpdateNotificationsSetting(context: Context, enabled: Boolean) {
     updatePrefs().encode(KEY_UPDATE_NOTIFICATIONS, enabled)
+    if (enabled) enqueueImmediateAutomaticUpdateCheck(context)
 }
 
 fun saveLastCheckedTime(context: Context, timestamp: String) {
@@ -603,6 +658,7 @@ fun getBetaUpdatesSetting(context: Context): Boolean =
 
 fun saveBetaUpdatesSetting(context: Context, enabled: Boolean) {
     updatePrefs().encode(KEY_BETA_UPDATES, enabled)
+    enqueueImmediateAutomaticUpdateCheck(context)
 }
 
 private fun formatGitHubDate(githubDate: String): String = try {
@@ -615,28 +671,52 @@ private fun formatGitHubDate(githubDate: String): String = try {
 }
 
 fun isNewerVersion(latestVersion: String, currentVersion: String): Boolean {
-    val latestVersionClean = latestVersion.removePrefix("b").removePrefix("v")
-    val currentVersionClean = currentVersion.removePrefix("b").removePrefix("v")
+    data class ParsedVersion(
+        val numbers: List<Int>,
+        val prerelease: List<String>
+    )
 
-    val latestParts = latestVersionClean.split(".").map { it.toIntOrNull() ?: 0 }
-    val currentParts = currentVersionClean.split(".").map { it.toIntOrNull() ?: 0 }
-    
-    for (i in 0 until maxOf(latestParts.size, currentParts.size)) {
-        val latest = latestParts.getOrElse(i) { 0 }
-        val current = currentParts.getOrElse(i) { 0 }
-        when {
-            latest > current -> return true
-            latest < current -> return false
+    fun parse(value: String): ParsedVersion {
+        val normalized = value.trim().removePrefix("v").removePrefix("b")
+        val pieces = normalized.split("-", limit = 2)
+        val numbers = pieces.first().split(".").map { it.toIntOrNull() ?: 0 }
+        val prerelease = pieces.getOrNull(1)
+            ?.split(".")
+            ?.filter { it.isNotBlank() }
+            .orEmpty()
+        return ParsedVersion(numbers, prerelease)
+    }
+
+    val latest = parse(latestVersion)
+    val current = parse(currentVersion)
+
+    for (index in 0 until maxOf(latest.numbers.size, current.numbers.size)) {
+        val latestPart = latest.numbers.getOrElse(index) { 0 }
+        val currentPart = current.numbers.getOrElse(index) { 0 }
+        if (latestPart != currentPart) return latestPart > currentPart
+    }
+
+    // A stable release is newer than a pre-release with the same numeric version.
+    if (latest.prerelease.isEmpty() && current.prerelease.isNotEmpty()) return true
+    if (latest.prerelease.isNotEmpty() && current.prerelease.isEmpty()) return false
+
+    for (index in 0 until maxOf(latest.prerelease.size, current.prerelease.size)) {
+        val latestPart = latest.prerelease.getOrNull(index)
+        val currentPart = current.prerelease.getOrNull(index)
+        if (latestPart == null) return false
+        if (currentPart == null) return true
+        if (latestPart == currentPart) continue
+
+        val latestNumber = latestPart.toIntOrNull()
+        val currentNumber = currentPart.toIntOrNull()
+        return when {
+            latestNumber != null && currentNumber != null -> latestNumber > currentNumber
+            latestNumber != null -> true
+            currentNumber != null -> false
+            else -> latestPart.compareTo(currentPart, ignoreCase = true) > 0
         }
     }
-    
-    // For equal version numbers, prefer stable over beta.
-    if (latestVersionClean == currentVersionClean) {
-        val latestIsBeta = latestVersion.startsWith("b")
-        val currentIsBeta = currentVersion.startsWith("b")
-        if (currentIsBeta && !latestIsBeta) return true
-    }
-    
+
     return false
 }
 
