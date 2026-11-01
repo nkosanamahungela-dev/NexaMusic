@@ -37,7 +37,7 @@ import coil3.compose.AsyncImage
 import com.convx.music.constants.SearchSource
 import com.convx.music.ui.ios.compat.Text
 import com.convx.music.ui.ios.foundation.IosTheme
-import com.convx.music.ui.utils.openSearchResults
+import com.convx.music.utils.openSearchResults
 import com.convx.music.ui.utils.youtubeBrowseRoute
 import com.music.innertube.YouTube
 import com.music.innertube.models.AlbumItem
@@ -92,21 +92,21 @@ private val MoodAndGenres.Item.key get() = endpoint.browseId + "|" + endpoint.pa
 
 private data class SearchTileSpec(val title: String, val terms: List<String>, val icon: androidx.compose.ui.graphics.vector.ImageVector)
 private val activities = listOf(
-    SearchTileSpec("Workout", listOf("workout", "fitness"), Icons.Rounded.FitnessCenter),
-    SearchTileSpec("Focus", listOf("focus", "study"), Icons.Rounded.CenterFocusStrong),
-    SearchTileSpec("Sleep", listOf("sleep", "bedtime"), Icons.Rounded.Bedtime),
-    SearchTileSpec("Commute", listOf("commute", "driving"), Icons.Rounded.DirectionsCar),
-    SearchTileSpec("Party", listOf("party", "celebration"), Icons.Rounded.Celebration),
-    SearchTileSpec("Chill", listOf("chill", "relax"), Icons.Rounded.LocalCafe),
-    SearchTileSpec("Energise", listOf("energise", "energy", "energize"), Icons.Rounded.Bolt),
-    SearchTileSpec("Feel-good", listOf("feel-good", "feel good", "happy"), Icons.Rounded.WbSunny),
+    SearchTileSpec("Workout", listOf("workout", "fitness"), SearchIcons.workout),
+    SearchTileSpec("Focus", listOf("focus", "study"), SearchIcons.focus),
+    SearchTileSpec("Sleep", listOf("sleep", "bedtime"), SearchIcons.sleep),
+    SearchTileSpec("Commute", listOf("commute", "driving"), SearchIcons.commute),
+    SearchTileSpec("Party", listOf("party", "celebration"), SearchIcons.party),
+    SearchTileSpec("Chill", listOf("chill", "relax"), SearchIcons.chill),
+    SearchTileSpec("Energise", listOf("energise", "energy", "energize"), SearchIcons.energise),
+    SearchTileSpec("Feel-good", listOf("feel-good", "feel good", "happy"), SearchIcons.feelGood),
 )
 private val moreMoods = listOf(
-    SearchTileSpec("Romance", listOf("romance", "love"), Icons.Rounded.Favorite),
-    SearchTileSpec("Sad", listOf("sad", "heartbreak"), Icons.Rounded.Umbrella),
-    SearchTileSpec("Christmas", listOf("christmas", "holiday"), Icons.Rounded.AcUnit),
-    SearchTileSpec("Metal", listOf("metal"), Icons.Rounded.LocalFireDepartment),
-    SearchTileSpec("Hip-hop", listOf("hip-hop", "hip hop", "rap"), Icons.Rounded.Mic),
+    SearchTileSpec("Romance", listOf("romance", "love"), SearchIcons.romance),
+    SearchTileSpec("Sad", listOf("sad", "heartbreak"), SearchIcons.sad),
+    SearchTileSpec("Christmas", listOf("christmas", "holiday"), SearchIcons.christmas),
+    SearchTileSpec("Metal", listOf("metal"), SearchIcons.metal),
+    SearchTileSpec("Hip-hop", listOf("hip-hop", "hip hop", "rap"), SearchIcons.hipHop),
 )
 
 @Composable
@@ -149,7 +149,7 @@ fun AppleSearchBrowse(
                         Row(Modifier.clip(CircleShape).background(t.surface).border(1.dp, t.border, CircleShape)
                             .clickable { onRecentSearchClick(query) }.padding(horizontal = 13.dp, vertical = 10.dp),
                             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-                            Icon(Icons.Rounded.Schedule, null, tint = t.secondary, modifier = Modifier.size(16.dp))
+                            Icon(SearchIcons.recent, null, tint = t.secondary, modifier = Modifier.size(16.dp))
                             Text(query, color = t.text, fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         }
                     }
@@ -258,7 +258,7 @@ private fun FeaturedTile(title: String, art: String?, palette: SearchDesignToken
             modifier = Modifier.align(Alignment.BottomEnd).fillMaxWidth(.58f).height(142.dp).graphicsLayer { rotationZ = 12f })
         Box(Modifier.align(Alignment.BottomStart).padding(12.dp).size(30.dp).clip(CircleShape).background(Color.White),
             contentAlignment = Alignment.Center) {
-            Icon(Icons.Rounded.PlayArrow, null, tint = Color(0xFF1A120C), modifier = Modifier.size(17.dp))
+            Icon(SearchIcons.play, null, tint = Color(0xFF1A120C), modifier = Modifier.size(17.dp))
         }
     }
 }
@@ -284,7 +284,7 @@ private fun GenreTile(title: String, art: String?, palette: SearchDesignTokens.T
             modifier = Modifier.align(Alignment.BottomEnd).fillMaxWidth(.58f).height(92.dp).graphicsLayer { rotationZ = 12f })
         Box(Modifier.align(Alignment.BottomStart).padding(9.dp).size(24.dp).clip(CircleShape).background(Color.White),
             contentAlignment = Alignment.Center) {
-            Icon(Icons.Rounded.PlayArrow, null, tint = Color(0xFF1A120C), modifier = Modifier.size(14.dp))
+            Icon(SearchIcons.play, null, tint = Color(0xFF1A120C), modifier = Modifier.size(14.dp))
         }
     }
 }
@@ -307,6 +307,6 @@ private fun MoreMoodRow(name: String, icon: androidx.compose.ui.graphics.vector.
             Icon(icon, null, tint = palette.content, modifier = Modifier.size(19.dp))
         }
         Text(name, color = t.text, fontSize = 16.sp, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
-        Icon(Icons.Rounded.ChevronRight, null, tint = t.secondary, modifier = Modifier.size(18.dp))
+        Icon(SearchIcons.chevron, null, tint = t.secondary, modifier = Modifier.size(18.dp))
     }
 }
