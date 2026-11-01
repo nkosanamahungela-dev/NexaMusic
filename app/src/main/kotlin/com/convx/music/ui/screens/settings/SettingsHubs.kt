@@ -6,6 +6,7 @@
 package com.convx.music.ui.screens.settings
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -26,6 +27,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.convx.music.R
 import com.convx.music.ui.component.IosPageSheet
@@ -327,17 +329,19 @@ fun SettingsLinkCard(
 ) {
     Column(Modifier.fillMaxWidth()) {
         if (title != null) Text(
-            title,
+            title.uppercase(),
             style = IosTheme.typography.footnote,
-            fontWeight = FontWeight.SemiBold,
+            fontWeight = FontWeight.Bold,
             color = IosTheme.colors.secondaryLabel,
-            modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 8.dp),
+            letterSpacing = 1.3.sp,
+            modifier = Modifier.padding(start = 14.dp, end = 20.dp, bottom = 10.dp),
         )
         Column(
             Modifier
                 .fillMaxWidth()
-                .clip(ContinuousRoundedRectangle(IosMetrics.GroupedCornerRadius))
-                .background(IosTheme.colors.secondarySystemGroupedBackground),
+                .clip(ContinuousRoundedRectangle(22.dp))
+                .background(IosTheme.colors.secondarySystemGroupedBackground)
+                .then(Modifier.border(1.dp, SettingsDesign.cardBorder, ContinuousRoundedRectangle(22.dp))),
         ) {
             links.forEachIndexed { i, link ->
                 if (i > 0) HorizontalDivider(
@@ -358,22 +362,32 @@ fun SettingsLinkRow(link: SettingsLink, trailing: String?, selected: Boolean, on
             .fillMaxWidth()
             .then(if (selected) Modifier.background(IosTheme.colors.systemFill) else Modifier)
             .iosRowPress(onClick = onClick)
-            .defaultMinSize(minHeight = 52.dp)
+            .defaultMinSize(minHeight = 58.dp)
             .padding(horizontal = 14.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
             Modifier
-                .size(30.dp)
-                .clip(ContinuousRoundedRectangle(7.dp))
-                .background(link.tint(IosTheme.colors)),
+                .size(36.dp)
+                .clip(ContinuousRoundedRectangle(11.dp))
+                .background(SettingsDesign.tileColor(link.title)),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(painterResource(link.icon), null, tint = Color.White, modifier = Modifier.size(18.dp))
+            Icon(
+                painterResource(SettingsDesign.iconFor(link.title, link.icon)),
+                null,
+                tint = SettingsDesign.iconTint(link.title),
+                modifier = Modifier.size(20.dp),
+            )
         }
         Spacer(Modifier.width(14.dp))
         Column(Modifier.weight(1f)) {
-            Text(link.title, style = IosTheme.typography.body, color = IosTheme.colors.label)
+            Text(
+                link.title,
+                style = IosTheme.typography.body.copy(fontSize = 17.sp),
+                fontWeight = FontWeight.Medium,
+                color = IosTheme.colors.label,
+            )
             if (link.subtitle != null) Text(
                 link.subtitle,
                 style = IosTheme.typography.footnote,
@@ -386,6 +400,6 @@ fun SettingsLinkRow(link: SettingsLink, trailing: String?, selected: Boolean, on
             Text(trailing, style = IosTheme.typography.body, color = IosTheme.colors.secondaryLabel, maxLines = 1)
             Spacer(Modifier.width(8.dp))
         }
-        SymbolIcon(symbol = sf("chevron.right"), contentDescription = null, size = 14.dp, tint = IosTheme.colors.tertiaryLabel)
+        SymbolIcon(symbol = sf("chevron.right"), contentDescription = null, size = 16.dp, tint = IosTheme.colors.tertiaryLabel)
     }
 }
