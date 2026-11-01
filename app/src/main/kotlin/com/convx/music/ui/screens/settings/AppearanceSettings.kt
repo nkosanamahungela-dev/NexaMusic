@@ -16,6 +16,7 @@ import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -45,6 +46,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -884,8 +886,8 @@ fun ColumnScope.LyricsAnimationSheetContent() {
                 Box(
                     Modifier
                         .fillMaxWidth()
-                        .height(360.dp)
-                        .clip(ContinuousRoundedRectangle(24.dp)),
+                        .height(262.dp)
+                        .clip(ContinuousRoundedRectangle(26.dp)),
                 ) {
                     com.convx.music.ui.player.NowPlayingBackground(
                         artworkUrl = lyricsTrack?.thumbnailUrl,
@@ -911,8 +913,8 @@ fun ColumnScope.LyricsAnimationSheetContent() {
                     Modifier
                         .fillMaxWidth()
                         .height(168.dp)
-                        .clip(ContinuousRoundedRectangle(24.dp))
-                        .background(androidx.compose.ui.graphics.Brush.verticalGradient(listOf(selectedColor.copy(alpha = 0.38f).compositeOver(Color(0xFF111217)), Color(0xFF111217)))),
+                        .clip(ContinuousRoundedRectangle(26.dp))
+                        .background(selectedColor.copy(alpha = 0.28f).compositeOver(SettingsDesign.previewFallback)),
                 ) {
                     Column(
                         Modifier.fillMaxSize().padding(horizontal = 22.dp),
@@ -1045,20 +1047,46 @@ fun ColumnScope.LyricsAnimationSheetContent() {
             ) {
                 items(LyricsAnimationStyle.entries) { style ->
                     val active = style == selected
-                    Text(
-                        text = com.convx.music.ui.component.lyricsStyleLabel(style),
-                        color = if (active) Color.White else IosTheme.colors.label,
-                        style = IosTheme.typography.subheadline,
-                        fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal,
-                        maxLines = 1,
+                    Column(
                         modifier = Modifier
-                            .clip(ContinuousCapsule())
-                            .background(if (active) selectedColor else IosTheme.colors.secondarySystemFill)
+                            .width(112.dp)
+                            .height(96.dp)
+                            .clip(ContinuousRoundedRectangle(20.dp))
+                            .background(IosTheme.colors.secondarySystemGroupedBackground)
+                            .border(
+                                width = if (active) 2.dp else 1.dp,
+                                color = if (active) selectedColor else SettingsDesign.cardBorder(),
+                                shape = ContinuousRoundedRectangle(20.dp),
+                            )
                             .clickable { onSelect(style) }
-                            .defaultMinSize(minHeight = 40.dp)
-                            .wrapContentHeight(Alignment.CenterVertically)
-                            .padding(horizontal = 16.dp),
-                    )
+                            .padding(horizontal = 12.dp, vertical = 9.dp),
+                        verticalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Box(Modifier.fillMaxWidth()) {
+                            Text(
+                                "Aa",
+                                color = if (active) selectedColor else IosTheme.colors.label,
+                                style = IosTheme.typography.title2,
+                                fontWeight = FontWeight.ExtraBold,
+                                modifier = Modifier.align(Alignment.CenterStart),
+                            )
+                            if (active) {
+                                Text(
+                                    "✓",
+                                    color = selectedColor,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.align(Alignment.TopEnd),
+                                )
+                            }
+                        }
+                        Text(
+                            text = com.convx.music.ui.component.lyricsStyleLabel(style),
+                            color = IosTheme.colors.label,
+                            style = IosTheme.typography.footnote,
+                            fontWeight = if (active) FontWeight.Bold else FontWeight.Medium,
+                            maxLines = 2,
+                        )
+                    }
                 }
             }
 
