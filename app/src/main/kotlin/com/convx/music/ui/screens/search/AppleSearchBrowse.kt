@@ -129,7 +129,7 @@ fun AppleSearchBrowse(
     val activityItems = activities.map { spec -> spec to categories.firstOrNull { item -> spec.terms.any { item.title.contains(it, true) } } }
     val moodItems = moreMoods.map { spec -> spec to categories.firstOrNull { item -> spec.terms.any { item.title.contains(it, true) } } }
     val excluded = (activityItems + moodItems).mapNotNull { it.second?.key }.toSet()
-    val genres = categories.filter { it.key !in excluded }
+    val genres = categories.drop(8).filter { it.key !in excluded }
     val featured = categories.take(8)
 
     LazyVerticalGrid(
