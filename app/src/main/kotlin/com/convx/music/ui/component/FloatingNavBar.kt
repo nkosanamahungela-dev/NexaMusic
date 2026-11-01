@@ -221,12 +221,14 @@ private fun AppFloatingNavBarChrome(
     // A custom color overrides the system surface; glass stays transparent.
     val backgroundColor = when {
         useGlass -> Color.Transparent
+        searchModeActive && !IosTheme.colors.isDark -> IosTheme.colors.systemBackground
         pureBlack -> Color.Black
         appBackgroundColorInt != 0 -> Color(appBackgroundColorInt)
         else -> AppTheme.colorScheme.surfaceContainerLow
     }
     // Theme-only: the sampled backdrop appearance flips while scrolling and made the tabs flicker.
-    val isDark = AppTheme.colorScheme.surface.luminance() <= 0.5f
+    val isDark = if (searchModeActive) IosTheme.colors.isDark
+        else AppTheme.colorScheme.surface.luminance() <= 0.5f
     val ambientColor = Color.Unspecified // plain: no artwork-driven tinting
     // The Library screens' accent, so the selected tab matches the icons on those screens.
     val selectedIconColor = IosTheme.tint
@@ -267,6 +269,7 @@ private fun AppFloatingNavBarChrome(
     val selectedTabKey = rememberStickySelectedRoute(currentRoute, tabScreens)
 
     val accessoryContentColor = when {
+        searchModeActive && !IosTheme.colors.isDark -> Color(0xFF1A1A1A)
         appTextColorInt != 0 -> Color(appTextColorInt)
         useGlass -> IosTheme.colors.label
         pureBlack -> Color.White
@@ -446,7 +449,7 @@ private fun SearchBarPlaceholder(
     useGlass: Boolean = true,
 ) {
     // Plus-blend chrome only reads on dark: added to a light surface it disappears.
-    val isDark = glassUsesDarkAppearance()
+    val isDark = IosTheme.colors.isDark
     val additiveOk = isDark
     // Same finger-tracking glow as the keyboard-active pill (NavBarSearchInputBar)
     // and the normal search circle (ExpandedStandaloneTab/InlineStandaloneTab).
@@ -516,16 +519,17 @@ fun NavBarSearchInputBar(
     val glassConfig = LocalGlassEffectConfig.current
     val useGlass = glassConfig.isEnabledFor(GlassComponent.NAV_BAR) && isGlassAllowed()
     val ambientColor = Color.Unspecified // plain: no artwork-driven tinting
-    val isDark = glassUsesDarkAppearance()
+    val isDark = IosTheme.colors.isDark
     // On glass, take the adaptive glass content colour rather than a flat white —
     // the search field is the one piece of chrome the user is actively reading.
     val onTint = when {
+        !isDark -> Color(0xFF1A1A1A)
         useGlass -> IosTheme.colors.label
         pureBlack -> Color.White
         else -> AppTheme.colorScheme.onSurface
     }
     val searchIconTint = when {
-        !isDark -> com.convx.music.ui.theme.GlassTintTokens.IconOpaqueBlackishLight
+        !isDark -> Color(0xFF1A1A1A)
         useGlass && ambientColor.isSpecified -> ambientColor.asSoftIconTint()
         else -> onTint
     }
