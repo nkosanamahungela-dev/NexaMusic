@@ -174,11 +174,15 @@ fun AppleSearchBrowse(
         }
         if (activityItems.isNotEmpty()) {
             item(key = "activities-title", span = { GridItemSpan(maxLineSpan) }) { SectionTitle("Activities", null, t, null) }
-            items(activityItems, key = { it.first.title }) { (spec, item) ->
-                ActivityTile(spec.title, spec.icon, SearchDesignTokens.colorFor(spec.title, activities.indexOf(spec)),
-                    Modifier.fillMaxWidth().height(104.dp)) {
-                    if (item != null) navController.navigate(youtubeBrowseRoute(item.endpoint.browseId, item.endpoint.params))
-                    else navController.openSearchResults(spec.title + " music")
+            item(key = "activities-row", span = { GridItemSpan(maxLineSpan) }) {
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    rowItems(activityItems, key = { it.first.title }) { (spec, item) ->
+                        ActivityTile(spec.title, spec.icon, SearchDesignTokens.colorFor(spec.title, activities.indexOf(spec)),
+                            Modifier.width(150.dp).height(96.dp)) {
+                            if (item != null) navController.navigate(youtubeBrowseRoute(item.endpoint.browseId, item.endpoint.params))
+                            else navController.openSearchResults(spec.title + " music")
+                        }
+                    }
                 }
             }
         }
@@ -187,7 +191,7 @@ fun AppleSearchBrowse(
             items(genres, key = { it.key }) { item ->
                 LaunchedEffect(item.key) { viewModel.loadArt(item) }
                 GenreTile(item.title, art[item.key], SearchDesignTokens.colorFor(item.title, genres.indexOf(item)),
-                    Modifier.fillMaxWidth().height(112.dp)) {
+                    Modifier.fillMaxWidth().height(104.dp)) {
                     navController.navigate(youtubeBrowseRoute(item.endpoint.browseId, item.endpoint.params))
                 }
             }
