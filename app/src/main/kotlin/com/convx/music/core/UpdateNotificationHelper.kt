@@ -23,7 +23,9 @@ object UpdateNotificationHelper {
     }
 
     fun showUpdateNotification(context: Context, versionName: String) {
-        if (com.convx.music.core.updater.AUTOMATIC_UPDATE_ALERTS_PAUSED) {
+        if (com.convx.music.core.updater.AUTOMATIC_UPDATE_ALERTS_PAUSED ||
+            !com.convx.music.core.updater.getUpdateNotificationsSetting(context)
+        ) {
             cancelUpdateNotification(context)
             return
         }
