@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -155,7 +156,8 @@ fun OnlineSearchScreen(
             .asPaddingValues(),
         modifier = Modifier
             .fillMaxSize()
-            // Keep the list transparent so the caller's hero background shows through.
+            .imePadding()
+            // Keep the list transparent so the caller's page background shows through.
     ) {
         if (referenceHistory && query.isEmpty()) {
             item(key = "history_header", contentType = "header") {
