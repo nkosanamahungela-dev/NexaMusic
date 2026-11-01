@@ -7,9 +7,6 @@
 
 package com.convx.music.ui.component
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -24,14 +21,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
-import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -41,8 +35,6 @@ import com.convx.music.lyrics.LyricsEntry
 import com.convx.music.lyrics.wordsWithSpacing
 import androidx.compose.runtime.remember
 import com.convx.music.lyrics.WordTimestamp
-import kotlin.math.PI
-import kotlin.math.sin
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -162,36 +154,11 @@ fun AnimatedWordV2(
         else -> ((effectivePlaybackPosition - wordStartMs).toFloat() / wordDuration).coerceIn(0f, 1f)
     }
 
-    // Bounce and Float animation
-    val sinProgress = sin(progress * PI).toFloat()
-    val wordScale = 1f + (0.015f * sinProgress)
-    
-    val targetFloat = if (isWordActive) -4f * sinProgress else 0f
-    val floatOffset by animateFloatAsState(
-        targetValue = targetFloat,
-        animationSpec = tween(
-            durationMillis = if (isWordActive) 50 else 350,
-            easing = FastOutSlowInEasing
-        ),
-        label = "WordFloatOffset"
-    )
-
-    // Glow intensity
-    val glowProgress = (progress * 2f).coerceAtMost(1f)
-    val glowAlpha = if (isWordActive) glowProgress * 0.45f else 0f
-    val glowRadius = if (isWordActive) glowProgress * 12f else 0f
-
-    val density = LocalDensity.current
     val fontWeight = FontWeight.Bold
 
-    Box(
-        modifier = Modifier
-            .graphicsLayer {
-                translationY = floatOffset * density.density
-                scaleX = wordScale
-                scaleY = wordScale
-            }
-    ) {
+
+
+    Box {
         // Layer 1: Base text (always dimmed)
         Text(
                     fontFamily = fontFamily,
@@ -217,13 +184,6 @@ fun AnimatedWordV2(
                     letterSpacing = (fontSize * 0.012f).sp,
                     fontStyle = if (isBackground) FontStyle.Italic else FontStyle.Normal,
                     lineHeight = lineHeight.sp,
-                    shadow = if (glowAlpha > 0f) {
-                        Shadow(
-                            color = expressiveAccent.copy(alpha = glowAlpha),
-                            offset = Offset.Zero,
-                            blurRadius = glowRadius.coerceAtLeast(1f),
-                        )
-                    } else null,
                 ),
                 color = expressiveAccent.copy(alpha = if (isBackground) 0.75f else 1f),
                 modifier = if (isWordActive) {
