@@ -18,6 +18,9 @@ class UpdateDownloadWorker(private val context: Context, workerParams: WorkerPar
     CoroutineWorker(context, workerParams) {
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
+        // Background auto-downloads can run before the update screen is opened.
+        DownloadNotificationManager.initialize(context)
+
         val apkUrl = inputData.getString("apk_url") ?: return@withContext Result.failure()
         val version = inputData.getString("version") ?: "unknown"
         val fileSize = inputData.getString("file_size") ?: ""
