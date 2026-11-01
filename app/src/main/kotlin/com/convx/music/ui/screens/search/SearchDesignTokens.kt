@@ -12,24 +12,23 @@ internal object SearchDesignTokens {
         val selectedScope: Color, val selectedScopeText: Color,
     )
 
-    // Spotify-inspired true black canvas, graphite surfaces and a restrained green action accent.
-    // Apple Music-inspired vivid artwork colours are reserved for discovery tiles.
+    // Apple Music-inspired black canvas with a clear red action and selection accent.
     val dark = Theme(
         page = Color(0xFF000000), surface = Color(0xFF121212),
         border = Color(0x26FFFFFF), text = Color(0xFFFFFFFF),
-        secondary = Color(0xFFB3B3B3), accent = Color(0xFF1ED760),
-        selectedScope = Color(0xFF1ED760), selectedScopeText = Color(0xFF000000),
+        secondary = Color(0xFFB3B3B3), accent = Color(0xFFFA243C),
+        selectedScope = Color(0xFFFA243C), selectedScopeText = Color(0xFFFFFFFF),
     )
     val light = Theme(
         page = Color(0xFFFFFFFF), surface = Color(0xFFF2F0EB),
         border = Color(0x1A1A120C), text = Color(0xFF1A120C),
         secondary = Color(0xFF5C5247), accent = Color(0xFFB3331A),
-        selectedScope = Color(0xFF1A120C), selectedScopeText = Color(0xFFF4EEDD),
+        selectedScope = Color(0xFFB3331A), selectedScopeText = Color(0xFFFFFFFF),
     )
 
     data class TileColor(val name: String, val fill: Color, val content: Color)
     val tilePalette = listOf(
-        TileColor("Spotify Green", Color(0xFF167A43), Color.White),
+        TileColor("Crimson", Color(0xFFB71C3C), Color.White),
         TileColor("Apple Red", Color(0xFFC62845), Color.White),
         TileColor("Electric Blue", Color(0xFF2457B8), Color.White),
         TileColor("Violet", Color(0xFF713A9B), Color.White),
@@ -39,10 +38,10 @@ internal object SearchDesignTokens {
         TileColor("Indigo", Color(0xFF3949AB), Color.White),
         TileColor("Berry", Color(0xFF8E245B), Color.White),
         TileColor("Cyan", Color(0xFF087C9C), Color.White),
-        TileColor("Lime", Color(0xFFB7D83D), Color(0xFF172000)),
+        TileColor("Rose", Color(0xFFE85D7A), Color(0xFF240A10)),
         TileColor("Sunshine", Color(0xFFF2C94C), Color(0xFF211A00)),
         TileColor("Coral", Color(0xFFE85D4A), Color(0xFF240A06)),
-        TileColor("Mint", Color(0xFFA8E6CF), Color(0xFF12382A)),
+        TileColor("Blush", Color(0xFFF2A7B5), Color(0xFF3A101A)),
     )
 
     val pageSide = 20.dp
