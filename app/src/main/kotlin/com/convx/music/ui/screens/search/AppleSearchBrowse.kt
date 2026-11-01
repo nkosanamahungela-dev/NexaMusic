@@ -126,9 +126,9 @@ fun AppleSearchBrowse(
     val c = IosTheme.colors
     val t = if (c.isDark) SearchDesignTokens.dark else SearchDesignTokens.light
     val categories = all.orEmpty()
-    val activityItems = activities.mapNotNull { spec -> categories.firstOrNull { item -> spec.terms.any { item.title.contains(it, true) } }?.let { spec to it } }
-    val moodItems = moreMoods.mapNotNull { spec -> categories.firstOrNull { item -> spec.terms.any { item.title.contains(it, true) } }?.let { spec to it } }
-    val excluded = (activityItems + moodItems).map { it.second.key }.toSet()
+    val activityItems = activities.map { spec -> spec to categories.firstOrNull { item -> spec.terms.any { item.title.contains(it, true) } } }
+    val moodItems = moreMoods.map { spec -> spec to categories.firstOrNull { item -> spec.terms.any { item.title.contains(it, true) } } }
+    val excluded = (activityItems + moodItems).mapNotNull { it.second?.key }.toSet()
     val genres = categories.filter { it.key !in excluded }
     val featured = categories.take(8)
 
@@ -177,7 +177,8 @@ fun AppleSearchBrowse(
             items(activityItems, key = { it.first.title }) { (spec, item) ->
                 ActivityTile(spec.title, spec.icon, SearchDesignTokens.colorFor(spec.title, activities.indexOf(spec)),
                     Modifier.fillMaxWidth().height(104.dp)) {
-                    navController.navigate(youtubeBrowseRoute(item.endpoint.browseId, item.endpoint.params))
+                    if (item != null) navController.navigate(youtubeBrowseRoute(item.endpoint.browseId, item.endpoint.params))
+                    else navController.openSearchResults(spec.title + " music")
                 }
             }
         }
@@ -207,7 +208,8 @@ fun AppleSearchBrowse(
                     .border(1.dp, t.border, RoundedCornerShape(22.dp))) {
                     moodItems.forEachIndexed { index, pair ->
                         MoreMoodRow(pair.first.title, pair.first.icon, SearchDesignTokens.colorFor(pair.first.title, index), t) {
-                            navController.navigate(youtubeBrowseRoute(pair.second.endpoint.browseId, pair.second.endpoint.params))
+                            if (pair.second != null) navController.navigate(youtubeBrowseRoute(pair.second.endpoint.browseId, pair.second.endpoint.params))
+                            else navController.openSearchResults(pair.first.title + " music")
                         }
                         if (index < moodItems.lastIndex) Spacer(Modifier.fillMaxWidth().padding(start = 56.dp).height(1.dp).background(t.border))
                     }
