@@ -24,7 +24,7 @@ internal object LibraryMapper {
 
             val tabs = response.contents?.singleColumnBrowseResultsRenderer?.tabs
 
-            val contents = if (tabs != null && tabs.size >= tabIndex) {
+            val contents = if (tabs != null && tabIndex in tabs.indices) {
                 tabs[tabIndex].tabRenderer.content?.sectionListRenderer?.contents?.firstOrNull()
             }
             else {
