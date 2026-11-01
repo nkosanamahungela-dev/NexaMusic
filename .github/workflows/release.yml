@@ -1,4 +1,4 @@
-name: NexaMusic Pre-release Build
+name: NexaMusic Release Build
 
 on:
   push:
@@ -105,7 +105,7 @@ jobs:
         run: |
           ./gradlew assembleUniversalGmsRelease --no-configuration-cache --console=plain --warning-mode summary -x lint
 
-      - name: Create pre-release and upload signed APK
+      - name: Create release and upload APK + changelog
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
@@ -129,23 +129,40 @@ jobs:
             find app/build/outputs/apk -type f -name '*.apk' -print
             exit 1
           fi
+          if [[ ! -s "changelog.json" ]]; then
+            echo "::error::changelog.json is missing or empty."
+            exit 1
+          fi
 
           APK_NAME="nexamusic-${RELEASE_TAG}.apk"
           cp "$APK_PATH" "$APK_NAME"
 
-          if gh release view "$RELEASE_TAG" --repo "${{ github.repository }}" >/dev/null 2>&1; then
-            IS_PRERELEASE=$(gh release view "$RELEASE_TAG" --repo "${{ github.repository }}" --json isPrerelease --jq '.isPrerelease')
-            if [[ "$IS_PRERELEASE" != "true" ]]; then
-              echo "::error::Refusing to upload a beta APK to an existing non-prerelease release."
-              exit 1
-            fi
-          else
-            gh release create "$RELEASE_TAG" "$APK_NAME" \
-              --repo "${{ github.repository }}" \
-              --title "NexaMusic ${RELEASE_TAG}" \
-              --notes "NexaMusic pre-release build. Please report bugs and device compatibility issues." \
-              --prerelease
-            exit 0
+          # SemVer pre-release tags (beta, alpha, rc, preview, nightly) are
+          # marked as GitHub pre-releases. Plain vX.Y.Z tags are stable releases.
+          LOWER_TAG="${RELEASE_TAG,,}"
+          IS_PRERELEASE=false
+          if [[ "$LOWER_TAG" =~ -(alpha|beta|rc|pre|preview|nightly)([.-]|$) ]]; then
+            IS_PRERELEASE=true
           fi
 
-          gh release upload "$RELEASE_TAG" "$APK_NAME" --repo "${{ github.repository }}" --clobber
+          if gh release view "$RELEASE_TAG" --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            EXISTING_PRERELEASE=$(gh release view "$RELEASE_TAG" --repo "${{ github.repository }}" --json isPrerelease --jq '.isPrerelease')
+            if [[ "$EXISTING_PRERELEASE" != "$IS_PRERELEASE" ]]; then
+              echo "::error::Existing release prerelease status does not match tag $RELEASE_TAG."
+              exit 1
+            fi
+            gh release upload "$RELEASE_TAG" "$APK_NAME" changelog.json --repo "${{ github.repository }}" --clobber
+          else
+            if [[ "$IS_PRERELEASE" == true ]]; then
+              gh release create "$RELEASE_TAG" "$APK_NAME" changelog.json \
+                --repo "${{ github.repository }}" \
+                --title "NexaMusic ${RELEASE_TAG}" \
+                --notes "NexaMusic beta pre-release. Please report bugs and compatibility issues." \
+                --prerelease
+            else
+              gh release create "$RELEASE_TAG" "$APK_NAME" changelog.json \
+                --repo "${{ github.repository }}" \
+                --title "NexaMusic ${RELEASE_TAG}" \
+                --notes "NexaMusic stable release."
+            fi
+          fi
