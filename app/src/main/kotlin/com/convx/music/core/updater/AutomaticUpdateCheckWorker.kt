@@ -9,9 +9,7 @@ import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.convx.music.core.UpdateNotificationHelper
 import com.convx.music.core.updater.downloadmanager.UpdateDownloadWorker
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeoutOrNull
-import kotlin.coroutines.resume
 
 /**
  * Periodic GitHub Releases check. Stable releases are always eligible; GitHub
@@ -37,19 +35,17 @@ class AutomaticUpdateCheckWorker(
         if (!getAutoUpdateCheckSetting(context)) return Result.success()
 
         val update = withTimeoutOrNull(90_000L) {
-            suspendCancellableCoroutine<DetectedUpdate?> { continuation ->
-                checkForUpdate(
-                    context = context,
-                    onSuccess = { tag, available, _, size, _, _, _, apkUrl ->
-                        if (continuation.isActive) {
-                            continuation.resume(DetectedUpdate(tag, available, size, apkUrl))
-                        }
-                    },
-                    onError = {
-                        if (continuation.isActive) continuation.resume(null)
-                    }
-                )
-            }
+            var detectedUpdate: DetectedUpdate? = null
+            checkForUpdate(
+                context = context,
+                onSuccess = { tag, available, _, size, _, _, _, apkUrl ->
+                    detectedUpdate = DetectedUpdate(tag, available, size, apkUrl)
+                },
+                onError = {
+                    detectedUpdate = null
+                }
+            )
+            detectedUpdate
         } ?: return Result.retry()
 
         if (!getAutoUpdateCheckSetting(context)) return Result.success()
