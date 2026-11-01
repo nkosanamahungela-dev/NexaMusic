@@ -7,6 +7,7 @@ package com.convx.music.ui.component
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
@@ -32,6 +33,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.convx.music.ui.component.shapes.ContinuousRoundedRectangle
 import com.convx.music.ui.ios.component.IosBadge
 import com.convx.music.ui.ios.component.IosChevron
@@ -41,6 +43,7 @@ import com.convx.music.ui.ios.foundation.IosTheme
 import com.convx.music.ui.ios.foundation.iosRowPress
 import com.convx.music.ui.ios.foundation.LocalIosContentColor
 import com.convx.music.ui.ios.foundation.LocalIosTextStyle
+import com.convx.music.ui.screens.settings.SettingsDesign
 
 /**
  * An iOS inset-grouped settings section: a sentence-case header over one rounded card
@@ -52,6 +55,7 @@ import com.convx.music.ui.ios.foundation.LocalIosTextStyle
 fun IosSettingsGroup(
     title: String? = null,
     items: List<IosSettingsItem>,
+    settingsRedesign: Boolean = false,
 ) {
     val colors = IosTheme.colors
 
@@ -64,16 +68,19 @@ fun IosSettingsGroup(
             IosText(
                 text = it,
                 style = IosTheme.typography.subheadline,
+                fontWeight = if (settingsRedesign) androidx.compose.ui.text.font.FontWeight.Bold else androidx.compose.ui.text.font.FontWeight.SemiBold,
+                letterSpacing = if (settingsRedesign) 1.3.sp else 0.sp,
                 color = colors.secondaryLabel,
-                modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 8.dp),
+                modifier = Modifier.padding(start = if (settingsRedesign) 14.dp else 20.dp, end = 20.dp, top = 12.dp, bottom = 8.dp),
             )
         }
 
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(ContinuousRoundedRectangle(IosMetrics.GroupedCornerRadius))
+                .clip(ContinuousRoundedRectangle(if (settingsRedesign) 22.dp else IosMetrics.GroupedCornerRadius))
                 .background(colors.secondarySystemGroupedBackground)
+                .then(if (settingsRedesign) Modifier.border(1.dp, SettingsDesign.cardBorder(), ContinuousRoundedRectangle(22.dp)) else Modifier)
         ) {
             items.forEachIndexed { index, item ->
                 if (index > 0) {
@@ -87,14 +94,14 @@ fun IosSettingsGroup(
                             .background(colors.separator)
                     )
                 }
-                IosSettingsItemRow(item)
+                IosSettingsItemRow(item, settingsRedesign)
             }
         }
     }
 }
 
 @Composable
-private fun IosSettingsItemRow(item: IosSettingsItem) {
+private fun IosSettingsItemRow(item: IosSettingsItem, settingsRedesign: Boolean) {
     val colors = IosTheme.colors
     val contentColor = if (item.enabled) colors.label else colors.tertiaryLabel
 
@@ -105,7 +112,7 @@ private fun IosSettingsItemRow(item: IosSettingsItem) {
                 enabled = item.enabled,
                 onClick = item.onClick?.let { click -> { click() } },
             )
-            .defaultMinSize(minHeight = maxOf(IosMetrics.ListRowHeight, 56.dp))
+            .defaultMinSize(minHeight = if (settingsRedesign) 58.dp else maxOf(IosMetrics.ListRowHeight, 56.dp))
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -113,7 +120,7 @@ private fun IosSettingsItemRow(item: IosSettingsItem) {
             item.leadingContent.invoke()
             Spacer(Modifier.width(12.dp))
         } else item.icon?.let { icon ->
-            IosSettingsIconTile(icon, item)
+            IosSettingsIconTile(icon, item, settingsRedesign)
             Spacer(Modifier.width(12.dp))
         }
 
@@ -151,17 +158,17 @@ private fun IosSettingsItemRow(item: IosSettingsItem) {
  * icon sits on the accent, not tinted into a faint container.
  */
 @Composable
-private fun IosSettingsIconTile(icon: Painter, item: IosSettingsItem) {
+private fun IosSettingsIconTile(icon: Painter, item: IosSettingsItem, settingsRedesign: Boolean) {
     val colors = IosTheme.colors
 
     Box(contentAlignment = Alignment.TopEnd) {
         if (item.tintIcon) {
             Box(
                 modifier = Modifier
-                    .size(IosMetrics.IconTileSize)
-                    .clip(item.iconShape ?: ContinuousRoundedRectangle(IosMetrics.IconTileRadius))
+                    .size(if (settingsRedesign) 36.dp else IosMetrics.IconTileSize)
+                    .clip(item.iconShape ?: ContinuousRoundedRectangle(if (settingsRedesign) 11.dp else IosMetrics.IconTileRadius))
                     .background(
-                        when {
+                        if (settingsRedesign) SettingsDesign.appearanceTile else when {
                             !item.enabled -> colors.systemGray3
                             item.isHighlighted -> IosTheme.tint
                             else -> IosTheme.tint.copy(alpha = 0.9f)
@@ -172,8 +179,8 @@ private fun IosSettingsIconTile(icon: Painter, item: IosSettingsItem) {
                 Image(
                     painter = icon,
                     contentDescription = null,
-                    modifier = Modifier.size(18.dp),
-                    colorFilter = ColorFilter.tint(Color.White),
+                    modifier = Modifier.size(if (settingsRedesign) 20.dp else 18.dp),
+                    colorFilter = ColorFilter.tint(if (settingsRedesign) SettingsDesign.appearanceIcon else Color.White),
                 )
             }
         } else {
