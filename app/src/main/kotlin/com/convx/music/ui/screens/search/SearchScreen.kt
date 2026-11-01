@@ -215,6 +215,10 @@ fun SearchScreen(
         val previousLightNavigation = controller?.isAppearanceLightNavigationBars
         val previousStatusColor = window?.statusBarColor
         val previousNavigationColor = window?.navigationBarColor
+        val previousStatusContrast = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q)
+            window?.isStatusBarContrastEnforced else null
+        val previousNavigationContrast = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q)
+            window?.isNavigationBarContrastEnforced else null
         onDispose {
             if (controller != null) {
                 previousLightStatus?.let { controller.isAppearanceLightStatusBars = it }
@@ -222,6 +226,10 @@ fun SearchScreen(
             }
             previousStatusColor?.let { window?.statusBarColor = it }
             previousNavigationColor?.let { window?.navigationBarColor = it }
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                previousStatusContrast?.let { window?.isStatusBarContrastEnforced = it }
+                previousNavigationContrast?.let { window?.isNavigationBarContrastEnforced = it }
+            }
         }
     }
     SideEffect {
@@ -232,6 +240,10 @@ fun SearchScreen(
             }
             it.statusBarColor = android.graphics.Color.TRANSPARENT
             it.navigationBarColor = android.graphics.Color.TRANSPARENT
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                it.isStatusBarContrastEnforced = false
+                it.isNavigationBarContrastEnforced = false
+            }
         }
     }
     // Respect the real status-bar/cutout inset on every device, with 8dp breathing room.
