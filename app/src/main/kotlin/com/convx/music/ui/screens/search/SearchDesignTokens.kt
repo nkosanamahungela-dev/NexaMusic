@@ -12,13 +12,12 @@ internal object SearchDesignTokens {
         val selectedScope: Color, val selectedScopeText: Color,
     )
 
-    // Spotify-inspired true black canvas, graphite surfaces and a restrained green action accent.
-    // Apple Music-inspired vivid artwork colours are reserved for discovery tiles.
+    // Apple Music-inspired true black canvas, graphite surfaces and a restrained red action accent.
     val dark = Theme(
         page = Color(0xFF000000), surface = Color(0xFF121212),
         border = Color(0x26FFFFFF), text = Color(0xFFFFFFFF),
-        secondary = Color(0xFFB3B3B3), accent = Color(0xFF1ED760),
-        selectedScope = Color(0xFF1ED760), selectedScopeText = Color(0xFF000000),
+        secondary = Color(0xFFB3B3B3), accent = Color(0xFFFA243C),
+        selectedScope = Color(0xFFFA243C), selectedScopeText = Color(0xFFFFFFFF),
     )
     val light = Theme(
         page = Color(0xFFFFFFFF), surface = Color(0xFFF2F0EB),
@@ -29,7 +28,7 @@ internal object SearchDesignTokens {
 
     data class TileColor(val name: String, val fill: Color, val content: Color)
     val tilePalette = listOf(
-        TileColor("Spotify Green", Color(0xFF167A43), Color.White),
+        TileColor("Crimson", Color(0xFFD7263D), Color.White),
         TileColor("Apple Red", Color(0xFFC62845), Color.White),
         TileColor("Electric Blue", Color(0xFF2457B8), Color.White),
         TileColor("Violet", Color(0xFF713A9B), Color.White),
