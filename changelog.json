@@ -1,16 +1,25 @@
 {
-  "description": "NexaMusic 0.1.0 beta — the first NexaMusic-branded beta build.",
+  "description": "NexaMusic 0.1.2 — refreshed interface, lyrics improvements, and automatic updates.",
   "image": "",
   "changelog": [
     {
-      "title": "NexaMusic Beta",
+      "title": "What's new",
       "items": [
-        "Introduced NexaMusic app branding.",
-        "About screen credits Smelokuhle (Mahungela) as the developer.",
-        "Community links now point to the NexaMusic GitHub repository and Discord.",
-        "Support options are marked Not available while support channels are being prepared.",
-        "Software update and changelog screens now use the NexaMusic repository.",
-        "Crash and playback issue reports are directed to the NexaMusic issue tracker."
+        "Refreshed the Search screen with a black background and Apple Music-inspired red accents.",
+        "Improved Search category tiles, selection states, and animations while keeping existing search behaviour.",
+        "Refined Settings screen grouping, layout, and appearance.",
+        "Added automatic update checks every six hours, with support for stable and beta releases.",
+        "Added automatic update downloads when an eligible update is found; Android still asks for approval before installation.",
+        "Improved lyrics rendering performance and reduced excessive glow.",
+        "Added Flamingo as a named option in the Lyrics Style selector.",
+        "Improved the Lyrics Style live preview."
+      ]
+    },
+    {
+      "title": "Notes",
+      "items": [
+        "Some playback interruptions and lyric timing issues may still occur on certain devices or accounts.",
+        "Playlist synchronization and album loading improvements should be verified with a signed-in YouTube Music account."
       ]
     }
   ]
