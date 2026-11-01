@@ -204,6 +204,7 @@ fun SearchScreen(
 
     // Keep the browse page and results page on the same system background.
     val colors = com.convx.music.ui.ios.foundation.IosTheme.colors
+    val pageColor = if (colors.isDark) SearchDesignTokens.dark.page else SearchDesignTokens.light.page
     val context = LocalContext.current
     val view = LocalView.current
     val window = (context as? android.app.Activity)?.window
@@ -259,7 +260,7 @@ fun SearchScreen(
     Box(
         Modifier
             .fillMaxSize()
-            .background(colors.systemBackground),
+            .background(pageColor),
     ) {
         if (!searching) {
             // Frosted strip under the status bar once tiles scroll up into it.
@@ -285,14 +286,13 @@ fun SearchScreen(
             }
             TopFadeBlur(
                 hazeState = browseHaze,
-                pageColor = colors.systemBackground,
-                scrimColor = colors.systemBackground,
+                pageColor = pageColor,
+                scrimColor = pageColor,
                 scrimOpacity = 0.9f,
                 modifier = Modifier.align(Alignment.TopCenter),
                 heightOverride = statusTop,
             )
         } else {
-            val pageColor = colors.systemBackground
             val searchBackdrop = com.convx.music.ui.component.backdrop.backdrops.rememberLayerBackdrop(
                 onDraw = remember(pageColor) { { drawRect(pageColor); drawContent() } },
             )
@@ -306,7 +306,7 @@ fun SearchScreen(
                         modifier = Modifier.padding(start = sideInset + 16.dp, end = 16.dp),
                     )
                 }
-                Box(Modifier.weight(1f)
+                Box(Modifier.weight(1f).background(pageColor)
                     .layerBackdrop(searchBackdrop)) {
                     when (navSearch.searchSource) {
                         SearchSource.LOCAL -> LocalSearchScreen(
