@@ -36,8 +36,11 @@ android {
         applicationId = "com.nexamusic.music"
         minSdk = 26
         targetSdk = 36
-        versionCode = appVersionCode
-        versionName = appVersionName
+        // Release builds can carry their exact Git tag in versionName so beta
+        // updates compare correctly against later beta and stable releases.
+        versionCode = (project.findProperty("releaseVersionCode") as String?)
+            ?.toIntOrNull() ?: appVersionCode
+        versionName = project.findProperty("releaseVersionName") as String? ?: appVersionName
 
         testInstrumentationRunner = providers.gradleProperty("convxTestRunner")
             .orElse("androidx.test.runner.AndroidJUnitRunner").get()
