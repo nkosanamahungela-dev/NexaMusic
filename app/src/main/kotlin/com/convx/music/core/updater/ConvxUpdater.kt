@@ -720,8 +720,9 @@ fun isNewerVersion(latestVersion: String, currentVersion: String): Boolean {
         val currentNumber = currentPart.toIntOrNull()
         return when {
             latestNumber != null && currentNumber != null -> latestNumber > currentNumber
-            latestNumber != null -> true
-            currentNumber != null -> false
+            // SemVer gives numeric prerelease identifiers lower precedence than text identifiers.
+            latestNumber != null -> false
+            currentNumber != null -> true
             else -> latestPart.compareTo(currentPart, ignoreCase = true) > 0
         }
     }
