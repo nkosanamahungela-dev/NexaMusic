@@ -6,6 +6,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.convx.music.R
+import com.convx.music.core.updater.saveLastAutoDownloadedTag
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -128,6 +129,9 @@ class UpdateDownloadWorker(private val context: Context, workerParams: WorkerPar
             }
 
             DownloadNotificationManager.showDownloadComplete(version, finalFile.absolutePath)
+            if (inputData.getBoolean("automatic", false)) {
+                saveLastAutoDownloadedTag(version)
+            }
 
             Result.success(workDataOf("file_path" to finalFile.absolutePath))
         } catch (e: kotlinx.coroutines.CancellationException) {
