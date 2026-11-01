@@ -115,7 +115,7 @@ internal object AlbumMapper {
     }
 
     suspend fun albumSongs(innerTube: InnerTube, playlistId: String, album: AlbumItem?): Result<List<SongItem>> = catching {
-        val response = innerTube.browse(WEB_REMIX, "VL${playlistId.removePrefix("VL")}").body<BrowseResponse>()
+        val response = innerTube.browse(WEB_REMIX, "VL${playlistId.removePrefix("VL")}", setLogin = true).body<BrowseResponse>()
         collectSongs(innerTube, response, album)
     }
 
@@ -124,7 +124,7 @@ internal object AlbumMapper {
         var next = continuation(response)
         val seen = mutableSetOf<String>()
         while (next != null && seen.size < 50 && seen.add(next)) {
-            val continued = innerTube.browse(client = WEB_REMIX, continuation = next).body<BrowseResponse>()
+            val continued = innerTube.browse(client = WEB_REMIX, continuation = next, setLogin = true).body<BrowseResponse>()
             songs += songContents(continued).getItems().mapNotNull { AlbumPage.getSong(it, album) }
             next = continuation(continued)
         }
