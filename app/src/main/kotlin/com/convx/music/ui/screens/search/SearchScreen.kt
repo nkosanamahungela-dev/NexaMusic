@@ -542,11 +542,20 @@ private fun SourceSwitch(
         modifier = modifier
             .fillMaxWidth()
             .height(50.dp)
-            .then(if (colors.isDark) Modifier else Modifier.background(Color(0xFFE5E5EA), CircleShape))
-            .iosGlass(shape = CircleShape,
-                spec = com.convx.music.ui.ios.foundation.IosGlassSpec.Control,
-                interactive = true, backdrop = backdrop,
-                wash = if (colors.isDark) Color.Black.copy(alpha = 0.75f) else Color.Transparent),
+            .then(
+                if (colors.isDark) {
+                    Modifier.iosGlass(
+                        shape = CircleShape,
+                        spec = com.convx.music.ui.ios.foundation.IosGlassSpec.Control,
+                        interactive = true,
+                        backdrop = backdrop,
+                        wash = Color.Black.copy(alpha = 0.75f),
+                    )
+                } else {
+                    // A flat semantic track in light mode avoids the dark glass band.
+                    Modifier.background(Color(0xFFE5E5EA), CircleShape)
+                }
+            ),
     ) {
         val thumbWidth = (maxWidth - 20.dp) / 2 + 12.dp
         val selectionOffset = animateDpAsState(
@@ -576,7 +585,10 @@ private fun SourceSwitch(
                     style = com.convx.music.ui.screens.library.apple.SfStyle(
                         14.sp, 18.sp, FontWeight.SemiBold, (-0.1).sp,
                     ),
-                    color = if (colors.isDark || selected) colors.label else colors.secondaryLabel,
+                    color = when {
+                        colors.isDark || selected -> colors.label
+                        else -> Color(0xFF6E6E73)
+                    },
                     maxLines = 1,
                 )
             }
