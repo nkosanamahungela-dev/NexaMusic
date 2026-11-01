@@ -1,8 +1,14 @@
 package com.convx.music.ui.screens.search
 
+import androidx.compose.animation.core.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items as rowItems
@@ -108,6 +114,21 @@ private val moreMoods = listOf(
     SearchTileSpec("Metal", listOf("metal"), SearchIcons.metal),
     SearchTileSpec("Hip-hop", listOf("hip-hop", "hip hop", "rap"), SearchIcons.hipHop),
 )
+
+
+@Composable
+private fun Modifier.searchPressScale(interactionSource: MutableInteractionSource): Modifier {
+    val pressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (pressed) SearchDesignTokens.pressScale else 1f,
+        animationSpec = spring(dampingRatio = 0.78f, stiffness = 650f),
+        label = "searchPressScale",
+    )
+    return graphicsLayer {
+        scaleX = scale
+        scaleY = scale
+    }
+}
 
 @Composable
 fun AppleSearchBrowse(
@@ -230,10 +251,22 @@ private fun ScopeSwitch(scope: SearchSource, onSelect: (SearchSource) -> Unit, t
         .border(1.dp, t.border, CircleShape).padding(3.dp), verticalAlignment = Alignment.CenterVertically) {
         listOf(SearchSource.ONLINE to "YouTube Music", SearchSource.LOCAL to "Your Library").forEach { (value, label) ->
             val selected = scope == value
+            val selectionColor by animateColorAsState(
+                targetValue = if (selected) t.selectedScope else Color.Transparent,
+                animationSpec = tween(180),
+                label = "searchScopeFill",
+            )
+            val labelColor by animateColorAsState(
+                targetValue = if (selected) t.selectedScopeText else t.secondary,
+                animationSpec = tween(180),
+                label = "searchScopeText",
+            )
+            val interactionSource = remember { MutableInteractionSource() }
             Box(Modifier.weight(1f).fillMaxHeight().clip(CircleShape)
-                .background(if (selected) t.selectedScope else Color.Transparent).clickable { onSelect(value) },
+                .background(selectionColor)
+                .clickable(interactionSource = interactionSource, indication = null) { onSelect(value) },
                 contentAlignment = Alignment.Center) {
-                Text(label, color = if (selected) t.selectedScopeText else t.secondary, fontSize = 14.sp,
+                Text(label, color = labelColor, fontSize = 14.sp,
                     fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium, maxLines = 1)
             }
         }
@@ -257,7 +290,9 @@ private fun SectionTitle(title: String, action: String?, t: SearchDesignTokens.T
 
 @Composable
 private fun FeaturedTile(title: String, art: String?, palette: SearchDesignTokens.TileColor, modifier: Modifier, onClick: () -> Unit) {
-    Box(modifier.clip(RoundedCornerShape(26.dp)).background(palette.fill).clickable(onClick = onClick)
+    val interactionSource = remember { MutableInteractionSource() }
+    Box(modifier.searchPressScale(interactionSource).clip(RoundedCornerShape(26.dp)).background(palette.fill)
+        .clickable(interactionSource = interactionSource, indication = null, onClick = onClick)
         .semantics { contentDescription = "$title mood playlist" }) {
         Column(Modifier.align(Alignment.TopStart).padding(16.dp)) {
             Text(title, color = palette.content, fontSize = 26.sp, lineHeight = 29.sp, fontWeight = FontWeight.ExtraBold,
@@ -276,7 +311,9 @@ private fun FeaturedTile(title: String, art: String?, palette: SearchDesignToken
 @Composable
 private fun ActivityTile(name: String, icon: androidx.compose.ui.graphics.vector.ImageVector, palette: SearchDesignTokens.TileColor,
     modifier: Modifier, onClick: () -> Unit) {
-    Box(modifier.clip(RoundedCornerShape(22.dp)).background(palette.fill).clickable(onClick = onClick)
+    val interactionSource = remember { MutableInteractionSource() }
+    Box(modifier.searchPressScale(interactionSource).clip(RoundedCornerShape(22.dp)).background(palette.fill)
+        .clickable(interactionSource = interactionSource, indication = null, onClick = onClick)
         .padding(14.dp).semantics { contentDescription = name }) {
         Icon(icon, null, tint = palette.content, modifier = Modifier.align(Alignment.TopStart).size(28.dp))
         Text(name, color = palette.content, fontSize = SearchDesignTokens.tileLabelSize, fontWeight = FontWeight.Bold, maxLines = 2,
@@ -286,7 +323,9 @@ private fun ActivityTile(name: String, icon: androidx.compose.ui.graphics.vector
 
 @Composable
 private fun GenreTile(title: String, art: String?, palette: SearchDesignTokens.TileColor, modifier: Modifier, onClick: () -> Unit) {
-    Box(modifier.clip(RoundedCornerShape(22.dp)).background(palette.fill).clickable(onClick = onClick)
+    val interactionSource = remember { MutableInteractionSource() }
+    Box(modifier.searchPressScale(interactionSource).clip(RoundedCornerShape(22.dp)).background(palette.fill)
+        .clickable(interactionSource = interactionSource, indication = null, onClick = onClick)
         .semantics { contentDescription = "$title genre" }) {
         Text(title, color = palette.content, fontSize = SearchDesignTokens.tileLabelSize, fontWeight = FontWeight.Bold, maxLines = 2,
             overflow = TextOverflow.Ellipsis, modifier = Modifier.align(Alignment.TopStart).padding(12.dp).width(110.dp))
@@ -301,7 +340,9 @@ private fun GenreTile(title: String, art: String?, palette: SearchDesignTokens.T
 
 @Composable
 private fun DecadeTile(number: String, label: String, palette: SearchDesignTokens.TileColor, modifier: Modifier, onClick: () -> Unit) {
-    Column(modifier.clip(RoundedCornerShape(20.dp)).background(palette.fill).clickable(onClick = onClick).padding(12.dp),
+    val interactionSource = remember { MutableInteractionSource() }
+    Column(modifier.searchPressScale(interactionSource).clip(RoundedCornerShape(20.dp)).background(palette.fill)
+        .clickable(interactionSource = interactionSource, indication = null, onClick = onClick).padding(12.dp),
         verticalArrangement = Arrangement.SpaceBetween) {
         Text(number, color = palette.content, fontSize = 29.sp, lineHeight = 32.sp, fontWeight = FontWeight.ExtraBold)
         Text(label, color = palette.content, fontSize = 13.sp, fontWeight = FontWeight.Bold)
@@ -311,7 +352,9 @@ private fun DecadeTile(number: String, label: String, palette: SearchDesignToken
 @Composable
 private fun MoreMoodRow(name: String, icon: androidx.compose.ui.graphics.vector.ImageVector, palette: SearchDesignTokens.TileColor,
     t: SearchDesignTokens.Theme, onClick: () -> Unit) {
-    Row(Modifier.fillMaxWidth().height(58.dp).clickable(onClick = onClick).padding(horizontal = 12.dp),
+    val interactionSource = remember { MutableInteractionSource() }
+    Row(Modifier.fillMaxWidth().height(58.dp).searchPressScale(interactionSource)
+        .clickable(interactionSource = interactionSource, indication = null, onClick = onClick).padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         Box(Modifier.size(32.dp).clip(RoundedCornerShape(9.dp)).background(palette.fill), contentAlignment = Alignment.Center) {
             Icon(icon, null, tint = palette.content, modifier = Modifier.size(19.dp))
