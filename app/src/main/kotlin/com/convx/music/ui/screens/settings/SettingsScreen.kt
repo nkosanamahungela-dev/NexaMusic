@@ -60,6 +60,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -151,7 +152,7 @@ fun SettingsScreen(
                         item("group$i") {
                             Spacer(Modifier.height(if (i == 0) 20.dp else 28.dp))
                             SettingsLinkCard(
-                                title = null,
+                                title = listOf(null, "EXPERIENCE", "YOUR MUSIC", "PRIVACY & DATA", "ABOUT").getOrNull(i),
                                 links = links,
                                 trailing = trailing,
                                 selected = if (sidebar) links.firstOrNull { it.action == SettingsAction.Route("settings/hub/$selectedHubId") } else null,
@@ -275,15 +276,15 @@ private fun LocalOnlyRow() {
             .clip(ContinuousRoundedRectangle(IosMetrics.GroupedCornerRadius))
             .background(IosTheme.colors.secondarySystemGroupedBackground)
             .clickable { setLocalOnly(!localOnly) }
-            .defaultMinSize(minHeight = 56.dp)
-            .padding(horizontal = 14.dp, vertical = 8.dp),
+            .defaultMinSize(minHeight = 76.dp)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
-            Modifier.size(30.dp).clip(ContinuousRoundedRectangle(7.dp)).background(IosTheme.colors.systemOrange),
+            Modifier.size(36.dp).clip(ContinuousRoundedRectangle(11.dp)).background(SettingsDesign.tileColor("Local-only mode")),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(painterResource(R.drawable.music_note), null, tint = Color.White, modifier = Modifier.size(18.dp))
+            Icon(painterResource(SettingsDesign.iconFor("Local-only mode", R.drawable.music_note)), null, tint = SettingsDesign.iconTint("Local-only mode"), modifier = Modifier.size(20.dp))
         }
         Spacer(Modifier.width(14.dp))
         Column(Modifier.weight(1f)) {
@@ -313,13 +314,13 @@ private fun ProfileCard(accountName: String, accountImageUrl: String?, onClick: 
         AccountAvatar(
             imageUrl = accountImageUrl.takeIf { signedIn },
             name = accountName.takeIf { signedIn }.orEmpty(),
-            size = 60.dp,
+            size = 56.dp,
         )
         Column(Modifier.weight(1f).padding(start = 16.dp)) {
             Text(
                 if (signedIn) accountName else "Sign in",
-                style = IosTheme.typography.title3,
-                fontWeight = FontWeight.SemiBold,
+                style = IosTheme.typography.title3.copy(fontSize = 22.sp),
+                fontWeight = FontWeight.ExtraBold,
                 color = IosTheme.colors.label,
                 maxLines = 1,
             )
