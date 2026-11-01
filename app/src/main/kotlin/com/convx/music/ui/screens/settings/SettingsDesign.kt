@@ -85,6 +85,8 @@ object SettingsDesign {
         else -> creamInk
     }
 
+    val previewFallback = Color(0xFF1B1713)
+
     @Composable
     fun cardBorder(): Color =
         if (IosTheme.colors.isDark) Color(0x14F4EEDD) else Color(0x1A1A120C)
