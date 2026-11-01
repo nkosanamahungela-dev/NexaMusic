@@ -45,6 +45,8 @@ import com.convx.music.utils.dataStore
 import com.convx.music.utils.migrateSharedPreferencesToMMKV
 import com.convx.music.utils.warmPreferenceMirror
 import com.convx.music.utils.reportException
+import com.convx.music.core.updater.getAutoUpdateCheckSetting
+import com.convx.music.core.updater.scheduleAutomaticUpdateChecks
 import com.tencent.mmkv.MMKV
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
@@ -126,6 +128,11 @@ class App : Application(), SingletonImageLoader.Factory {
         migrateSharedPreferencesToMMKV(this, "nanosonic_eq_profiles")
         migrateSharedPreferencesToMMKV(this, "vivi_eq_prefs")
         migrateSharedPreferencesToMMKV(this, "settings")
+
+        // Restore periodic GitHub update checks for users who already enabled the setting.
+        if (getAutoUpdateCheckSetting(this)) {
+            scheduleAutomaticUpdateChecks(this)
+        }
 
         // Spotify's native engine: report whether it loaded, without ever failing startup over it.
         applicationScope.launch(Dispatchers.IO) {
