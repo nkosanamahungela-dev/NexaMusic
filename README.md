@@ -11,6 +11,11 @@
     </a>
   </p>
   <p>
+    <a href="https://api.bitchord.kushagrasingh.in/api/stats/live">
+      <img src="https://api.bitchord.kushagrasingh.in/api/stats/live/badge.svg" alt="NexaMusic listening stats">
+    </a>
+  </p>
+  <p>
     <a href="https://discord.gg/D8fYQKUEzw">
       <img src="https://img.shields.io/badge/Discord-Join%20the%20Community-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Join the NexaMusic Discord community">
     </a>
