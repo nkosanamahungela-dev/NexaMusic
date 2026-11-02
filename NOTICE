@@ -33,8 +33,8 @@ Official music video matching is adapted from Square
 
 ## AMLL TTML Database (optional runtime lyrics source)
 
-NexaMusic includes an independently written provider that requests TTML files on demand
-from the AMLL TTML Database (https://github.com/amll-dev/amll-ttml-db). No upstream
+NexaMusic includes an independently written, opt-in provider that requests TTML files on demand
+from the AMLL TTML Database (https://github.com/amll-dev/amll-ttml-db). The provider is disabled by default. No upstream
 database files or lyric text are bundled in the NexaMusic APK or source tree.
 
 The upstream repository states that contributor-authored material is shared under
