@@ -9,7 +9,6 @@ package com.convx.music.lyrics
 
 import com.convx.music.betterlyrics.TTMLParser
 import io.ktor.client.HttpClient
-import io.ktor.client.call.body
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -20,7 +19,6 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
@@ -103,7 +101,7 @@ object AmllTtmlDatabaseProvider : LyricsProvider {
         album: String?,
     ): Long? {
         val response = client.get("https://itunes.apple.com/search") {
-            parameter("term", "$title $artist")
+            parameter("term", "$title ${artist.substringBefore(",").trim()}")
             parameter("entity", "song")
             parameter("limit", 25)
         }
@@ -113,7 +111,7 @@ object AmllTtmlDatabaseProvider : LyricsProvider {
             .getOrNull() ?: return null
         val results = root["results"]?.jsonArray ?: return null
         val expectedTitle = normalize(title)
-        val expectedArtist = normalize(artist)
+        val requestedArtists = artist.split(",").map(::normalize).filter { it.isNotBlank() }
         val expectedAlbum = normalize(album.orEmpty())
         val expectedDuration = duration.takeIf { it > 0 }?.times(1_000L)
 
@@ -128,11 +126,12 @@ object AmllTtmlDatabaseProvider : LyricsProvider {
             val trackId = track.longValue("trackId") ?: return@mapNotNull null
             val trackTitle = normalize(track.stringValue("trackName"))
             val trackArtist = normalize(track.stringValue("artistName"))
-            if (trackTitle != expectedTitle || trackArtist.isBlank() ||
-                !(trackArtist == expectedArtist ||
-                    trackArtist.contains(expectedArtist) ||
-                    expectedArtist.contains(trackArtist))
-            ) return@mapNotNull null
+            val artistMatches = requestedArtists.any { requested ->
+                trackArtist == requested || trackArtist.contains(requested) || requested.contains(trackArtist)
+            }
+            if (trackTitle != expectedTitle || trackArtist.isBlank() || !artistMatches) {
+                return@mapNotNull null
+            }
 
             val trackDuration = track.longValue("trackTimeMillis") ?: 0L
             val durationDifference = if (expectedDuration != null && trackDuration > 0) {
