@@ -16,4 +16,26 @@ class BitChordLyricsFormatTest {
         assertTrue(encoded.contains("<00:02.000|00:02.500>here"))
         assertTrue(encoded.contains("[00:02.000]{bg}"))
     }
+
+    @Test fun parsesAppleTtmlAndRetainsSyllableTimingInProviderFormat() {
+        val ttml = """
+            <tt xmlns="http://www.w3.org/ns/ttml"
+                xmlns:ttm="http://www.w3.org/ns/ttml#metadata">
+                <body><div><p begin="0.0" end="2.0">
+                    <span begin="0.0" end="0.5">Hel</span><span begin="0.5" end="0.9">lo</span> <span begin="1.0" end="2.0">world</span>
+                </p></div></body>
+            </tt>
+        """.trimIndent()
+
+        val parsed = TtmlLyrics.parse(ttml)
+        assertEquals(1, parsed.size)
+        assertEquals("Hello world", parsed.single().text)
+        assertEquals(2, parsed.single().words.size)
+        assertEquals(2, parsed.single().words.first().syllables.size)
+
+        val encoded = parsed.toConvxLyrics()
+        assertTrue(encoded.contains("<00:00.000|00:00.900>Hello"))
+        assertTrue(encoded.contains("<00:01.000|00:02.000>world"))
+    }
+
 }
