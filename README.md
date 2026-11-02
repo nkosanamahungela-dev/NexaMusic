@@ -37,7 +37,7 @@ NexaMusic brings music discovery, playback, lyrics, and your library together in
 
 - Follow synchronized lyrics with word-level highlighting.
 - Explore animated artwork and album-inspired colors.
-- Browse lyrics from multiple providers.
+- Browse lyrics from multiple providers, including the optional AMLL TTML Database source for word-timed lyrics (coverage varies by track).
 
 ### Library and integrations
 
