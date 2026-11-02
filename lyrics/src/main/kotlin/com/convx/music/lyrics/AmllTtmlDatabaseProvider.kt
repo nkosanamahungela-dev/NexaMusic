@@ -104,6 +104,7 @@ object AmllTtmlDatabaseProvider : LyricsProvider {
             parameter("term", "$title ${artist.substringBefore(",").trim()}")
             parameter("entity", "song")
             parameter("limit", 25)
+            parameter("country", Locale.getDefault().country.lowercase(Locale.ROOT).ifBlank { "us" })
         }
         if (response.status != HttpStatusCode.OK) return null
 
