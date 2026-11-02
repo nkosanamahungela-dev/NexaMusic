@@ -52,7 +52,7 @@ class LyricsProviderRepository @Inject constructor(@ApplicationContext private v
             val provider = LyricsProviderRegistry.getProvider(id)
             when {
                 identity.id.startsWith("content://") && provider?.requiresVideoId == true -> LyricsProviderStatus.UNSUPPORTED
-                provider == null || preferences[LyricsProviderSettings.enabledKey(id)] == false -> LyricsProviderStatus.DISABLED
+                provider == null || !(preferences[LyricsProviderSettings.enabledKey(id)] ?: LyricsProviderSettings.defaultEnabled(id)) -> LyricsProviderStatus.DISABLED
                 else -> synchronized(lock) {
                     attempts[Key(identity, provider.id)]?.status ?: LyricsProviderStatus.NOT_FETCHED
                 }
