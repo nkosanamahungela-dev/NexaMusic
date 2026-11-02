@@ -1,9 +1,9 @@
 /**
  * NexaMusic AMLL TTML Database provider.
  *
- * This provider fetches lyrics on demand; it does not bundle or redistribute
- * the upstream database. Upstream data licensing varies by source; see NOTICE.
- * The provider implementation is part of NexaMusic and is licensed under GPL-3.0.
+ * Uses AMLL's public HTTP API to search and fetch TTML on demand. It does not
+ * bundle or redistribute upstream lyric files. Upstream data licensing varies
+ * by source; see NOTICE. This provider implementation is GPL-3.0.
  */
 package com.convx.music.lyrics
 
@@ -24,15 +24,10 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import java.text.Normalizer
 import java.util.Locale
-import kotlin.math.abs
-import kotlin.math.max
 
 /**
- * Uses Apple's public iTunes Search endpoint only to resolve a track's catalog ID,
- * then requests the corresponding TTML file from the AMLL community database.
- *
- * Exact title/artist matching and a duration check are intentional: a wrong edit
- * or recording can make otherwise accurate word timestamps appear out of sync.
+ * AMLL's API performs catalogue search against its own metadata. This avoids
+ * assuming an iTunes Search result is always an AMLL Apple Music ID.
  */
 object AmllTtmlDatabaseProvider : LyricsProvider {
     override val id = "AmllTtmlDatabase"
@@ -56,31 +51,31 @@ object AmllTtmlDatabaseProvider : LyricsProvider {
         duration: Int,
         album: String?,
     ): Result<String> = try {
-        if (title.isBlank() || artist.isBlank()) {
-            throw NoSuchElementException("Track title or artist is unavailable")
+        if (title.isBlank()) {
+            throw NoSuchElementException("Track title is unavailable")
         }
 
-        val appleMusicId = resolveAppleMusicId(title, artist, duration, album)
-            ?: throw NoSuchElementException("No matching Apple Music catalog entry")
+        val entryId = findEntryId(title, artist, album)
+            ?: throw NoSuchElementException("No matching AMLL lyrics entry")
 
-        val response = client.get(
-            "https://raw.githubusercontent.com/amll-dev/amll-ttml-db/main/am-lyrics/$appleMusicId.ttml"
-        )
+        val response = client.get("$API_BASE/v1/lyrics/get") {
+            parameter("id", entryId)
+        }
         if (response.status != HttpStatusCode.OK) {
-            throw NoSuchElementException("No AMLL TTML lyrics for this track")
+            throw IllegalStateException("AMLL lyrics request failed (" + response.status.value + ")")
         }
 
-        val ttml = response.bodyAsText()
+        val root = Json.parseToJsonElement(response.bodyAsText()).jsonObject
+        val data = root["data"]?.jsonObject
+            ?: throw IllegalStateException("AMLL returned no lyric data")
+        val ttml = data["lyrics"]?.jsonPrimitive?.contentOrNull.orEmpty()
         if (ttml.isBlank() || !ttml.contains("<tt")) {
-            throw IllegalStateException("The AMLL database returned an invalid TTML file")
+            throw NoSuchElementException("AMLL returned no TTML lyrics for this track")
         }
 
-        // Reuse NexaMusic's existing Apple-format TTML parser. It preserves
-        // syllable timings, voice alignment, and background vocals without
-        // changing the BetterLyrics parser or vendoring AMLL code.
         val lines = TtmlLyrics.parse(ttml)
         if (lines.isEmpty()) {
-            throw IllegalStateException("Could not parse the AMLL TTML lyrics")
+            throw IllegalStateException("Could not parse AMLL TTML lyrics")
         }
 
         Result.success(lines.toConvxLyrics())
@@ -90,80 +85,72 @@ object AmllTtmlDatabaseProvider : LyricsProvider {
         Result.failure(error)
     }
 
-    private suspend fun resolveAppleMusicId(
-        title: String,
-        artist: String,
-        duration: Int,
-        album: String?,
-    ): Long? {
-        val response = client.get("https://itunes.apple.com/search") {
-            parameter("term", "$title ${artist.substringBefore(",").trim()}")
-            parameter("entity", "song")
-            parameter("limit", 25)
-            parameter("country", Locale.getDefault().country.lowercase(Locale.ROOT).ifBlank { "us" })
-        }
-        if (response.status != HttpStatusCode.OK) return null
-
-        val root = runCatching { Json.parseToJsonElement(response.bodyAsText()).jsonObject }
-            .getOrNull() ?: return null
-        val results = root["results"]?.jsonArray ?: return null
-        val expectedTitle = normalize(title)
+    private suspend fun findEntryId(title: String, artist: String, album: String?): Long? {
+        val requestedTitle = normalize(title)
         val requestedArtists = artist.split(",").map(::normalize).filter { it.isNotBlank() }
-        val expectedAlbum = normalize(album.orEmpty())
-        val expectedDuration = duration.takeIf { it > 0 }?.times(1_000L)
 
-        data class Candidate(
-            val id: Long,
-            val albumMatches: Boolean,
-            val durationDifference: Long,
-        )
+        // AMLL's search endpoint performs fuzzy matching. Search by title and
+        // the primary artist, then rank returned metadata locally to avoid
+        // selecting a cover, remix, or similarly named recording.
+        val searchArtists = requestedArtists.ifEmpty { listOf("") }
+        for (searchArtist in searchArtists) {
+            val response = client.get("$API_BASE/v1/lyrics/search") {
+                parameter("musicName", title)
+                if (searchArtist.isNotBlank()) parameter("artistName", searchArtist)
+                parameter("page", 1)
+                parameter("pageSize", 50)
+            }
+            if (response.status != HttpStatusCode.OK) continue
 
-        return results.mapNotNull { item ->
-            val track = item as? JsonObject ?: return@mapNotNull null
-            val trackId = track.longValue("trackId") ?: return@mapNotNull null
-            val trackTitle = normalize(track.stringValue("trackName"))
-            val trackArtist = normalize(track.stringValue("artistName"))
-            val artistMatches = requestedArtists.any { requested ->
-                trackArtist == requested || trackArtist.contains(requested) || requested.contains(trackArtist)
-            }
-            if (trackTitle != expectedTitle || trackArtist.isBlank() || !artistMatches) {
-                return@mapNotNull null
+            val root = runCatching {
+                Json.parseToJsonElement(response.bodyAsText()).jsonObject
+            }.getOrNull() ?: continue
+            val data = root["data"]?.jsonObject ?: continue
+            val items = data["items"]?.jsonArray ?: continue
+
+            val matches = items.mapNotNull { item ->
+                val entry = item as? JsonObject ?: return@mapNotNull null
+                val entryId = entry.longValue("id") ?: return@mapNotNull null
+                val titles = entry.stringArray("musicNames").map(::normalize)
+                val artists = entry.stringArray("artistNames").map(::normalize)
+                val albums = entry.stringArray("albumNames").map(::normalize)
+
+                val titleMatches = titles.any {
+                    it == requestedTitle || it.contains(requestedTitle) || requestedTitle.contains(it)
+                }
+                val artistMatches = requestedArtists.isEmpty() || artists.any { candidate ->
+                    requestedArtists.any { requested ->
+                        candidate == requested || candidate.contains(requested) || requested.contains(candidate)
+                    }
+                }
+                if (!titleMatches || !artistMatches) return@mapNotNull null
+
+                val normalizedAlbum = normalize(album.orEmpty())
+                val albumMatches = normalizedAlbum.isNotBlank() &&
+                    albums.any { it == normalizedAlbum || it.contains(normalizedAlbum) || normalizedAlbum.contains(it) }
+                val exactTitle = titles.any { it == requestedTitle }
+                Triple(entryId, exactTitle, albumMatches)
             }
 
-            val trackDuration = track.longValue("trackTimeMillis") ?: 0L
-            val durationDifference = if (expectedDuration != null && trackDuration > 0) {
-                abs(trackDuration - expectedDuration)
-            } else {
-                0L
-            }
-            val durationTolerance = if (expectedDuration != null) {
-                max(5_000L, expectedDuration * 3 / 100)
-            } else {
-                Long.MAX_VALUE
-            }
-            if (durationDifference > durationTolerance) return@mapNotNull null
-
-            Candidate(
-                id = trackId,
-                albumMatches = expectedAlbum.isNotBlank() &&
-                    normalize(track.stringValue("collectionName")) == expectedAlbum,
-                durationDifference = durationDifference,
-            )
-        }.sortedWith(
-            compareByDescending<Candidate> { it.albumMatches }
-                .thenBy { it.durationDifference }
-        ).firstOrNull()?.id
+            matches.sortedWith(
+                compareByDescending<Triple<Long, Boolean, Boolean>> { it.second }
+                    .thenByDescending { it.third }
+            ).firstOrNull()?.first?.let { return it }
+        }
+        return null
     }
-
-    private fun JsonObject.stringValue(key: String): String =
-        this[key]?.jsonPrimitive?.contentOrNull.orEmpty()
 
     private fun JsonObject.longValue(key: String): Long? =
         this[key]?.jsonPrimitive?.contentOrNull?.toLongOrNull()
+
+    private fun JsonObject.stringArray(key: String): List<String> =
+        this[key]?.jsonArray?.mapNotNull { it.jsonPrimitive.contentOrNull }.orEmpty()
 
     private fun normalize(value: String): String =
         Normalizer.normalize(value, Normalizer.Form.NFD)
             .replace(Regex("\\p{Mn}+"), "")
             .lowercase(Locale.ROOT)
             .replace(Regex("[^\\p{L}\\p{N}]"), "")
+
+    private const val API_BASE = "https://api.amll.dev"
 }
