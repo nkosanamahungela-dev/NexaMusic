@@ -118,6 +118,7 @@ object TTMLParser {
                     spanInfos.joinToString(separator = "") {
                         it.text + if (it.hasTrailingSpace) " " else ""
                     }.trim()
+                }
                 
                 // If no spans found, use text content directly (excluding background text)
                 val finalText = if (lineText.isEmpty()) {
@@ -146,7 +147,11 @@ object TTMLParser {
         return lines
     }
     
-    private fun parseBackgroundSpan(\n        span: Element,\n        parentStartTime: Double,\n        mergeAdjacentSpans: Boolean,\n    ): ParsedLine? {
+    private fun parseBackgroundSpan(
+        span: Element,
+        parentStartTime: Double,
+        mergeAdjacentSpans: Boolean,
+    ): ParsedLine? {
         val bgBegin = span.getAttribute("begin")
         val bgStartTime = if (bgBegin.isNotEmpty()) parseTime(bgBegin) else parentStartTime
         
@@ -176,6 +181,7 @@ object TTMLParser {
             spanInfos.joinToString(separator = "") {
                 it.text + if (it.hasTrailingSpace) " " else ""
             }.trim()
+        }
         
         val finalText = if (lineText.isEmpty()) {
             getDirectTextContent(span).trim()
