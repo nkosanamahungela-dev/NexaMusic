@@ -54,7 +54,7 @@ object TTMLParser {
         return ""
     }
     
-    fun parseTTML(ttml: String, mergeAdjacentSpans: Boolean = true): List<ParsedLine> {
+    fun parseTTML(ttml: String): List<ParsedLine> {
         val lines = mutableListOf<ParsedLine>()
         
         try {
@@ -96,7 +96,7 @@ object TTMLParser {
                     // TTML uses roles to mark background, translated, and romanized spans.
                     val role = span.getAttributeByLocalName("role")
                     if (role == "x-bg") {
-                        val bgLine = parseBackgroundSpan(span, startTime, mergeAdjacentSpans)
+                        val bgLine = parseBackgroundSpan(span, startTime)
                         if (bgLine != null) backgroundLines.add(bgLine)
                         continue
                     }
@@ -105,20 +105,9 @@ object TTMLParser {
                     parseWordSpan(span, node)?.let(spanInfos::add)
                 }
                 
-                // BetterLyrics historically groups adjacent syllables into words. AMLL files
-                // may time CJK characters individually, so callers can preserve each span.
-                val words = if (mergeAdjacentSpans) {
-                    mergeSpansIntoWords(spanInfos)
-                } else {
-                    spanInfos.map { ParsedWord(it.text, it.startTime, it.endTime) }
-                }
-                val lineText = if (mergeAdjacentSpans) {
-                    words.joinToString(" ") { it.text }
-                } else {
-                    spanInfos.joinToString(separator = "") {
-                        it.text + if (it.hasTrailingSpace) " " else ""
-                    }.trim()
-                }
+                // Merge consecutive spans without whitespace between them into single words
+                val words = mergeSpansIntoWords(spanInfos)
+                val lineText = words.joinToString(" ") { it.text }
                 
                 // If no spans found, use text content directly (excluding background text)
                 val finalText = if (lineText.isEmpty()) {
@@ -147,11 +136,7 @@ object TTMLParser {
         return lines
     }
     
-    private fun parseBackgroundSpan(
-        span: Element,
-        parentStartTime: Double,
-        mergeAdjacentSpans: Boolean,
-    ): ParsedLine? {
+    private fun parseBackgroundSpan(span: Element, parentStartTime: Double): ParsedLine? {
         val bgBegin = span.getAttribute("begin")
         val bgStartTime = if (bgBegin.isNotEmpty()) parseTime(bgBegin) else parentStartTime
         
@@ -170,18 +155,8 @@ object TTMLParser {
             parseWordSpan(innerSpan, node)?.let(spanInfos::add)
         }
         
-        val words = if (mergeAdjacentSpans) {
-            mergeSpansIntoWords(spanInfos)
-        } else {
-            spanInfos.map { ParsedWord(it.text, it.startTime, it.endTime) }
-        }
-        val lineText = if (mergeAdjacentSpans) {
-            words.joinToString(" ") { it.text }
-        } else {
-            spanInfos.joinToString(separator = "") {
-                it.text + if (it.hasTrailingSpace) " " else ""
-            }.trim()
-        }
+        val words = mergeSpansIntoWords(spanInfos)
+        val lineText = words.joinToString(" ") { it.text }
         
         val finalText = if (lineText.isEmpty()) {
             getDirectTextContent(span).trim()
