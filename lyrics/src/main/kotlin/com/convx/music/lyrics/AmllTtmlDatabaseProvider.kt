@@ -7,7 +7,7 @@
  */
 package com.convx.music.lyrics
 
-import com.convx.music.betterlyrics.TTMLParser
+import com.convx.music.lyrics.bitchord.TtmlLyrics
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.HttpTimeout
@@ -80,14 +80,15 @@ object AmllTtmlDatabaseProvider : LyricsProvider {
             throw IllegalStateException("The AMLL database returned an invalid TTML file")
         }
 
-        // Keep every timed TTML span separate. AMLL files often time CJK
-        // characters/syllables individually, even when no spaces separate them.
-        val lines = TTMLParser.parseTTML(ttml, mergeAdjacentSpans = false)
+        // Reuse NexaMusic's existing Apple-format TTML parser. It preserves
+        // syllable timings, voice alignment, and background vocals without
+        // changing the BetterLyrics parser or vendoring AMLL code.
+        val lines = TtmlLyrics.parse(ttml)
         if (lines.isEmpty()) {
             throw IllegalStateException("Could not parse the AMLL TTML lyrics")
         }
 
-        Result.success(TTMLParser.toLRC(lines))
+        Result.success(lines.toConvxLyrics())
     } catch (cancelled: CancellationException) {
         throw cancelled
     } catch (error: Exception) {
