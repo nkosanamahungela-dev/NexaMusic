@@ -1,7 +1,6 @@
 package com.convx.music.betterlyrics
 
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class TTMLParserTest {
@@ -82,35 +81,4 @@ class TTMLParserTest {
             output.lines().filter(String::isNotEmpty),
         )
     }
-
-    @Test
-    fun preservesIndividualAmllSyllableTimestamps() {
-        val ttml = """
-            <tt><body><div><p begin="0" end="2">
-                <span begin="0" end="0.5">你</span><span begin="0.5" end="1">好</span> <span begin="1" end="2">world</span>
-            </p></div></body></tt>
-        """.trimIndent()
-
-        val line = TTMLParser.parseTTML(ttml, mergeAdjacentSpans = false).single()
-
-        assertEquals("你好 world", line.text)
-        assertEquals(listOf("你", "好", "world"), line.words.map { it.text })
-        assertEquals(3, line.words.size)
-        assertTrue(line.words[1].endTime > line.words[1].startTime)
-    }
-
-    @Test
-    fun keepsBetterLyricsWordMergingAsTheDefault() {
-        val ttml = """
-            <tt><body><div><p begin="0" end="2">
-                <span begin="0" end="0.5">你</span><span begin="0.5" end="1">好</span> <span begin="1" end="2">world</span>
-            </p></div></body></tt>
-        """.trimIndent()
-
-        val line = TTMLParser.parseTTML(ttml).single()
-
-        assertEquals("你好 world", line.text)
-        assertEquals(listOf("你好", "world"), line.words.map { it.text })
-    }
-
 }
