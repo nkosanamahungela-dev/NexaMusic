@@ -291,7 +291,9 @@ fun ContentAdvancedSettings(
         val defaultOrder = LyricsProviderRegistry.getDefaultProviderOrder()
         val providerPreferences by context.dataStore.data.collectAsStateWithLifecycle(initialValue = emptyPreferences())
         val providerScope = androidx.compose.runtime.rememberCoroutineScope()
-        val enabledStates = defaultOrder.associateWith { providerPreferences[LyricsProviderSettings.enabledKey(it)] ?: true }
+        val enabledStates = defaultOrder.associateWith {
+            providerPreferences[LyricsProviderSettings.enabledKey(it)] ?: LyricsProviderSettings.defaultEnabled(it)
+        }
 
         val savedOrder = LyricsProviderRegistry.deserializeProviderOrder(lyricsProviderOrder)
         val normalizedOrder = savedOrder + defaultOrder.filter { it !in savedOrder }
@@ -307,7 +309,7 @@ fun ContentAdvancedSettings(
                         id = name,
                         name = LyricsProviderRegistry.getDisplayName(name),
                         icon = lyricsIcon,
-                        enabled = enabledStates[name] ?: true,
+                        enabled = enabledStates[name] ?: LyricsProviderSettings.defaultEnabled(name),
                     )
                 }
             )
@@ -390,7 +392,7 @@ fun ContentAdvancedSettings(
                                 providerScope.launch {
                                     context.dataStore.edit { prefs ->
                                         val key = LyricsProviderSettings.enabledKey(id)
-                                        prefs[key] = !(prefs[key] ?: true)
+                                        prefs[key] = !(prefs[key] ?: LyricsProviderSettings.defaultEnabled(id))
                                     }
                                 }
                             },
