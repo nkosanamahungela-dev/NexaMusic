@@ -36,4 +36,12 @@ class LyricsProviderRegistryTest {
         assertEquals(listOf("Kugou", "YouTubeMusic"), order)
         assertEquals("Kugou,YouTubeMusic", LyricsProviderRegistry.serializeProviderOrder(order))
     }
+
+    @Test
+    fun registersTheOptionalAmllTtmlDatabaseProvider() {
+        assertSame(AmllTtmlDatabaseProvider, LyricsProviderRegistry.getProvider("AmllTtmlDatabase"))
+        assertEquals("AMLL TTML Database", LyricsProviderRegistry.getDisplayName("AmllTtmlDatabase"))
+        assertTrue(LyricsProviderRegistry.getDefaultProviderOrder().contains("AmllTtmlDatabase"))
+    }
+
 }
