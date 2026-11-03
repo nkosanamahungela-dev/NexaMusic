@@ -148,8 +148,7 @@ fun AppleMusicV3Lyrics(
                         .blur(blurRadius.dp)
                         .clickable { onSeek(entry.time) }
                         .padding(
-                            start = if (isBackground) 28.dp else 0.dp,
-                            end = if (isBackground) 28.dp else 0.dp,
+                            horizontal = if (isBackground) 28.dp else 0.dp,
                             vertical = if (isBackground) 2.dp else 0.dp,
                         ),
                     horizontalAlignment = lineAlignment,
