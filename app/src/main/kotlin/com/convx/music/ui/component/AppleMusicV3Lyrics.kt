@@ -98,7 +98,7 @@ fun AppleMusicV3Lyrics(
             state = listState,
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(vertical = verticalInset, horizontal = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(26.dp),
+            verticalArrangement = Arrangement.spacedBy(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             itemsIndexed(
@@ -208,9 +208,10 @@ fun AppleMusicV3Lyrics(
                                     text = word,
                                     color = wordColor,
                                     fontFamily = fontFamily,
-                                    fontSize = (fontSize * if (isBackground) 0.78f else 1f).sp,
-                                    fontWeight = if (isActive && progress >= 0.98f) FontWeight.SemiBold else FontWeight.Medium,
-                                    lineHeight = (fontSize * lineSpacing.coerceIn(1.0f, 1.55f)).sp,
+                                    fontSize = (fontSize * if (isBackground) 0.88f else 1.32f).sp,
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = (-0.5).sp,
+                                    lineHeight = ((fontSize * if (isBackground) 0.88f else 1.32f) * lineSpacing.coerceIn(1.12f, 1.45f)).sp,
                                     style = TextStyle(
                                         shadow = if (isActive && progress > 0f) {
                                             Shadow(color = accentColor.copy(alpha = progress * 0.24f), blurRadius = 16f)
@@ -224,11 +225,11 @@ fun AppleMusicV3Lyrics(
                     if (showTranslation && !translation.isNullOrBlank()) {
                         Text(
                             text = translation!!,
-                            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                            modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
                             color = textColor.copy(alpha = if (isActive) 0.72f else 0.44f),
                             fontFamily = fontFamily,
-                            fontSize = (fontSize * 0.62f).sp,
-                            fontWeight = FontWeight.Normal,
+                            fontSize = (fontSize * 0.78f).sp,
+                            fontWeight = FontWeight.SemiBold,
                             textAlign = lineTextAlign,
                             lineHeight = (fontSize * 0.78f).sp,
                         )
@@ -239,8 +240,8 @@ fun AppleMusicV3Lyrics(
                             modifier = Modifier.fillMaxWidth().padding(top = 7.dp),
                             color = textColor.copy(alpha = if (isActive) 0.62f else 0.42f),
                             fontFamily = fontFamily,
-                            fontSize = (fontSize * 0.56f).sp,
-                            fontWeight = FontWeight.Normal,
+                            fontSize = (fontSize * 0.68f).sp,
+                            fontWeight = FontWeight.Medium,
                             textAlign = lineTextAlign,
                             lineHeight = (fontSize * 0.72f).sp,
                         )
