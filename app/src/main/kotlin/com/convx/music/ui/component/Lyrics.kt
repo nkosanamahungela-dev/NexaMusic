@@ -1590,7 +1590,7 @@ fun Lyrics(
                                 parts.map { part ->
                                     val start = cursor
                                     cursor += (activeDuration * (part.length + 1).toFloat() / total).toLong()
-                                    com.convx.music.lyrics.LyricsEntry.Word(
+                                    com.convx.music.lyrics.WordTimestamp(
                                         text = part,
                                         startTime = start / 1000.0,
                                         endTime = cursor / 1000.0
@@ -1600,8 +1600,8 @@ fun Lyrics(
                             val linePosition = (effectivePlaybackPosition - item.time).coerceAtLeast(0L)
                             val styledText = buildAnnotatedString {
                                 timedWords.forEachIndexed { wordIndex, word ->
-                                    val start = if (words.isNotEmpty()) (word.startTime * 1000).toLong() else (word.startTime * 1000).toLong()
-                                    val end = if (words.isNotEmpty()) (word.endTime * 1000).toLong() else (word.endTime * 1000).toLong()
+                                    val start = (word.startTime * 1000).toLong() - if (words.isNotEmpty()) item.time else 0L
+                                    val end = (word.endTime * 1000).toLong() - if (words.isNotEmpty()) item.time else 0L
                                     val charDuration = ((end - start).coerceAtLeast(1L) / word.text.length.coerceAtLeast(1))
                                     word.text.forEachIndexed { charIndex, char ->
                                         val charEnd = start + charDuration * (charIndex + 1)
