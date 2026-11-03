@@ -9,6 +9,7 @@ package com.convx.music.ui.component
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -52,7 +53,7 @@ import kotlinx.coroutines.isActive
  * Apple Music V3's native presentation. Word timestamps are absolute milliseconds
  * after conversion from the LyricsEntry model's seconds-based timestamps.
  */
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun AppleMusicV3Lyrics(
     lines: List<LyricsEntry>,
