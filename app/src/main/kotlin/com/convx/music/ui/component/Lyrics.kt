@@ -681,12 +681,13 @@ fun Lyrics(
     var showMaxSelectionToast by remember { mutableStateOf(false) }
 
     val isLyricsProviderShown = lyricsEntity?.provider != null && lyricsEntity?.provider != "Unknown" && !isSelectionModeActive
+    val usesAppleMusicV3Renderer = lyricsAnimationStyle == LyricsAnimationStyle.APPLE_V3 && lines.isNotEmpty()
     val usesArchiveTuneRenderer = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
         lyricsAnimationStyle == LyricsAnimationStyle.ARCHIVE_TUNE &&
         lines.hasKaraokeTimings()
     val usesFlamingoRenderer = lyricsAnimationStyle == LyricsAnimationStyle.FLAMINGO && lines.isNotEmpty()
     val usesCrawlRenderer = lyricsAnimationStyle == LyricsAnimationStyle.STAR_CRAWL && lines.isNotEmpty()
-    val hasProviderRow = isLyricsProviderShown && !usesArchiveTuneRenderer && !usesFlamingoRenderer && !usesCrawlRenderer
+    val hasProviderRow = isLyricsProviderShown && !usesAppleMusicV3Renderer && !usesArchiveTuneRenderer && !usesFlamingoRenderer && !usesCrawlRenderer
 
     val lazyListState = rememberLazyListState()
     val rubber = rememberLyricRubber(lazyListState)
@@ -835,6 +836,20 @@ fun Lyrics(
 
         if (lyrics == LYRICS_NOT_FOUND || (lyrics != null && lines.all { it.text.isBlank() })) {
             LyricsEmptyNote(fontFamily = lyricsFontFamily, color = AppTheme.colorScheme.secondary)
+        } else if (usesAppleMusicV3Renderer) {
+            val lyricsOffset = currentSong?.song?.lyricsOffset?.toLong() ?: 0L
+            AppleMusicV3Lyrics(
+                lines = lines,
+                positionMs = { (sliderPositionProvider() ?: playerConnection.player.currentPosition) + lyricsOffset },
+                fontFamily = lyricsFontFamily,
+                fontSize = lyricsTextSize,
+                lineSpacing = lyricsLineSpacing,
+                showTranslation = hasActiveTranslations,
+                textColor = textColor,
+                accentColor = expressiveAccent,
+                onSeek = { if (isSynced && changeLyrics && !isGuest) playerConnection.player.seekTo((it - lyricsOffset).coerceAtLeast(0L)) },
+                modifier = Modifier.fillMaxSize().fadingEdge(vertical = 64.dp),
+            )
         } else if (usesCrawlRenderer) {
             val lyricsOffset = currentSong?.song?.lyricsOffset?.toLong() ?: 0L
             StarCrawlLyrics(
