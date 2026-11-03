@@ -37,8 +37,7 @@ object LyricsProviderSettings {
         else -> booleanPreferencesKey("enableLyrics$id")
     }
 
-    /** AMLL contains externally sourced lyric data, so require users to enable it explicitly. */
-    fun defaultEnabled(id: String): Boolean = id != "AmllTtmlDatabase"
+    fun defaultEnabled(id: String): Boolean = true
 
     fun isEnabled(context: Context, provider: LyricsProvider): Boolean =
         context.dataStore[enabledKey(provider.id)] ?: defaultEnabled(provider.id)

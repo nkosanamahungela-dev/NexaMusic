@@ -784,6 +784,7 @@ enum class LyricsAnimationStyle {
     KARAOKE,
     APPLE,
     APPLE_V2,
+    APPLE_V3,
     BITCHORD,
     CONVX_1,
     LYRICS_V2,

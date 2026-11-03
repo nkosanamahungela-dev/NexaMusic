@@ -9,7 +9,7 @@ object LyricsProviderRegistry {
     private val providers = listOf(
         YouTubeSubtitleLyricsProvider,
         YouTubeLyricsProvider,
-    ).plus(BitChordLyricsProviders.all + AmllTtmlDatabaseProvider).associateBy(LyricsProvider::id)
+    ).plus(BitChordLyricsProviders.all).associateBy(LyricsProvider::id)
 
     private val legacyDisplayNames = providers.values.associate { it.displayName to it.id } + mapOf(
         "YouLy+" to "YouLyPlus", "YouLyPlus" to "YouLyPlus", "LrcLib" to "LrcLib", "Kugou" to "Kugou",
@@ -33,7 +33,6 @@ object LyricsProviderRegistry {
     // Word timing providers lead so the default renderer receives real word
     // timestamps. The saved order always takes precedence over this default.
     fun getDefaultProviderOrder(): List<String> = listOf(
-        "AmllTtmlDatabase",
         "LrcRed",
         "BiniLyrics",
         "BetterLyrics",

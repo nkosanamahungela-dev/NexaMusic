@@ -55,7 +55,7 @@ fun LyricsSettingsScreen(navController: NavController) {
             IosSettingsItem(
                 icon = painterResource(R.drawable.lyrics),
                 title = { Text("Provider order and availability") },
-                description = { Text("Drag to reorder sources and enable or disable each provider. AMLL TTML Database is opt-in because individual lyric entries may have separate source terms.") },
+                description = { Text("Drag to reorder sources and enable or disable each provider.") },
                 onClick = { navController.navigate("settings/content/advanced") },
             ),
         ))

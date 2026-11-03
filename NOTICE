@@ -31,20 +31,6 @@ See the repository LICENSE for the license text.
 Official music video matching is adapted from Square
 (https://github.com/Lelonio/Square), licensed under GPL-3.0.
 
-## AMLL TTML Database (optional runtime lyrics source)
-
-NexaMusic includes an independently written, opt-in provider that requests TTML files on demand
-from the AMLL TTML Database (https://github.com/amll-dev/amll-ttml-db). The provider is disabled by default. No upstream
-database files or lyric text are bundled in the NexaMusic APK or source tree.
-
-The upstream repository states that contributor-authored material is shared under
-CC0-1.0, while externally sourced material follows the original data provider's
-sharing terms. The CC0 dedication must therefore not be treated as a blanket licence
-for every lyric in that database. Availability and permitted use can vary by item and
-source. See the upstream README and LICENSE before redistributing any fetched content.
-
-The NexaMusic provider code itself is part of this GPL-3.0 project; it does not copy
-or vendor AMLL's renderer or database content.
 
 ## Base project
 

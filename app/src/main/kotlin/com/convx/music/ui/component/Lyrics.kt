@@ -1576,6 +1576,57 @@ fun Lyrics(
                                 }
                             }
                             Text(text = styledText, fontSize = lyricsTextSize.sp, textAlign = alignment, lineHeight = (lyricsTextSize * lyricsLineSpacing.coerceAtMost(1.3f)).sp)
+                        } else if (lyricsAnimationStyle == LyricsAnimationStyle.APPLE_V3) {
+                            // APPLE_V3: smooth character-by-character karaoke reveal.
+                            val words = item.words.orEmpty()
+                            val duration = (lines.getOrNull(index + 1)?.time?.minus(item.time) ?: 4000L)
+                                .coerceAtLeast(300L)
+                            val activeDuration = (duration * 0.95f).toLong()
+                            val text = item.text
+                            val timedWords = if (words.isNotEmpty()) words else {
+                                val parts = text.split(" ").filter(String::isNotEmpty)
+                                var cursor = 0L
+                                val total = text.length.coerceAtLeast(1)
+                                parts.map { part ->
+                                    val start = cursor
+                                    cursor += (activeDuration * (part.length + 1).toFloat() / total).toLong()
+                                    com.convx.music.lyrics.LyricsEntry.Word(
+                                        text = part,
+                                        startTime = start / 1000.0,
+                                        endTime = cursor / 1000.0
+                                    )
+                                }
+                            }
+                            val linePosition = (effectivePlaybackPosition - item.time).coerceAtLeast(0L)
+                            val styledText = buildAnnotatedString {
+                                timedWords.forEachIndexed { wordIndex, word ->
+                                    val start = if (words.isNotEmpty()) (word.startTime * 1000).toLong() else (word.startTime * 1000).toLong()
+                                    val end = if (words.isNotEmpty()) (word.endTime * 1000).toLong() else (word.endTime * 1000).toLong()
+                                    val charDuration = ((end - start).coerceAtLeast(1L) / word.text.length.coerceAtLeast(1))
+                                    word.text.forEachIndexed { charIndex, char ->
+                                        val charEnd = start + charDuration * (charIndex + 1)
+                                        val progress = when {
+                                            !isActiveLine -> 1f
+                                            linePosition >= charEnd -> 1f
+                                            linePosition <= start + charDuration * charIndex -> 0f
+                                            else -> ((linePosition - (start + charDuration * charIndex)).toFloat() /
+                                                charDuration.coerceAtLeast(1L)).coerceIn(0f, 1f)
+                                        }
+                                        val eased = progress * progress * (3f - 2f * progress)
+                                        withStyle(SpanStyle(
+                                            color = expressiveAccent.copy(alpha = if (!isActiveLine) 0.58f else 0.28f + 0.72f * eased),
+                                            fontWeight = if (progress > 0.55f) FontWeight.Bold else FontWeight.Medium
+                                        )) { append(char) }
+                                    }
+                                    if (wordIndex < timedWords.lastIndex) append(" ")
+                                }
+                            }
+                            Text(
+                                text = styledText,
+                                fontSize = lyricsTextSize.sp,
+                                textAlign = alignment,
+                                lineHeight = (lyricsTextSize * lyricsLineSpacing.coerceAtMost(1.3f)).sp
+                            )
                         } else if (lyricsAnimationStyle == LyricsAnimationStyle.APPLE_V2) {
                             val nextEntryTime = lines.getOrNull(index + 1)?.time
                             val duration = remember(item.time, nextEntryTime) {
