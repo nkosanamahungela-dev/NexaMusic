@@ -222,18 +222,6 @@ fun AppleMusicV3Lyrics(
                         }
                     }
 
-                    if (!romanized.isNullOrBlank()) {
-                        Text(
-                            text = romanized!!,
-                            modifier = Modifier.fillMaxWidth().padding(top = 7.dp),
-                            color = textColor.copy(alpha = if (isActive) 0.62f else 0.42f),
-                            fontFamily = fontFamily,
-                            fontSize = (fontSize * 0.56f).sp,
-                            fontWeight = FontWeight.Normal,
-                            textAlign = lineTextAlign,
-                            lineHeight = (fontSize * 0.72f).sp,
-                        )
-                    }
                     if (showTranslation && !translation.isNullOrBlank()) {
                         Text(
                             text = translation!!,
@@ -244,6 +232,18 @@ fun AppleMusicV3Lyrics(
                             fontWeight = FontWeight.Normal,
                             textAlign = lineTextAlign,
                             lineHeight = (fontSize * 0.78f).sp,
+                        )
+                    }
+                    if (!romanized.isNullOrBlank()) {
+                        Text(
+                            text = romanized!!,
+                            modifier = Modifier.fillMaxWidth().padding(top = 7.dp),
+                            color = textColor.copy(alpha = if (isActive) 0.62f else 0.42f),
+                            fontFamily = fontFamily,
+                            fontSize = (fontSize * 0.56f).sp,
+                            fontWeight = FontWeight.Normal,
+                            textAlign = lineTextAlign,
+                            lineHeight = (fontSize * 0.72f).sp,
                         )
                     }
                 }
