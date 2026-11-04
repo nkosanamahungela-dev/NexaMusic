@@ -238,9 +238,11 @@ internal fun FoldingTabGroup(
                 child.placeRelative((width - grownWidth) / 2, (slotHeight - grownHeight) / 2)
             }
         }
+        // Keep the selected puck's press refraction subtle and avoid chromatic
+        // aberration: that extra shader work was being repeated during every touch frame.
         val slotLens: BackdropEffectScope.() -> Unit = {
             val progress = dampedDragAnimation.pressProgress
-            lens(10.dp.toPx() * progress, 14.dp.toPx() * progress, chromaticAberration = true)
+            lens(6.dp.toPx() * progress, 8.dp.toPx() * progress, chromaticAberration = false)
         }
         // While pressed the slot also refracts the bar's own surface, faded in so release doesn't pop.
         val pressedBackdrop = remember(backdrop, surfaceBackdrop, dampedDragAnimation) {
@@ -280,7 +282,9 @@ internal fun FoldingTabGroup(
                     shape = { ContinuousCapsule },
                     effects = {
                         vibrancy()
-                        blur(8.dp.toPx() * (1f - dampedDragAnimation.pressProgress.coerceIn(0f, 1f)))
+                        // A small fixed frost keeps the puck glassy without
+                        // changing the blur radius on every animation frame.
+                        blur(2.dp.toPx())
                         slotLens()
                     },
                     highlight = { Highlight.Default.copy(alpha = dampedDragAnimation.pressProgress) },
