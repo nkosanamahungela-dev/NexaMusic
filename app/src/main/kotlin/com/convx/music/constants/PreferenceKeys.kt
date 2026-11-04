@@ -17,6 +17,8 @@ import java.time.ZoneOffset
 import com.music.innertube.models.IpVersion
 
 val IsFirstRunKey = booleanPreferencesKey("isFirstRun")
+/** Permanently hides the YouTube sign-in reminder after the user opts out. */
+val HideYouTubeLoginReminderKey = booleanPreferencesKey("hideYouTubeLoginReminder")
 /** Set once, the first time the app ever runs — gates the donation prompt on "used for
  *  a while" rather than showing it to a brand new install. */
 val FirstLaunchTimestampKey = longPreferencesKey("firstLaunchTimestamp")
