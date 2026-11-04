@@ -55,6 +55,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.withFrameNanos
 import com.convx.music.lyrics.LyricsEntry
+import com.convx.music.lyrics.GROUP_AGENT_ID
+import com.convx.music.lyrics.primaryAgentId
 import kotlinx.coroutines.isActive
 
 /**
@@ -105,7 +107,12 @@ fun AppleMusicV3Lyrics(
         }
     }
 
-    val agents = remember(lines) { lines.mapNotNull { it.agent }.distinct() }
+    // Shared/group vocals are not a new singer turn and must not change the side.
+    val agents = remember(lines) {
+        lines.mapNotNull { entry ->
+            entry.agent?.let(::primaryAgentId)?.takeUnless { it == GROUP_AGENT_ID }
+        }.distinct()
+    }
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val verticalInset = maxHeight * 0.40f
@@ -141,7 +148,9 @@ fun AppleMusicV3Lyrics(
                 val translation by entry.translatedTextFlow.collectAsStateWithLifecycle()
                 val romanized by entry.romanizedTextFlow.collectAsStateWithLifecycle()
 
-                val agentIndex = entry.agent?.let { agents.indexOf(it) } ?: -1
+                val normalizedAgent = entry.agent?.let(::primaryAgentId)
+                val agentIndex = normalizedAgent?.takeUnless { it == GROUP_AGENT_ID }
+                    ?.let { agents.indexOf(it) } ?: -1
                 val isDuetSide = agentIndex >= 0 && agents.size > 1
                 val lineAlignment = when {
                     isDuetSide && agentIndex % 2 == 1 -> Alignment.End
