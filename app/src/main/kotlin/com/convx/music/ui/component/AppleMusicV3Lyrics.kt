@@ -44,6 +44,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -181,51 +184,63 @@ fun AppleMusicV3Lyrics(
                         }
                     }
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = when (lineTextAlign) {
-                            TextAlign.End -> Arrangement.End
-                            TextAlign.Center -> Arrangement.Center
-                            else -> Arrangement.Start
-                        },
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        androidx.compose.foundation.layout.FlowRow(
-                            horizontalArrangement = Arrangement.spacedBy(0.dp),
-                            verticalArrangement = Arrangement.Center,
-                        ) {
+                    val karaokeText = remember(words, entry.text, framePosition, isActive, textColor, accentColor, fontSize) {
+                        buildAnnotatedString {
+                            var sourceCursor = 0
                             words.forEach { (word, start, end) ->
-                                val progress = when {
-                                    framePosition <= start -> 0f
-                                    framePosition >= end -> 1f
-                                    else -> ((framePosition - start).toFloat() / (end - start).coerceAtLeast(1L)).coerceIn(0f, 1f)
+                                if (word.isBlank()) {
+                                    append(word)
+                                } else {
+                                    // Keep the exact whitespace and punctuation from the source lyric.
+                                    val foundAt = entry.text.indexOf(word, sourceCursor)
+                                    if (foundAt >= sourceCursor) {
+                                        append(entry.text.substring(sourceCursor, foundAt))
+                                        sourceCursor = foundAt
+                                    } else if (sourceCursor > 0) {
+                                        append(" ")
+                                    }
+
+                                    val progress = when {
+                                        framePosition <= start -> 0f
+                                        framePosition >= end -> 1f
+                                        else -> ((framePosition - start).toFloat() / (end - start).coerceAtLeast(1L)).coerceIn(0f, 1f)
+                                    }
+                                    val wordAlpha = if (isActive) 0.40f + progress * 0.60f else 0.86f
+                                    val wordColor = if (isActive && progress > 0.02f) {
+                                        Color(
+                                            red = textColor.red + (accentColor.red - textColor.red) * progress * 0.12f,
+                                            green = textColor.green + (accentColor.green - textColor.green) * progress * 0.12f,
+                                            blue = textColor.blue + (accentColor.blue - textColor.blue) * progress * 0.12f,
+                                            alpha = wordAlpha,
+                                        )
+                                    } else textColor.copy(alpha = wordAlpha)
+                                    withStyle(SpanStyle(color = wordColor, fontWeight = FontWeight.Bold)) {
+                                        append(word)
+                                    }
+                                    if (foundAt >= sourceCursor) sourceCursor += word.length
                                 }
-                                val wordAlpha = if (isActive) 0.40f + progress * 0.60f else 0.86f
-                                val wordColor = if (isActive && progress > 0.02f) {
-                                    Color(
-                                        red = textColor.red + (accentColor.red - textColor.red) * progress * 0.12f,
-                                        green = textColor.green + (accentColor.green - textColor.green) * progress * 0.12f,
-                                        blue = textColor.blue + (accentColor.blue - textColor.blue) * progress * 0.12f,
-                                        alpha = wordAlpha,
-                                    )
-                                } else textColor.copy(alpha = wordAlpha)
-                                Text(
-                                    text = word,
-                                    color = wordColor,
-                                    fontFamily = fontFamily,
-                                    fontSize = (fontSize * if (isBackground) 0.88f else 1f).sp,
-                                    fontWeight = FontWeight.Bold,
-                                    letterSpacing = (-0.5).sp,
-                                    lineHeight = (fontSize * lineSpacing.coerceIn(1.12f, 1.45f)).sp,
-                                    style = TextStyle(
-                                        shadow = if (isActive && progress > 0f) {
-                                            Shadow(color = accentColor.copy(alpha = progress * 0.24f), blurRadius = 16f)
-                                        } else Shadow(Color.Transparent, blurRadius = 0f)
-                                    ),
-                                )
+                            }
+                            if (sourceCursor < entry.text.length) {
+                                append(entry.text.substring(sourceCursor))
                             }
                         }
                     }
+                    Text(
+                        text = karaokeText,
+                        modifier = Modifier.fillMaxWidth(),
+                        color = textColor,
+                        fontFamily = fontFamily,
+                        fontSize = (fontSize * if (isBackground) 0.88f else 1f).sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = (-0.5).sp,
+                        textAlign = lineTextAlign,
+                        lineHeight = (fontSize * lineSpacing.coerceIn(1.12f, 1.45f)).sp,
+                        style = TextStyle(
+                            shadow = if (isActive) {
+                                Shadow(color = accentColor.copy(alpha = 0.18f), blurRadius = 12f)
+                            } else Shadow(Color.Transparent, blurRadius = 0f)
+                        ),
+                    )
 
                     if (showTranslation && !translation.isNullOrBlank()) {
                         Text(
@@ -260,7 +275,7 @@ fun AppleMusicV3Lyrics(
                 val nextLineTime = nextEntry?.time
                 val interludeStart = lastWordEndMs
                 val showInterlude = isActive && interludeStart != null && nextLineTime != null &&
-                    nextLineTime - interludeStart >= 1400L &&
+                    nextLineTime - interludeStart >= 700L &&
                     framePosition >= interludeStart && framePosition < nextLineTime
                 if (showInterlude) {
                     val transition = rememberInfiniteTransition(label = "appleV3Interlude")
@@ -271,20 +286,31 @@ fun AppleMusicV3Lyrics(
                     ) {
                         repeat(3) { dotIndex ->
                             val dotAlpha by transition.animateFloat(
-                                initialValue = 0.22f,
-                                targetValue = 0.95f,
+                                initialValue = 0.18f,
+                                targetValue = 1f,
                                 animationSpec = infiniteRepeatable(
-                                    animation = tween(durationMillis = 620, delayMillis = dotIndex * 150),
+                                    animation = tween(durationMillis = 520, delayMillis = dotIndex * 170),
                                     repeatMode = RepeatMode.Reverse,
                                 ),
-                                label = "appleV3InterludeDot$dotIndex",
+                                label = "appleV3InterludeDotAlpha$dotIndex",
+                            )
+                            val dotLift by transition.animateFloat(
+                                initialValue = 0f,
+                                targetValue = -5f,
+                                animationSpec = infiniteRepeatable(
+                                    animation = tween(durationMillis = 520, delayMillis = dotIndex * 170),
+                                    repeatMode = RepeatMode.Reverse,
+                                ),
+                                label = "appleV3InterludeDotLift$dotIndex",
                             )
                             Text(
                                 text = "•",
                                 color = textColor.copy(alpha = dotAlpha),
-                                fontSize = 19.sp,
+                                fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(horizontal = 3.dp),
+                                modifier = Modifier
+                                    .padding(horizontal = 4.dp)
+                                    .graphicsLayer { translationY = dotLift },
                             )
                         }
                     }
