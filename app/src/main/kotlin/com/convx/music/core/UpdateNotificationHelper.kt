@@ -22,7 +22,7 @@ object UpdateNotificationHelper {
         NotificationManagerCompat.from(context).cancel(NOTIFICATION_ID)
     }
 
-    fun showUpdateNotification(context: Context, versionName: String) {
+    fun showUpdateNotification(context: Context, versionName: String, apkUrl: String? = null) {
         if (com.convx.music.core.updater.AUTOMATIC_UPDATE_ALERTS_PAUSED ||
             !com.convx.music.core.updater.getUpdateNotificationsSetting(context)
         ) {
@@ -41,12 +41,12 @@ object UpdateNotificationHelper {
         }
 
         // Download links for NexaMusic releases and nightly debug artifacts.
-        val apkUrl = if (versionName.contains("nightly", ignoreCase = true)) {
+        val downloadUrl = apkUrl?.takeIf(String::isNotBlank) ?: if (versionName.contains("nightly", ignoreCase = true)) {
             "https://nightly.link/nkosanamahungela-dev/NexaMusic/workflows/nightly.yml/main/nexamusic-gms-beta.zip"
         } else {
             "https://github.com/nkosanamahungela-dev/NexaMusic/releases/download/$versionName/nexamusic-$versionName.apk"
         }
-        val intent = Intent(Intent.ACTION_VIEW, apkUrl.toUri())
+        val intent = Intent(Intent.ACTION_VIEW, downloadUrl.toUri())
 
         val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         val pending = PendingIntent.getActivity(context, NOTIFICATION_ID, intent, flags)
