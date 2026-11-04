@@ -17,7 +17,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import com.convx.music.lyrics.LyricsEntry
 import com.convx.music.ui.ios.compat.Text
 import kotlin.math.abs
+import kotlinx.coroutines.delay
 
 /**
  * Perspective lyrics renderer: the active line sits on the centre of a curved field,
@@ -58,7 +58,9 @@ fun FisheyeLyrics(
             return@LaunchedEffect
         }
         while (true) {
-            withFrameNanos { }
+            // The active lyric changes far less often than the display refresh rate.
+            // Sample at 30 Hz instead of scanning the entire lyric list every frame.
+            delay(33L)
             val position = positionMs()
             val found = lines.indexOfLast { it.time <= position }
             if (found != activeIndex) activeIndex = found
