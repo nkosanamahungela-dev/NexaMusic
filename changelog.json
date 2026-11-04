@@ -1,25 +1,28 @@
 {
-  "description": "NexaMusic 0.1.2 — refreshed interface, lyrics improvements, and automatic updates.",
+  "description": "NexaMusic 0.1.3 Beta — a major lyrics, interface, playback, and performance update.",
   "image": "",
   "changelog": [
     {
       "title": "What's new",
       "items": [
-        "Refreshed the Search screen with a black background and Apple Music-inspired red accents.",
-        "Improved Search category tiles, selection states, and animations while keeping existing search behaviour.",
-        "Refined Settings screen grouping, layout, and appearance.",
-        "Added automatic update checks every six hours, with support for stable and beta releases.",
-        "Added automatic update downloads when an eligible update is found; Android still asks for approval before installation.",
-        "Improved lyrics rendering performance and reduced excessive glow.",
-        "Added Flamingo as a named option in the Lyrics Style selector.",
-        "Improved the Lyrics Style live preview."
+        "Introduced Apple Music V3 lyrics as a beta style, with improved typography, spacing, word timing, and smoother lyric auto-scrolling.",
+        "Improved duet and multi-vocalist lyric alignment so each singer's lines retain their identity and positioning.",
+        "Added animated interlude indicators and refined timed-lyrics rendering.",
+        "Refreshed Search colours and Settings icons with a more consistent, colourful Apple Music-inspired appearance.",
+        "Restored YouTube Music playlist synchronization in the Library.",
+        "Fixed guest playback truncation on streams that do not report their total length.",
+        "Improved transition timing and playback handoff behaviour.",
+        "Optimized lyrics rendering, Liquid Glass effects, and tab animations to reduce unnecessary work.",
+        "Added a sign-in reminder for logged-out users, with a preference to hide it.",
+        "Added automatic update checks, beta-release support, background APK downloads, and update notifications."
       ]
     },
     {
       "title": "Notes",
       "items": [
-        "Some playback interruptions and lyric timing issues may still occur on certain devices or accounts.",
-        "Playlist synchronization and album loading improvements should be verified with a signed-in YouTube Music account."
+        "Apple Music V3 lyrics are still in beta; timing and alignment can vary by track and lyrics provider.",
+        "Playlist synchronization requires a signed-in YouTube Music account.",
+        "Playback transitions and performance should be verified across different devices and tracks."
       ]
     }
   ]
