@@ -34,7 +34,9 @@ internal fun List<LyricLine>.toConvxLyrics(): String {
     fun LyricLine.row(background: Boolean = false): String = buildString {
         append("[${stamp(timeMs.coerceAtLeast(0))}]")
         if (background) append("{bg}")
-        if (alignment == LyricAlignment.End) append("{agent:v2}")
+        val vocalist = agent
+        if (!vocalist.isNullOrBlank()) append("{agent:$vocalist}")
+        else if (alignment == LyricAlignment.End) append("{agent:v2}")
         if (words.isEmpty()) append(text) else words.forEachIndexed { index, word ->
             if (index > 0) append(' ')
             append("<${stamp(word.startMs)}|${stamp(word.endMs)}>${word.text}")
