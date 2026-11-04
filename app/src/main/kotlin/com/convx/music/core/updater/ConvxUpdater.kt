@@ -809,15 +809,22 @@ suspend fun checkForUpdate(
                 return@withContext
             }
 
+            var bestStableRelease: JSONObject? = null
             var bestOverallRelease: JSONObject? = null
 
             for (i in 0 until releases.length()) {
                 val release = releases.getJSONObject(i)
                 val tagName = release.getString("tag_name")
+                val isPreRelease = release.optBoolean("prerelease", false)
 
-                // Published GitHub releases, including public beta pre-releases,
-                // are available to every NexaMusic user. The beta preference only
-                // controls nightly builds above, not tagged beta releases.
+                if (!isPreRelease) {
+                    if (bestStableRelease == null ||
+                        isNewerVersion(tagName, bestStableRelease.getString("tag_name"))
+                    ) {
+                        bestStableRelease = release
+                    }
+                }
+
                 if (bestOverallRelease == null ||
                     isNewerVersion(tagName, bestOverallRelease.getString("tag_name"))
                 ) {
@@ -825,7 +832,9 @@ suspend fun checkForUpdate(
                 }
             }
 
-            val targetRelease = bestOverallRelease
+            // Stable releases are public to everyone. GitHub pre-releases
+            // are only offered when the user explicitly enables Beta Updates.
+            val targetRelease = if (betaEnabled) bestOverallRelease else bestStableRelease
 
             if (targetRelease != null) {
                 val targetTagName = targetRelease.getString("tag_name")
