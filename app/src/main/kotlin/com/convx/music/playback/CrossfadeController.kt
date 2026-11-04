@@ -74,6 +74,8 @@ class CrossfadeController(
 
     private var fadeEndMs = 0L
 
+    private var fadeStartMs = 0L
+
     private var smartFadeActive = false
 
     private var incomingCueTimeMs: Long = 0L
@@ -261,7 +263,12 @@ class CrossfadeController(
         val remaining = duration - player.currentPosition
         if (remaining > fade + ARM_LEAD_MS) return
 
-        begin(fade, endMs = duration, smart = false)
+        begin(
+            fade,
+            endMs = duration,
+            smart = false,
+            startAtMs = (duration - fade).coerceAtLeast(0L),
+        )
     }
 
     private fun considerSmartTransition(duration: Long) {
@@ -324,6 +331,7 @@ class CrossfadeController(
             fade,
             endMs = (plan.transitionEnd * 1000).roundToLong(),
             smart = true,
+            startAtMs = transitionStartMs,
             cueTimeMs = (plan.incomingCueTime * 1000).roundToLong(),
             playbackRate = plan.incomingPlaybackRate,
             renderStyle = Render(
@@ -411,6 +419,7 @@ class CrossfadeController(
         fade: Long,
         endMs: Long,
         smart: Boolean,
+        startAtMs: Long = (endMs - fade).coerceAtLeast(0L),
         cueTimeMs: Long = 0L,
         playbackRate: Double = 1.0,
         renderStyle: Render = Render(),
@@ -431,6 +440,7 @@ class CrossfadeController(
         )
         fadeMs = fade
         fadeEndMs = endMs
+        fadeStartMs = startAtMs.coerceAtLeast(0L)
         smartFadeActive = smart
         incomingCueTimeMs = cueTimeMs.coerceAtLeast(0L)
         val requestedRate = djPlan?.takeIf { it.tier != DjMixTier.PLAIN_CROSSFADE }
@@ -478,7 +488,9 @@ class CrossfadeController(
 
         if (expired && !ready) return bail()
 
-        val atFadePoint = fadeEndMs <= 0L || fadeEndMs - out.currentPosition <= fadeMs
+        // Start at the planner's explicit opening point. Deriving it from end - fade
+        // is wrong for plans such as GAPLESS, whose marker window is wider than its fade.
+        val atFadePoint = fadeStartMs <= 0L || out.currentPosition >= fadeStartMs
         if (!atFadePoint) return
         if (ready) startFade()
     }
@@ -623,6 +635,8 @@ class CrossfadeController(
         handedOff = false
         queuedItemCount = 0
         incomingCueTimeMs = 0L
+        fadeStartMs = 0L
+        fadeEndMs = 0L
         incomingPlaybackRate = 1.0
         djEngine?.clearActivePlan()
         phase = Phase.IDLE
