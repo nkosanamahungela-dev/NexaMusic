@@ -370,7 +370,7 @@ fun SettingsLinkRow(link: SettingsLink, trailing: String?, selected: Boolean, on
             Modifier
                 .size(36.dp)
                 .clip(ContinuousRoundedRectangle(11.dp))
-                .background(SettingsDesign.tileColor(link.title)),
+                .background(link.tint(IosTheme.colors)),
             contentAlignment = Alignment.Center,
         ) {
             Icon(
