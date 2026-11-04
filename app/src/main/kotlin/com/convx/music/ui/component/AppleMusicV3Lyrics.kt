@@ -7,6 +7,11 @@
 package com.convx.music.ui.component
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -98,7 +103,7 @@ fun AppleMusicV3Lyrics(
             state = listState,
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(vertical = verticalInset, horizontal = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(32.dp),
+            verticalArrangement = Arrangement.spacedBy(22.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             itemsIndexed(
@@ -208,10 +213,10 @@ fun AppleMusicV3Lyrics(
                                     text = word,
                                     color = wordColor,
                                     fontFamily = fontFamily,
-                                    fontSize = (fontSize * if (isBackground) 0.88f else 1.32f).sp,
+                                    fontSize = (fontSize * if (isBackground) 0.88f else 1f).sp,
                                     fontWeight = FontWeight.Bold,
                                     letterSpacing = (-0.5).sp,
-                                    lineHeight = ((fontSize * if (isBackground) 0.88f else 1.32f) * lineSpacing.coerceIn(1.12f, 1.45f)).sp,
+                                    lineHeight = (fontSize * lineSpacing.coerceIn(1.12f, 1.45f)).sp,
                                     style = TextStyle(
                                         shadow = if (isActive && progress > 0f) {
                                             Shadow(color = accentColor.copy(alpha = progress * 0.24f), blurRadius = 16f)
@@ -228,8 +233,8 @@ fun AppleMusicV3Lyrics(
                             modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
                             color = textColor.copy(alpha = if (isActive) 0.72f else 0.44f),
                             fontFamily = fontFamily,
-                            fontSize = (fontSize * 0.78f).sp,
-                            fontWeight = FontWeight.SemiBold,
+                            fontSize = (fontSize * 0.70f).sp,
+                            fontWeight = FontWeight.Bold,
                             textAlign = lineTextAlign,
                             lineHeight = (fontSize * 0.78f).sp,
                         )
@@ -240,11 +245,48 @@ fun AppleMusicV3Lyrics(
                             modifier = Modifier.fillMaxWidth().padding(top = 7.dp),
                             color = textColor.copy(alpha = if (isActive) 0.62f else 0.42f),
                             fontFamily = fontFamily,
-                            fontSize = (fontSize * 0.68f).sp,
+                            fontSize = (fontSize * 0.62f).sp,
                             fontWeight = FontWeight.Medium,
                             textAlign = lineTextAlign,
                             lineHeight = (fontSize * 0.72f).sp,
                         )
+                    }
+                }
+
+                // Apple Music-style interlude ellipsis appears only in a real timed gap
+                // between the end of this line and the next lyric line.
+                val nextEntry = lines.getOrNull(index + 1)
+                val lastWordEndMs = entry.words?.lastOrNull()?.endTime?.let { (it * 1000.0).toLong() }
+                val nextLineTime = nextEntry?.time
+                val interludeStart = lastWordEndMs
+                val showInterlude = isActive && interludeStart != null && nextLineTime != null &&
+                    nextLineTime - interludeStart >= 1400L &&
+                    framePosition >= interludeStart && framePosition < nextLineTime
+                if (showInterlude) {
+                    val transition = rememberInfiniteTransition(label = "appleV3Interlude")
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 2.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        repeat(3) { dotIndex ->
+                            val dotAlpha by transition.animateFloat(
+                                initialValue = 0.22f,
+                                targetValue = 0.95f,
+                                animationSpec = infiniteRepeatable(
+                                    animation = tween(durationMillis = 620, delayMillis = dotIndex * 150),
+                                    repeatMode = RepeatMode.Reverse,
+                                ),
+                                label = "appleV3InterludeDot$dotIndex",
+                            )
+                            Text(
+                                text = "•",
+                                color = textColor.copy(alpha = dotAlpha),
+                                fontSize = 19.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 3.dp),
+                            )
+                        }
                     }
                 }
             }
