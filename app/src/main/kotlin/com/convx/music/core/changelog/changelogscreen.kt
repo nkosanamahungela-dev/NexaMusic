@@ -479,8 +479,8 @@ data class CachedChangelogData(val sections: List<ChangelogSection>, val image: 
 
 private fun cleanupOldChangelogCache(context: Context, currentVersionTag: String) {
     try {
-        context.filesDir.listFiles { file -> file.name.startsWith("changelog_cache_") && file.name.endsWith(".json") }?.forEach { file ->
-            if (file.name != "changelog_cache_$currentVersionTag.json") file.delete()
+        context.filesDir.listFiles { file -> file.name.startsWith("changelog_cache_v2_") && file.name.endsWith(".json") }?.forEach { file ->
+            if (file.name != "changelog_cache_v2_$currentVersionTag.json") file.delete()
         }
     } catch (e: Exception) { Timber.tag("ChangelogCache").e(e, "Error cleaning up cache") }
 }
@@ -503,15 +503,15 @@ private fun saveChangelogToCache(context: Context, versionTag: String, sections:
             put("description", description ?: "")
             put("warning", warning ?: "")
         }
-        context.openFileOutput("changelog_cache_$versionTag.json", Context.MODE_PRIVATE).use { it.write(cacheData.toString().toByteArray()) }
+        context.openFileOutput("changelog_cache_v2_$versionTag.json", Context.MODE_PRIVATE).use { it.write(cacheData.toString().toByteArray()) }
     } catch (e: Exception) { Timber.tag("ChangelogCache").e(e, "Error saving cache") }
 }
 
 private fun loadChangelogFromCache(context: Context, versionTag: String): CachedChangelogData? {
     return try {
-        val cacheFile = File(context.filesDir, "changelog_cache_$versionTag.json")
+        val cacheFile = File(context.filesDir, "changelog_cache_v2_$versionTag.json")
         if (!cacheFile.exists()) return null
-        val cacheData = JSONObject(context.openFileInput("changelog_cache_$versionTag.json").use { it.bufferedReader().readText() })
+        val cacheData = JSONObject(context.openFileInput("changelog_cache_v2_$versionTag.json").use { it.bufferedReader().readText() })
         
         val sectionsArray = cacheData.optJSONArray("sections")
         val sections = mutableListOf<ChangelogSection>()
