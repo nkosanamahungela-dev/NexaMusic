@@ -73,7 +73,8 @@ object TtmlLyrics {
         for (i in 0 until paragraphs.length) {
             val paragraph = paragraphs.item(i) as? Element ?: continue
             val line = lineFrom(paragraph) ?: continue
-            sung += line to paragraph.qualified("ttm:agent").takeIf { it.isNotEmpty() }
+            val agent = paragraph.qualified("ttm:agent").takeIf { it.isNotEmpty() }
+            sung += line.copy(agent = agent) to agent
         }
         sung.sortBy { it.first.timeMs }
 
