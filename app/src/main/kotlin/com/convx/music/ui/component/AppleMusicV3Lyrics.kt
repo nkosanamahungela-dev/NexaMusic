@@ -188,16 +188,12 @@ fun AppleMusicV3Lyrics(
                         buildAnnotatedString {
                             var sourceCursor = 0
                             words.forEach { (word, start, end) ->
-                                if (word.isBlank()) {
-                                    append(word)
-                                } else {
+                                if (word.isNotBlank()) {
                                     // Keep the exact whitespace and punctuation from the source lyric.
                                     val foundAt = entry.text.indexOf(word, sourceCursor)
                                     if (foundAt >= sourceCursor) {
                                         append(entry.text.substring(sourceCursor, foundAt))
                                         sourceCursor = foundAt
-                                    } else if (sourceCursor > 0) {
-                                        append(" ")
                                     }
 
                                     val progress = when {
@@ -217,7 +213,11 @@ fun AppleMusicV3Lyrics(
                                     withStyle(SpanStyle(color = wordColor, fontWeight = FontWeight.Bold)) {
                                         append(word)
                                     }
-                                    if (foundAt >= sourceCursor) sourceCursor += word.length
+                                    sourceCursor = if (foundAt >= 0) {
+                                        (foundAt + word.length).coerceAtMost(entry.text.length)
+                                    } else {
+                                        (sourceCursor + word.length).coerceAtMost(entry.text.length)
+                                    }
                                 }
                             }
                             if (sourceCursor < entry.text.length) {
