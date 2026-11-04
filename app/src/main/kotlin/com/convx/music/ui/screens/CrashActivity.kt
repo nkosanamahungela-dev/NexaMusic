@@ -1,5 +1,5 @@
 /**
- * Convx Project (C) 2026
+ * NexaMusic Project (C) 2026
  * Licensed under GPL-3.0 | See git history for contributors
  */
 
@@ -101,7 +101,7 @@ class CrashActivity : ComponentActivity() {
         lifecycleScope.launch {
             try {
                 val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-                val fileName = "convx_crash_$timestamp.txt"
+                val fileName = "nexamusic_crash_$timestamp.txt"
                 val crashFile = withContext(Dispatchers.IO) {
                     File(cacheDir, fileName).also { it.writeText(crashLog) }
                 }
