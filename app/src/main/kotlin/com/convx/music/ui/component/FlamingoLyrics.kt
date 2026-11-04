@@ -16,6 +16,7 @@ import com.convx.music.lyrics.primaryLyricLineIndex
 import com.convx.music.ui.component.flamingo.*
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.delay
 
 /** Adapts persisted timing and text to the scrolling word renderer. */
 @Composable
@@ -66,10 +67,14 @@ fun FlamingoLyrics(
     LaunchedEffect(lines, isSynced) {
         if (!isSynced) return@LaunchedEffect
         while (true) {
-            withFrameNanos { }
+            // Word exposure only changes when the active word changes; sampling at 30 Hz
+            // keeps the glow responsive without driving this renderer at display refresh rate.
+            delay(33L)
             val position = playhead()
-            current.intValue = primaryLyricLineIndex(lines, position)
-            exposureTarget.floatValue = heldWordExposure(lines.getOrNull(current.intValue), position)
+            val nextIndex = primaryLyricLineIndex(lines, position)
+            if (current.intValue != nextIndex) current.intValue = nextIndex
+            val nextExposure = heldWordExposure(lines.getOrNull(nextIndex), position)
+            if (exposureTarget.floatValue != nextExposure) exposureTarget.floatValue = nextExposure
         }
     }
     Box(modifier) {
