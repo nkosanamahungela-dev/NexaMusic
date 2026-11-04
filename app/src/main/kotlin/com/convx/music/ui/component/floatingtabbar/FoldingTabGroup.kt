@@ -312,7 +312,10 @@ internal fun FoldingTabGroup(
                 .drawBackdrop(
                     backdrop = tabsBackdrop,
                     shape = { ContinuousCapsule },
-                    effects = slotLens,
+                    // The interactive puck above already renders the press refraction.
+                    // A second lens pass here duplicated the same shader work on every
+                    // touch frame without adding useful visual information.
+                    effects = {},
                     highlight = null,
                     shadow = null,
                 )
