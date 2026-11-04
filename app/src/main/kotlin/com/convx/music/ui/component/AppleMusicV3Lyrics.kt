@@ -88,13 +88,20 @@ fun AppleMusicV3Lyrics(
         }
     }
 
-    val activeIndex = remember(lines, framePosition) {
-        lines.indexOfLast { it.time <= framePosition }.coerceAtLeast(0)
+    // Keep the list-level state stable between lyric changes. The playhead is sampled
+    // every frame for karaoke, but the list only needs to react when the active line changes.
+    val activeIndex by remember(lines) {
+        androidx.compose.runtime.derivedStateOf {
+            lines.indexOfLast { it.time <= framePosition }.coerceAtLeast(0)
+        }
     }
+    val lyricRubber = rememberLyricRubber(listState)
 
-    LaunchedEffect(activeIndex, lines) {
+    LaunchedEffect(activeIndex, lines, lyricRubber) {
         if (lines.isNotEmpty()) {
-            listState.animateScrollToItem(activeIndex)
+            // The shared rubber scroll carries motion across rapid line changes instead of
+            // cancelling one 550ms animation and starting another on every lyric boundary.
+            listState.followLyricLine(activeIndex, animate = true, rubber = lyricRubber)
         }
     }
 
