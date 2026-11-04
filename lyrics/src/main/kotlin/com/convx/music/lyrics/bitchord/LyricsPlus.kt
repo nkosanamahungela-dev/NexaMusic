@@ -125,7 +125,7 @@ object LyricsPlus {
                 )
                 else -> null
             }
-            built?.to(line.element)
+            built?.copy(agent = singerOf(line.element))?.to(line.element)
         }.sortedBy { it.first.timeMs }
 
         val sides = lineAlignments(sung.map { singerOf(it.second) }, response.agentTypes())
