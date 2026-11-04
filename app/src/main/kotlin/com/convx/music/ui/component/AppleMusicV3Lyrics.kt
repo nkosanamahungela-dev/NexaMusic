@@ -83,9 +83,15 @@ fun AppleMusicV3Lyrics(
     // Read the player clock at frame cadence so word highlighting does not inherit
     // the slower line-index polling interval used by the standard lyrics screen.
     LaunchedEffect(lines, positionMs) {
+        var lastSampleNanos = 0L
         while (isActive) {
-            withFrameNanos {
-                framePosition = positionMs()
+            withFrameNanos { frameTimeNanos ->
+                // 30 Hz is sufficient for word highlighting and halves continuous
+                // playhead-driven Compose invalidations on mid-range devices.
+                if (lastSampleNanos == 0L || frameTimeNanos - lastSampleNanos >= 33_000_000L) {
+                    framePosition = positionMs()
+                    lastSampleNanos = frameTimeNanos
+                }
             }
         }
     }
@@ -200,7 +206,18 @@ fun AppleMusicV3Lyrics(
                         }
                     }
 
-                    val karaokeText = remember(words, entry.text, framePosition, isActive, textColor, accentColor, fontSize) {
+                    // Only the active line needs live word-progress styling. Keeping the playhead
+                    // out of inactive rows' remember keys avoids rebuilding every visible
+                    // lyric line on every playback tick.
+                    val karaokeText = remember(
+                        words,
+                        entry.text,
+                        if (isActive) framePosition else 0L,
+                        isActive,
+                        textColor,
+                        accentColor,
+                        fontSize,
+                    ) {
                         buildAnnotatedString {
                             var sourceCursor = 0
                             words.forEach { (word, start, end) ->
