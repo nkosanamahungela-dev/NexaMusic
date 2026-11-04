@@ -76,7 +76,10 @@ object SettingsDesign {
     private val privacyStorage = Color(0xFF0A84FF)
     private val history = Color(0xFF0E9AA7)
     private val stats = Color(0xFFFFD60A)
-    private val neutral = Color(0xFF8E8E93)
+    private val softwareUpdate = Color(0xFF5856D6)
+    private val helpAbout = Color(0xFF00A896)
+    // A colourful fallback for any newly added settings destination.
+    private val neutral = Color(0xFF0A84FF)
 
     val appearanceTile = appearance
     val appearanceIcon = Color.White
@@ -93,7 +96,8 @@ object SettingsDesign {
         "Privacy & Storage" -> privacyStorage
         "History" -> history
         "Stats" -> stats
-        "Software Update", "Help & About" -> neutral
+        "Software Update" -> softwareUpdate
+        "Help & About" -> helpAbout
         "Local-only mode" -> libraryContent
         else -> neutral
     }
