@@ -68,7 +68,7 @@ class AutomaticUpdateCheckWorker(
         if (getUpdateNotificationsSetting(context) &&
             getLastNotifiedUpdateTag() != update.tag
         ) {
-            UpdateNotificationHelper.showUpdateNotification(context, update.tag)
+            UpdateNotificationHelper.showUpdateNotification(context, update.tag, update.apkUrl)
             saveLastNotifiedUpdateTag(update.tag)
         }
 
