@@ -61,7 +61,7 @@ NexaMusic brings music discovery, playback, lyrics, and your library together in
 
 ## Download NexaMusic
 
-[![Get it on Orion Store](https://raw.githubusercontent.com/RookieEnough/Orion-Store/refs/heads/main/assets/orion-badge.png)](https://rookieenough.github.io/Orion-Data/app/?id=)
+[![Get it on Orion Store](https://raw.githubusercontent.com/RookieEnough/Orion-Store/refs/heads/main/assets/orion-badge.png)](https://rookieenough.github.io/Orion-Data/app/?id=com.nexamusic.music)
 
 **[View all NexaMusic releases and download the latest APK](https://github.com/nkosanamahungela-dev/NexaMusic/releases)**
 
