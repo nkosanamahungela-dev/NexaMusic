@@ -383,9 +383,10 @@ private fun AppFloatingNavBarChrome(
                                 chrome = 0f,
                                 tint = tint,
                                 mode = SfRenderingMode.Monochrome,
-                                bounceOnEnter = true,
-                                // The whole row bounces as the bar folds inline or expands.
-                                replayOn = scrollConnection.isInline,
+                                // Keep selection feedback, but do not replay every icon
+                                // animation whenever the floating bar folds or expands.
+                                bounceOnEnter = false,
+                                replayOn = null,
                                 selected = isSelected,
                             )
                         }
