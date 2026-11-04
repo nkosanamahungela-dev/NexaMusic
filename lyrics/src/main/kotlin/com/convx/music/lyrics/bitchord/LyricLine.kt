@@ -152,6 +152,8 @@ data class LyricLine(
     val alignment: LyricAlignment = LyricAlignment.Start,
     /** Display-only translation: drive its sweep and bloom from the original vocal. */
     val timingSource: LyricLine? = null,
+    /** Original vocalist/agent id supplied by the lyric provider, when available. */
+    val agent: String? = null,
 ) {
     val isGap: Boolean get() = text.isEmpty()
 
