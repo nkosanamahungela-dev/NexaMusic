@@ -44,7 +44,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AlertDialogDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -88,6 +91,8 @@ import androidx.media3.common.Player
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.convx.music.constants.AppBackgroundColorKey
+import com.convx.music.constants.HideYouTubeLoginReminderKey
+import com.convx.music.constants.InnerTubeCookieKey
 import com.convx.music.constants.AppBarHeight
 import com.convx.music.constants.AppleMusicUiKey
 import com.convx.music.constants.DarkModeKey
@@ -277,6 +282,31 @@ internal fun AppRootContent(
             val bottomInsetDp = WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()
 
             val navController = rememberNavController()
+
+            val (innerTubeCookie) = rememberPreference(InnerTubeCookieKey, "")
+            val (hideYouTubeLoginReminder, setHideYouTubeLoginReminder) =
+                rememberPreference(HideYouTubeLoginReminderKey, defaultValue = false)
+            val isYouTubeLoggedIn = remember(innerTubeCookie) {
+                val authenticatedCookies = setOf(
+                    "SID", "HSID", "SSID", "APISID", "SAPISID",
+                    "__Secure-1PSID", "__Secure-3PSID",
+                    "__Secure-1PAPISID", "__Secure-3PAPISID",
+                )
+                innerTubeCookie.split(';').any { part ->
+                    part.trim().substringBefore('=') in authenticatedCookies
+                }
+            }
+            var showYouTubeLoginReminder by rememberSaveable {
+                mutableStateOf(false)
+            }
+            var dontShowYouTubeLoginReminder by rememberSaveable {
+                mutableStateOf(false)
+            }
+
+            LaunchedEffect(isYouTubeLoggedIn, hideYouTubeLoginReminder) {
+                showYouTubeLoginReminder =
+                    !isYouTubeLoggedIn && !hideYouTubeLoginReminder
+            }
 
             val navigationArtwork = remember(navController) { com.convx.music.ui.utils.NavigationArtworkState() }
             InstallMorphNavListener(navController, navigationArtwork)
@@ -1288,6 +1318,59 @@ internal fun AppRootContent(
                     manager = LocalListenTogetherManager.current,
                     playerConnection = playerConnection,
                 )
+
+                if (showYouTubeLoginReminder) {
+                    AlertDialog(
+                        onDismissRequest = { showYouTubeLoginReminder = false },
+                        title = { androidx.compose.material3.Text("Sign in to YouTube Music") },
+                        text = {
+                            Column {
+                                androidx.compose.material3.Text(
+                                    "YouTube Music may require you to sign in before streaming. " +
+                                        "Some Piped instances may also be unavailable. Sign in to NexaMusic " +
+                                        "for a more reliable listening experience."
+                                )
+                                androidx.compose.foundation.layout.Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.padding(top = 12.dp),
+                                ) {
+                                    Checkbox(
+                                        checked = dontShowYouTubeLoginReminder,
+                                        onCheckedChange = { dontShowYouTubeLoginReminder = it },
+                                    )
+                                    androidx.compose.material3.Text("Do not show again")
+                                }
+                            }
+                        },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    if (dontShowYouTubeLoginReminder) {
+                                        setHideYouTubeLoginReminder(true)
+                                    }
+                                    showYouTubeLoginReminder = false
+                                    navController.navigate("login") {
+                                        launchSingleTop = true
+                                    }
+                                },
+                            ) {
+                                androidx.compose.material3.Text("Go to login page")
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(
+                                onClick = {
+                                    if (dontShowYouTubeLoginReminder) {
+                                        setHideYouTubeLoginReminder(true)
+                                    }
+                                    showYouTubeLoginReminder = false
+                                },
+                            ) {
+                                androidx.compose.material3.Text("Cancel")
+                            }
+                        },
+                    )
+                }
 
                 // Queue actions share one entry point, so host the conflict prompt here.
                 QueueConflictDialog(playerConnection = playerConnection)
