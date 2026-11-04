@@ -40,6 +40,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -97,6 +98,8 @@ import com.convx.music.constants.ArtistSortDescendingKey
 import com.convx.music.constants.ArtistSortType
 import com.convx.music.constants.ArtistSortTypeKey
 import com.convx.music.constants.LibraryViewType
+import com.convx.music.constants.InnerTubeCookieKey
+import com.convx.music.constants.YtmSyncKey
 import com.convx.music.constants.PlaylistSortDescendingKey
 import com.convx.music.constants.PlaylistSortType
 import com.convx.music.constants.PlaylistSortTypeKey
@@ -135,6 +138,7 @@ import com.convx.music.ui.menu.AddToPlaylistDialog
 import com.convx.music.ui.utils.albumRoute
 import com.convx.music.ui.utils.artistRoute
 import com.convx.music.ui.utils.localPlaylistRoute
+import com.music.innertube.utils.parseCookieString
 import com.convx.music.utils.rememberEnumPreference
 import com.convx.music.utils.rememberPreference
 import com.convx.music.viewmodels.LibraryAlbumsViewModel
@@ -390,6 +394,21 @@ private fun ArtRow(
 @Composable
 fun ApplePlaylistsPage(navController: NavController, onBack: () -> Unit, viewModel: LibraryPlaylistsViewModel = hiltViewModel()) {
     val allPlaylists by viewModel.allPlaylists.collectAsStateWithLifecycle()
+    val (innerTubeCookie) = rememberPreference(InnerTubeCookieKey, "")
+    val (ytmSync) = rememberPreference(YtmSyncKey, true)
+    val isLoggedIn = remember(innerTubeCookie) {
+        "SAPISID" in parseCookieString(innerTubeCookie)
+    }
+
+    // The Apple-style Library replaced the old playlist screen, so its previous
+    // cookie-change sync hook was lost. Reconnect it here: after sign-in, fetch the
+    // account's saved YouTube playlists into the local Library database.
+    LaunchedEffect(innerTubeCookie, ytmSync) {
+        if (ytmSync && isLoggedIn) {
+            viewModel.sync()
+        }
+    }
+
     val localOnly = com.convx.music.LocalLocalOnlyMode.current
     val playlists = allPlaylists.filter { !localOnly || it.playlist.browseId == null }
     var viewType by rememberEnumPreference(PlaylistViewTypeKey, LibraryViewType.LIST)
