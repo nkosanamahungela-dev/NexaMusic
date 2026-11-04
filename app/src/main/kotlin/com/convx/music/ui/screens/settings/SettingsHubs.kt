@@ -143,7 +143,7 @@ object SettingsHubs {
             SettingsLinkGroup(
                 "Advanced",
                 listOf(
-                    SettingsLink("Advanced playback", R.drawable.settings, { systemGray }, route("settings/player/advanced"),
+                    SettingsLink("Advanced playback", R.drawable.settings, { systemCyan }, route("settings/player/advanced"),
                         "Offload, bit-perfect and queue rules", "offload bit perfect duplicates history duration"),
                     SettingsLink("JioSaavn", R.drawable.music_note, { systemTeal }, route("settings/player/jio"), "Streaming source settings"),
                     SettingsLink("AI DJ analysis", R.drawable.equalizer, { systemPurple }, route("ai_dj_set"),
@@ -168,7 +168,7 @@ object SettingsHubs {
             SettingsLinkGroup(
                 "App",
                 listOf(
-                    SettingsLink("Font", R.drawable.alphabet_cyrillic, { systemGray }, route("settings/appearance/font"), "App typeface"),
+                    SettingsLink("Font", R.drawable.alphabet_cyrillic, { systemIndigo }, route("settings/appearance/font"), "App typeface"),
                     SettingsLink("App icon", R.drawable.convx_logo, { systemBlue }, route("settings/appearance/appicon"), "Home screen icon"),
                     SettingsLink("Layout & home", R.drawable.sliders, { systemGreen }, route("settings/appearance"),
                         "Language, default tab, density, home", "language default tab density refresh rate"),
@@ -178,7 +178,7 @@ object SettingsHubs {
             SettingsLinkGroup(
                 "Advanced",
                 listOf(
-                    SettingsLink("Advanced appearance", R.drawable.settings, { systemGray }, route("settings/appearance/advanced"),
+                    SettingsLink("Advanced appearance", R.drawable.settings, { systemTeal }, route("settings/appearance/advanced"),
                         "Grids, corners, blur and overscroll", "grid corner radius blur overscroll pure black"),
                 ),
             ),
@@ -202,7 +202,7 @@ object SettingsHubs {
                 listOf(
                     SettingsLink("Music folders", R.drawable.music_note, { systemOrange }, route("settings/player/local_folders"), "Choose folders to scan", "local files"),
                     SettingsLink("Scan local files", R.drawable.search, { systemGreen }, route("settings/scan_music"), "Find songs on this device"),
-                    SettingsLink("Network storage", R.drawable.storage, { systemGray }, route("settings/network_storage"), "SMB and WebDAV shares", "smb webdav nas"),
+                    SettingsLink("Network storage", R.drawable.storage, { systemPurple }, route("settings/network_storage"), "SMB and WebDAV shares", "smb webdav nas"),
                 ),
             ),
             SettingsLinkGroup(
@@ -228,7 +228,7 @@ object SettingsHubs {
             SettingsLinkGroup(
                 "Services",
                 listOf(
-                    SettingsLink("Network & proxy", R.drawable.wifi_proxy, { systemGray }, route("settings/network"), "IP version and proxy", "proxy ipv6 ipv4 network"),
+                    SettingsLink("Network & proxy", R.drawable.wifi_proxy, { systemOrange }, route("settings/network"), "IP version and proxy", "proxy ipv6 ipv4 network"),
                 ),
             ),
         ),
@@ -241,7 +241,7 @@ object SettingsHubs {
                 null,
                 listOf(
                     SettingsLink("Privacy", R.drawable.security, { systemBlue }, route("settings/privacy"), "History and screenshots", "pause history clear history screenshot"),
-                    SettingsLink("Storage", R.drawable.storage, { systemGray }, route("settings/storage"), "Downloads and caches", "cache downloads clear"),
+                    SettingsLink("Storage", R.drawable.storage, { systemPink }, route("settings/storage"), "Downloads and caches", "cache downloads clear"),
                     SettingsLink("Backup & restore", R.drawable.restore, { systemGreen }, route("settings/backup_restore"), "Save or restore your library", "backup import export"),
                 ),
             ),
@@ -249,7 +249,7 @@ object SettingsHubs {
     )
 
     val help = SettingsHub(
-        "help", "Help & About", R.drawable.info, { systemGray },
+        "help", "Help & About", R.drawable.info, { systemTeal },
         listOf(
             SettingsLinkGroup(
                 null,
@@ -257,7 +257,7 @@ object SettingsHubs {
                     SettingsLink("Crash report", R.drawable.bug_report, { systemRed }, route("settings/help/crash_logs"), "View or share the latest crash"),
                     SettingsLink("Playback logs", R.drawable.bug_report, { systemOrange }, route("settings/content/advanced"), "Troubleshoot playback", "logs client probe"),
                     SettingsLink("Changelog", R.drawable.network_update, { systemBlue }, route("settings/changelog"), "What's new"),
-                    SettingsLink("About", R.drawable.info, { systemGray }, route("settings/about"), "Version, licenses and project"),
+                    SettingsLink("About", R.drawable.info, { systemBlue }, route("settings/about"), "Version, licenses and project"),
                 ),
             ),
         ),
