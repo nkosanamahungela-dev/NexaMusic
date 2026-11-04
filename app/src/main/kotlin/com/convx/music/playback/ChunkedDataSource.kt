@@ -43,11 +43,12 @@ class ChunkedDataSource(private val upstream: DataSource) : DataSource {
         remaining = dataSpec.length
         val first = openPiece()
         val total = upstream.contentRangeLength()
-        val available = when {
-            total != null -> (total - dataSpec.position).coerceAtLeast(0L)
-            first < CHUNK_BYTES -> first
-            else -> C.LENGTH_UNSET.toLong()
-        }
+        // A short first range is not proof that the media itself has ended.
+        // Some CDN responses (especially guest streams) can return fewer bytes than
+        // requested without a total Content-Range. Keep the length unknown and let
+        // the next range request continue; a genuine EOF is reported by HTTP 416.
+        val available = total?.let { (it - dataSpec.position).coerceAtLeast(0L) }
+            ?: C.LENGTH_UNSET.toLong()
         if (available != C.LENGTH_UNSET.toLong()) {
             remaining = if (remaining == C.LENGTH_UNSET.toLong()) available else minOf(remaining, available)
         }
