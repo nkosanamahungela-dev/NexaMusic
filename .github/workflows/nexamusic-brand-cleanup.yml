@@ -1,0 +1,37 @@
+name: NexaMusic branding cleanup
+
+on:
+  push:
+    branches:
+      - chore/nexamusic-brand-cleanup
+
+permissions:
+  contents: write
+
+jobs:
+  rename-branding:
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out cleanup branch
+        uses: actions/checkout@v4
+        with:
+          ref: chore/nexamusic-brand-cleanup
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Replace Convx identifiers and paths
+        run: python scripts/nexamusic_brand_cleanup.py
+      - name: Commit and push refactor
+        run: |
+          if git diff --quiet && git diff --cached --quiet; then
+            echo "No branding changes required."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "refactor: replace Convx branding with NexaMusic [skip ci]"
+          git push origin chore/nexamusic-brand-cleanup
