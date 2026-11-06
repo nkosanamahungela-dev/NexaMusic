@@ -124,5 +124,4 @@ NexaMusic is intended to be distributed under the GNU General Public License v3.
 
 ---
 
-Maintained by **Smelokuhle (Mahungela)**.
-Made with "❤️"
+Maintained by _**Smelokuhle Mahungela**_
