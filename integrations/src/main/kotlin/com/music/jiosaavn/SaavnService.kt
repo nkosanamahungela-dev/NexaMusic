@@ -1,5 +1,5 @@
 /**
- * convx Project (C) 2026
+ * nexamusic Project (C) 2026
  * Licensed under GPL-3.0 | See git history for contributors
  *
  * JioSaavn audio streaming service.

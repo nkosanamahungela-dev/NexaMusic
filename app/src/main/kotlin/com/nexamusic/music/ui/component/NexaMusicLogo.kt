@@ -1,0 +1,33 @@
+/**
+ * NexaMusic Project (C) 2026
+ * Licensed under GPL-3.0 | See git history for contributors
+ */
+
+package com.nexamusic.music.ui.component
+
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.size
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import com.nexamusic.music.R
+
+/**
+ * The NexaMusic brand mark. Uses the filled monogram and mint tile from the Android icon pack,
+ * matching the current launcher branding across app screens.
+ */
+@Composable
+fun NexaMusicLogo(modifier: Modifier = Modifier, size: Dp = 20.dp) {
+    Image(
+        painter = painterResource(R.drawable.nexamusic_logo),
+        contentDescription = null,
+        modifier = modifier.size(size),
+    )
+}
+
+/** Backwards-compatible entry point for existing screens; renders the NexaMusic mark. */
+@Deprecated("Use NexaMusicLogo")
+@Composable
+fun NexaMusicLogo(modifier: Modifier = Modifier, size: Dp = 20.dp) = NexaMusicLogo(modifier, size)

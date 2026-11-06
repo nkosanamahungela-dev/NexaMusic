@@ -28,7 +28,7 @@ plugins {
 }
 
 android {
-    namespace = "com.convx.music"
+    namespace = "com.nexamusic.music"
     compileSdk = 37
     ndkVersion = "27.0.12077973"
 
@@ -42,7 +42,7 @@ android {
             ?.toIntOrNull() ?: appVersionCode
         versionName = project.findProperty("releaseVersionName") as String? ?: appVersionName
 
-        testInstrumentationRunner = providers.gradleProperty("convxTestRunner")
+        testInstrumentationRunner = providers.gradleProperty("nexamusicTestRunner")
             .orElse("androidx.test.runner.AndroidJUnitRunner").get()
         vectorDrawables.useSupportLibrary = true
 

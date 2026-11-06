@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <instrumentation
-        android:name="com.convx.music.network.NetworkSecurityInstrumentation"
+        android:name="com.nexamusic.music.network.NetworkSecurityInstrumentation"
         android:targetPackage="com.nexamusic.music.debug"
         android:label="Network security regression checks" />
 </manifest>

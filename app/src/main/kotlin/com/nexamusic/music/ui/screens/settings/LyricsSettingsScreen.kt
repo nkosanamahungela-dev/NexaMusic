@@ -1,0 +1,101 @@
+/**
+ * NexaMusic Project (C) 2026
+ * Licensed under GPL-3.0 | See git history for contributors
+ */
+
+package com.nexamusic.music.ui.screens.settings
+
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import com.nexamusic.music.R
+import com.nexamusic.music.constants.AppleMusicLyricsBlurKey
+import com.nexamusic.music.constants.LyricsGlowEffectKey
+import com.nexamusic.music.constants.LyricsStandardBlurKey
+import com.nexamusic.music.ui.component.IosSettingsGroup
+import com.nexamusic.music.ui.component.IosSettingsItem
+import com.nexamusic.music.ui.ios.compat.Switch
+import com.nexamusic.music.ui.ios.compat.Text
+import com.nexamusic.music.utils.rememberPreference
+import com.nexamusic.music.utils.rememberEnumPreference
+import com.nexamusic.music.constants.LyricsAnimationStyle
+import com.nexamusic.music.ui.component.lyricsStyleLabel
+
+/** Lyrics look: glow and the two blur modes. Kept apart from the animation style and text layout. */
+@Composable
+fun LyricsSettingsScreen(navController: NavController) {
+    val (animationStyle, selectAnimationStyle) = rememberEnumPreference(com.nexamusic.music.constants.LyricsAnimationStyleKey, LyricsAnimationStyle.FLAMINGO)
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val credentials = remember(context) { context.getSharedPreferences("lyrics_credentials", android.content.Context.MODE_PRIVATE) }
+    var paxKey by remember { mutableStateOf(credentials.getString("paxsenix_api_key", "").orEmpty()) }
+    val (glow, onGlowChange) = rememberPreference(LyricsGlowEffectKey, defaultValue = true)
+    val (appleBlur, onAppleBlurChange) = rememberPreference(AppleMusicLyricsBlurKey, defaultValue = true)
+    val (standardBlur, onStandardBlurChange) = rememberPreference(LyricsStandardBlurKey, defaultValue = false)
+
+    SettingsPage(navController = navController, title = stringResource(R.string.lyrics), horizontalPadding = 16.dp) {
+        IosSettingsGroup(title = stringResource(R.string.lyrics_animation_style), items = listOf(
+            IosSettingsItem(
+                icon = painterResource(R.drawable.lyrics),
+                title = { Text(lyricsStyleLabel(animationStyle)) },
+                description = { Text(stringResource(R.string.lyrics_centered_scroll_description)) },
+                onClick = { SettingsSheets.open = SettingsAction.LyricsStyle },
+            ),
+        ))
+        LyricsFontSettings()
+        IosSettingsGroup(title = "Lyrics sources", items = listOf(
+            IosSettingsItem(
+                icon = painterResource(R.drawable.lyrics),
+                title = { Text("Provider order and availability") },
+                description = { Text("Drag to reorder sources and enable or disable each provider.") },
+                onClick = { navController.navigate("settings/content/advanced") },
+            ),
+        ))
+        com.nexamusic.music.ui.ios.compat.OutlinedTextField(
+            value = paxKey,
+            onValueChange = {
+                paxKey = it
+                credentials.edit().putString("paxsenix_api_key", it.trim()).apply()
+            },
+            label = { Text("PaxSenix API key") },
+            supportingText = { Text("Used by PaxSenix Spotify and Musixmatch sources") },
+            singleLine = true,
+            visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+        )
+        IosSettingsGroup(
+            title = "Lyrics effects",
+            items = listOf(
+                IosSettingsItem(
+                    icon = painterResource(R.drawable.lyrics),
+                    title = { Text(stringResource(R.string.lyrics_glow_effect)) },
+                    description = { Text(stringResource(R.string.lyrics_glow_effect_desc)) },
+                    trailingContent = { Switch(checked = glow, onCheckedChange = onGlowChange) },
+                    onClick = { onGlowChange(!glow) },
+                ),
+                IosSettingsItem(
+                    icon = painterResource(R.drawable.lyrics),
+                    title = { Text(stringResource(R.string.apple_music_lyrics_blur)) },
+                    description = { Text(stringResource(R.string.apple_music_lyrics_blur_desc)) },
+                    trailingContent = { Switch(checked = appleBlur, onCheckedChange = onAppleBlurChange) },
+                    onClick = { onAppleBlurChange(!appleBlur) },
+                ),
+                IosSettingsItem(
+                    icon = painterResource(R.drawable.lyrics),
+                    title = { Text(stringResource(R.string.standard_lyrics_blur)) },
+                    description = { Text(stringResource(R.string.apple_music_lyrics_blur_desc)) },
+                    trailingContent = { Switch(checked = standardBlur, onCheckedChange = onStandardBlurChange) },
+                    onClick = { onStandardBlurChange(!standardBlur) },
+                ),
+            ),
+        )
+        Spacer(Modifier.height(32.dp))
+    }
+}

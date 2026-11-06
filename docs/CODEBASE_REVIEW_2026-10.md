@@ -1,4 +1,4 @@
-# Convx codebase review — 2026-10-12
+# NexaMusic codebase review — 2026-10-12
 
 ## Scope and confidence
 
@@ -8,9 +8,9 @@ Verification is incremental. Recent checks include `:spine:compileDebugKotlin`, 
 
 ## Changes made
 
-- Merged `applecanvas` and `convxcanvas` into `:canvas`. Their Kotlin package names and public provider names are unchanged, so existing imports and call sites stay intact. The Gradle project count is now 18, down from 20.
+- Merged `applecanvas` and `nexamusiccanvas` into `:canvas`. Their Kotlin package names and public provider names are unchanged, so existing imports and call sites stay intact. The Gradle project count is now 18, down from 20.
 - Replaced `nearestValue`'s `filter` plus `minByOrNull` chain with a single pass. It keeps the nearest qualifying finite value, preserves first-in-list tie behavior, and avoids allocating an intermediate list for each candidate check.
-- Removed the stale `//new link` comment from the Convx Music Canvas URL.
+- Removed the stale `//new link` comment from the NexaMusic Music Canvas URL.
 - Removed three playback comments that repeated the EQ collector and IP-version collector behavior; retained comments explaining startup timing and stream re-resolution constraints.
 
 ## Findings
@@ -53,7 +53,7 @@ Provider implementations construct their own Ktor clients and repeat timeout, co
 
 ## Consolidation result
 
-The two canvas modules are now source packages inside `:canvas`; they no longer appear as Gradle projects. Their package names remain `com.convx.music.applecanvas` and `com.convx.music.convxcanvas`. The next best candidate is a `lyrics-providers` module, but its Android/JVM plugin split and `paxsenixlyrics` → `betterlyrics` dependency should be resolved before moving files.
+The two canvas modules are now source packages inside `:canvas`; they no longer appear as Gradle projects. Their package names remain `com.nexamusic.music.applecanvas` and `com.nexamusic.music.nexamusiccanvas`. The next best candidate is a `lyrics-providers` module, but its Android/JVM plugin split and `paxsenixlyrics` → `betterlyrics` dependency should be resolved before moving files.
 
 ## Review verdict
 
@@ -187,11 +187,11 @@ In `DeepLService`, replaced nested translation-count branches and a mutable padd
 
 The translation line-count helper is now shared by DeepL, Mistral, and OpenRouter instead of being duplicated in each provider. Added focused tests for unchanged, truncated, and padded results.
 
-Verification for the shared translation helper passed: `:app:testUniversalGmsDebugUnitTest --tests com.convx.music.api.TranslationLinesTest`, `:app:compileUniversalGmsDebugKotlin`, and `git diff --check`.
+Verification for the shared translation helper passed: `:app:testUniversalGmsDebugUnitTest --tests com.nexamusic.music.api.TranslationLinesTest`, `:app:compileUniversalGmsDebugKotlin`, and `git diff --check`.
 
 Mistral and OpenRouter also had the same response-content parser. Moved that parser beside the shared line-count helper, so both providers now use the same markdown cleanup, JSON extraction, and plain-line fallback. Added focused parser tests.
 
-The shared Mistral/OpenRouter parser and translation line helper passed `:app:testUniversalGmsDebugUnitTest --tests com.convx.music.api.TranslationLinesTest`; `:app:compileUniversalGmsDebugKotlin` and `git diff --check` also passed.
+The shared Mistral/OpenRouter parser and translation line helper passed `:app:testUniversalGmsDebugUnitTest --tests com.nexamusic.music.api.TranslationLinesTest`; `:app:compileUniversalGmsDebugKotlin` and `git diff --check` also passed.
 
 OpenRouter streaming now uses the shared `fitLineCount` and JSON-array parser, removing a second copy of each utility while keeping its streaming-specific fallback behavior intact.
 
@@ -263,9 +263,9 @@ In `BottomSheetPlayer`, replaced an exhaustive list of non-default backgrounds w
 
 Split `MusicService`'s Discord and scrobbling preference collectors into separate helpers. `onCreate` still registers the collectors in the same order. `:app:compileUniversalGmsDebugKotlin` passed.
 
-Flattened `LyricsUtils.parseRichSyncLyrics` by returning early for lines that do not match and for empty lyric text. Rewrote `parseStandardLyrics` as a direct indexed loop, preserving the association between a lyric line and the word-timing line after it. Timestamp conversion, agent/background handling, sorting, and result fields remain unchanged. Added rich-sync and standard-format parser tests. `:app:testUniversalGmsDebugUnitTest --tests com.convx.music.lyrics.LyricsUtilsTest` passed.
+Flattened `LyricsUtils.parseRichSyncLyrics` by returning early for lines that do not match and for empty lyric text. Rewrote `parseStandardLyrics` as a direct indexed loop, preserving the association between a lyric line and the word-timing line after it. Timestamp conversion, agent/background handling, sorting, and result fields remain unchanged. Added rich-sync and standard-format parser tests. `:app:testUniversalGmsDebugUnitTest --tests com.nexamusic.music.lyrics.LyricsUtilsTest` passed.
 
-`parseLyrics` now filters lines through a sequence before materializing the list needed by indexed parsers, avoiding the intermediate list created by `lines().filter(...)`. Both parser tests passed after this change with `:app:testUniversalGmsDebugUnitTest --tests com.convx.music.lyrics.LyricsUtilsTest`.
+`parseLyrics` now filters lines through a sequence before materializing the list needed by indexed parsers, avoiding the intermediate list created by `lines().filter(...)`. Both parser tests passed after this change with `:app:testUniversalGmsDebugUnitTest --tests com.nexamusic.music.lyrics.LyricsUtilsTest`.
 
 Rewrote `DatabaseDao.insert(AlbumPage)` from chained list operations into explicit steps for inserting the album, songs, song links, artists, and artist links. Preserved the transaction and database write order, including artist-ID cache updates. `:app:compileUniversalGmsDebugKotlin` and `git diff --check` passed. There is no focused Room test for this method, so database runtime behavior remains unverified.
 
@@ -289,7 +289,7 @@ In the smart transition planner, replaced the filter-plus-minimum chain for phra
 
 Rewrote the planner's latest-valid-value lookup as a single pass with the original finite, minimum, target, and tolerance checks. Also removed three section labels from `Player_v2.kt` that only named the immediately following layout block. `:app:compileUniversalGmsDebugKotlin` passed; it reported two existing deprecated volume-icon references in `Player_v2.kt`.
 
-In `YouTubeUtils.resize`, hoisted three reusable URL regexes and replaced prefix-only `split` calls with `substringBefore`. Added regression cases for Google artwork, Google avatar, and Apple artwork URLs, and replaced test comments that described old regressions with a short statement of what the tests cover. `:app:testUniversalGmsDebugUnitTest --tests com.convx.music.ui.utils.ThumbnailResizeTest` and `git diff --check` passed.
+In `YouTubeUtils.resize`, hoisted three reusable URL regexes and replaced prefix-only `split` calls with `substringBefore`. Added regression cases for Google artwork, Google avatar, and Apple artwork URLs, and replaced test comments that described old regressions with a short statement of what the tests cover. `:app:testUniversalGmsDebugUnitTest --tests com.nexamusic.music.ui.utils.ThumbnailResizeTest` and `git diff --check` passed.
 
 In `AppIcon.apply`, replaced the filtered list used to disable other launcher aliases with a direct loop; the selected alias is still enabled first. Removed a stale Wrapped-page history note and a comment that only restated `ModernSwitch`'s delegation, and rewrote the iOS app-bar note to state the current backdrop behavior. `:app:compileUniversalGmsDebugKotlin` and `git diff --check` passed. The compiler still reports an experimental API warning at the existing `CupertinoTopAppBar` call.
 
@@ -307,10 +307,10 @@ Removed the unnecessary `run` wrapper from `buildHomeSections` and returned its 
 
 Shortened the `PlayerV2Canvas` overview to describe the current single-player lifecycle and clarified why fetched artwork is tagged with its media ID across `produceState` key changes. Expanded storefront normalization into named country-code and storefront values without changing the two-letter lowercase/fallback behavior. `:app:compileUniversalGmsDebugKotlin` and `git diff --check` passed.
 
-Added `HomeSectionOrderTest` coverage for default section order, saved newline-delimited order, hidden sections, and stable per-section seeded ordering when more sections appear. `:app:testUniversalGmsDebugUnitTest --tests com.convx.music.ui.screens.HomeSectionOrderTest` passed; app test source count is now 50.
+Added `HomeSectionOrderTest` coverage for default section order, saved newline-delimited order, hidden sections, and stable per-section seeded ordering when more sections appear. `:app:testUniversalGmsDebugUnitTest --tests com.nexamusic.music.ui.screens.HomeSectionOrderTest` passed; app test source count is now 50.
 
 Replaced `NavBarSearchInputBar`'s migration-history KDoc with its current contract: the focused search input replaces the navigation bar and follows the keyboard. `git diff --check` passed; executable code is unchanged.
 
-In `resolveSingerNames`, replaced the two-list trim/filter chain with `mapNotNull` and built the ranked name map with a direct indexed loop. The same credit trimming, lead ranking, majority threshold, and insertion order are preserved. Added tests for ranking, background-line exclusion, whitespace trimming, and ambiguous lead counts. `:app:testUniversalGmsDebugUnitTest --tests com.convx.music.ui.component.SingerBadgeNameTest` and `git diff --check` passed; app test source count is now 51.
+In `resolveSingerNames`, replaced the two-list trim/filter chain with `mapNotNull` and built the ranked name map with a direct indexed loop. The same credit trimming, lead ranking, majority threshold, and insertion order are preserved. Added tests for ranking, background-line exclusion, whitespace trimming, and ambiguous lead counts. `:app:testUniversalGmsDebugUnitTest --tests com.nexamusic.music.ui.component.SingerBadgeNameTest` and `git diff --check` passed; app test source count is now 51.
 
 Extracted the AI DJ concert-role ordering into a pure helper and replaced repeated list membership checks with a set lookup. Seed-first order, opener/rising/peak/closer order, and input order for unassigned roles are retained. Added focused role-order tests. Their Gradle test task could not reach test execution because app compilation currently fails in the independently modified `DatabaseDao`/`HistoryViewModel` path: generated `DatabaseDao_Impl` lacks `historyEventsPage`, and `HistoryViewModel` has unresolved `observeEvents` references. The changed helper has no reported compiler errors; whitespace checks passed. App test source count is now 52.

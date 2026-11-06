@@ -6,7 +6,7 @@
  * distribution the network has never seen.
  *
  * Copyright (C) 2026 SFG545 (original Orchard implementation)
- * Copyright (C) 2026 Convx contributors (adapted from an open-source base)
+ * Copyright (C) 2026 NexaMusic contributors (adapted from an open-source base)
  *
  * Orchard's original source is licensed under the GNU Affero General Public
  * License, version 3 or later. Per AGPLv3 section 13, this file is combined
@@ -44,7 +44,7 @@
 #include <cstddef>
 #include <vector>
 
-namespace convx::smart {
+namespace nexamusic::smart {
 
 // The model's input rate. Audio at any other rate is refused rather than
 // resampled here, because resampling belongs upstream where the decoded
@@ -76,4 +76,4 @@ BeatSpectrogram ComputeBeatSpectrogram(
   double sample_rate
 );
 
-}  // namespace convx::smart
+}  // namespace nexamusic::smart

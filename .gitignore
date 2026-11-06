@@ -153,7 +153,7 @@ merge_strings.py
 # Local design reference/prototype, not app source
 stitch_lucid_glass_music/
 app/arm64Gms
-Convx_GitHub_Analytics.xlsx
+NexaMusic_GitHub_Analytics.xlsx
 
 # Workspace-local native toolchains and Cargo outputs.
 .tools/
@@ -177,7 +177,7 @@ sh.exe.stackdump
 !.github/release-notes/*.md
 
 # Local data and tooling files
-/Convx*.csv
-/Convx*Analytics.xlsx
+/NexaMusic*.csv
+/NexaMusic*Analytics.xlsx
 skills-lock.json
 renovate.json

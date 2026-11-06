@@ -2,7 +2,7 @@
  * Ported from Orchard (https://github.com/SFG5453/Orchard).
  *
  * Copyright (C) 2026 SFG545 (original Orchard implementation)
- * Copyright (C) 2026 Convx contributors (adapted from an open-source base)
+ * Copyright (C) 2026 NexaMusic contributors (adapted from an open-source base)
  *
  * Orchard's original source is licensed under the GNU Affero General Public
  * License, version 3 or later. Per AGPLv3 section 13, this file is combined
@@ -33,7 +33,7 @@
 // Offline DSP implementation: reusable vectors and percentile copies favor
 // readable whole-track analysis over real-time allocation constraints.
 
-namespace convx::smart {
+namespace nexamusic::smart {
 namespace {
 
 constexpr double kPi = 3.14159265358979323846;
@@ -678,4 +678,4 @@ AnalysisResult AnalyzeAudio(
   return result;
 }
 
-}  // namespace convx::smart
+}  // namespace nexamusic::smart

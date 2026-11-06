@@ -1,0 +1,26 @@
+package com.nexamusic.music.ui.component
+
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.nexamusic.music.R
+import com.nexamusic.music.constants.LyricsAnimationStyle
+
+@Composable
+fun lyricsStyleLabel(style: LyricsAnimationStyle): String = when (style) {
+    LyricsAnimationStyle.FLAMINGO -> stringResource(R.string.lyrics_style_flamingo)
+    LyricsAnimationStyle.NONE -> stringResource(R.string.none)
+    LyricsAnimationStyle.FADE -> stringResource(R.string.fade)
+    LyricsAnimationStyle.GLOW -> stringResource(R.string.glow)
+    LyricsAnimationStyle.SLIDE -> stringResource(R.string.slide)
+    LyricsAnimationStyle.KARAOKE -> stringResource(R.string.karaoke)
+    LyricsAnimationStyle.APPLE -> stringResource(R.string.apple_music_style)
+    LyricsAnimationStyle.APPLE_V2 -> stringResource(R.string.apple_music_style_letter)
+    LyricsAnimationStyle.APPLE_V3 -> "Apple Music Style V3 (Beta)"
+    LyricsAnimationStyle.BITCHORD -> stringResource(R.string.lyrics_animation_bitchord)
+    LyricsAnimationStyle.NEXAMUSIC_1 -> stringResource(R.string.nexamusic_1)
+    LyricsAnimationStyle.LYRICS_V2 -> stringResource(R.string.lyrics_v2_fluid)
+    LyricsAnimationStyle.METRO_LYRICS -> stringResource(R.string.lyrics_animation_metro)
+    LyricsAnimationStyle.ARCHIVE_TUNE -> stringResource(R.string.lyrics_animation_karaoke_apple)
+    LyricsAnimationStyle.FISHEYE -> stringResource(R.string.lyrics_animation_fisheye)
+    LyricsAnimationStyle.STAR_CRAWL -> stringResource(R.string.lyrics_animation_star_crawl)
+}

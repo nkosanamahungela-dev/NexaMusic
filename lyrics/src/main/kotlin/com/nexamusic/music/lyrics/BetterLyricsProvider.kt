@@ -1,0 +1,32 @@
+/**
+ * NexaMusic Project (C) 2026
+ * Licensed under GPL-3.0 | See git history for contributors
+ */
+
+package com.nexamusic.music.lyrics
+
+import com.nexamusic.music.betterlyrics.BetterLyrics
+
+object BetterLyricsProvider : LyricsProvider {
+    override val id = "BetterLyrics"
+    override val displayName = "Better Lyrics"
+
+    override suspend fun getLyrics(
+        id: String,
+        title: String,
+        artist: String,
+        duration: Int,
+        album: String?,
+    ): Result<String> = BetterLyrics.getLyrics(title, artist, duration, album)
+
+    override suspend fun getAllLyrics(
+        id: String,
+        title: String,
+        artist: String,
+        duration: Int,
+        album: String?,
+        callback: (String) -> Unit,
+    ) {
+        BetterLyrics.getAllLyrics(title, artist, duration, album, callback)
+    }
+}

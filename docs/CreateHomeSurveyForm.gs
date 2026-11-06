@@ -1,4 +1,4 @@
-//  Convx — Home Screen & Playlist Design Survey (Google Form)
+//  NexaMusic — Home Screen & Playlist Design Survey (Google Form)
 //  HOW TO USE:
 //  1. Go to https://script.google.com
 //  2. Click "New project", delete the sample code, paste ALL of this.
@@ -24,7 +24,7 @@ function cb(form, title, options, helpText) {
 }
 
 function createSurveyForm() {
-  const form = FormApp.create('Convx — Help us make your music app calmer');
+  const form = FormApp.create('NexaMusic — Help us make your music app calmer');
   form.setDescription(
     'We are redesigning the Home screen to feel calmer and cleaner. ' +
     'No right or wrong answers — tick what feels good and leave the rest. About 10 minutes.');

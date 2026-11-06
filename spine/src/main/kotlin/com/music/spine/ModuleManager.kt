@@ -239,8 +239,8 @@ class ModuleManager {
     companion object {
         val shared by lazy { ModuleManager() }
         @Volatile var cacheDir: File? = null
-        /** Eclipse addons require `Convx/<app-version>`, supplied by the app at startup. */
-        @Volatile var userAgent: String = "Convx"
+        /** Eclipse addons require `NexaMusic/<app-version>`, supplied by the app at startup. */
+        @Volatile var userAgent: String = "NexaMusic"
         private val client by lazy {
             HttpClient(OkHttp) {
                 install(HttpTimeout) {

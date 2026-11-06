@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.convx.music.hig"
+    namespace = "com.nexamusic.music.hig"
     compileSdk = 37
 
     defaultConfig {

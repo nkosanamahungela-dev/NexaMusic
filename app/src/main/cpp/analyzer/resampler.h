@@ -2,7 +2,7 @@
  * Ported from Orchard (https://github.com/SFG5453/Orchard).
  *
  * Copyright (C) 2026 SFG545 (original Orchard implementation)
- * Copyright (C) 2026 Convx contributors (adapted from an open-source base)
+ * Copyright (C) 2026 NexaMusic contributors (adapted from an open-source base)
  *
  * Orchard's original source is licensed under the GNU Affero General Public
  * License, version 3 or later. Per AGPLv3 section 13, this file is combined
@@ -39,7 +39,7 @@
 #include <cstddef>
 #include <vector>
 
-namespace convx::smart {
+namespace nexamusic::smart {
 
 // Zero crossings kept either side of each output sample. Higher is a better
 // stopband at linear cost; 32 puts the aliasing well below the noise floor of
@@ -60,4 +60,4 @@ std::vector<float> Resample(
   double output_rate
 );
 
-}  // namespace convx::smart
+}  // namespace nexamusic::smart
