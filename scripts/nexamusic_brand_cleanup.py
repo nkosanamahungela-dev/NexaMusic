@@ -74,3 +74,5 @@ for item in remaining[:100]:
     print(item)
 if remaining:
     raise SystemExit("Brand cleanup incomplete; review remaining references.")
+
+# Trigger the registered GitHub Actions cleanup workflow.
