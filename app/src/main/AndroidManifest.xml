@@ -116,7 +116,7 @@
                 <data android:pathPrefix="/listen" />
             </intent-filter>
 
-            <!-- Party invites: nexamusic://party/CODE (legacy convx:// links remain supported) -->
+            <!-- Party invites: nexamusic://party/CODE (legacy invite links remain supported) -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
