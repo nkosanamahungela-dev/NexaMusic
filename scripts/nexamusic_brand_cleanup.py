@@ -31,7 +31,7 @@ tracked = [p for p in tracked if p]
 changed_contents = 0
 for relative in tracked:
     path = ROOT / relative
-    if not path.is_file() or path.name in SKIP_CONTENT or relative == "scripts/nexamusic_brand_cleanup.py" or relative.startswith(".github/workflows/"):
+    if not path.is_file() or path.name in SKIP_CONTENT or relative == "scripts/nexamusic_brand_cleanup.py" or relative.startswith(".github/workflows/") or relative == "app/src/main/AndroidManifest.xml":
         continue
     try:
         original = path.read_text(encoding="utf-8")
@@ -59,7 +59,7 @@ for relative in sorted(tracked, key=lambda p: (p.count("/"), len(p)), reverse=Tr
 # Report remaining tracked text references, excluding preserved legal attribution.
 remaining = []
 for path in ROOT.rglob("*"):
-    if not path.is_file() or ".git" in path.parts or path.name in SKIP_CONTENT or path.relative_to(ROOT).as_posix() == "scripts/nexamusic_brand_cleanup.py" or path.relative_to(ROOT).as_posix().startswith(".github/workflows/"):
+    if not path.is_file() or ".git" in path.parts or path.name in SKIP_CONTENT or path.relative_to(ROOT).as_posix() == "scripts/nexamusic_brand_cleanup.py" or path.relative_to(ROOT).as_posix().startswith(".github/workflows/") or path.relative_to(ROOT).as_posix() == "app/src/main/AndroidManifest.xml":
         continue
     try:
         text = path.read_text(encoding="utf-8")
