@@ -35,9 +35,9 @@ import kotlinx.coroutines.withContext
 /**
  * Bounded session cache of baked blurred backdrops, keyed by
  * "source|decodeSize|radiusPx|finishKey". One entry per track per background style; a
- * 128-entry ceiling covers hours of listening.
+ * A strict 8 MiB ceiling keeps the backdrop cache modest on low-memory devices.
  */
-private val blurredBackdropCache = object : android.util.LruCache<String, Bitmap>(32 * 1024 * 1024) {
+private val blurredBackdropCache = object : android.util.LruCache<String, Bitmap>(8 * 1024 * 1024) {
     override fun sizeOf(key: String, value: Bitmap): Int = value.allocationByteCount
 }
 
