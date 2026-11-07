@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-import spotapi
+from spotapi.v2 import Public
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -103,7 +103,7 @@ def _serialize_album(album: Any) -> dict[str, Any]:
 
 async def _search(kind: str, query: str, limit: int) -> list[dict[str, Any]]:
     try:
-        search = getattr(spotapi.v2.Public, f"search_{kind}")
+        search = getattr(Public, f"search_{kind}")
         results: list[dict[str, Any]] = []
         async for page in search(query):
             for item in page:
