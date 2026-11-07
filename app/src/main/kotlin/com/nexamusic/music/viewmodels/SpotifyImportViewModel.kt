@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.music.spotify.Spotify
 import com.music.spotify.SpotApi
-import com.music.spotify.models.SpotApiTrack
+import com.music.spotify.SpotApiTrack
 import com.music.spotify.SpotifyAuth
 import com.music.spotify.SpotifyHomeItem
 import com.music.spotify.SpotifyHomeItemType
