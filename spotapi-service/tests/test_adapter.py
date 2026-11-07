@@ -5,6 +5,8 @@ from unittest.mock import patch
 from fastapi import HTTPException
 
 from app import main as service
+from spotapi.v2.datastruct import ObjectDict
+from spotapi.v2.query import get_at_depth
 
 
 def make_track(name: str = "Test Song"):
@@ -27,6 +29,23 @@ def make_track(name: str = "Test Song"):
 
 
 class SpotApiAdapterTests(IsolatedAsyncioTestCase):
+
+    def test_get_at_depth_traverses_wrapped_search_response(self):
+        response = ObjectDict.from_json(
+            {
+                "searchV2": {
+                    "tracksV2": {
+                        "items": [{"data": {"name": "Test Song"}}],
+                    }
+                }
+            }
+        )
+
+        page = get_at_depth(response, 2)
+
+        self.assertIsNotNone(page)
+        self.assertEqual(page["_items"][0]["data"]["name"], "Test Song")
+
     def test_serialize_track_uses_spotapi_v2_model_shape(self):
         result = service._serialize_track(make_track())
 
