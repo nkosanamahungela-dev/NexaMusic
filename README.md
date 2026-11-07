@@ -87,7 +87,7 @@ NexaMusic is a Gradle multi-module Android project. Keep code in the module that
 | `spine/` | Add-on module hosting and lifecycle. |
 | `listen-together-server/` | Server component for Listen Together. |
 
-The Android app uses Jetpack Compose for UI, Media3 for playback, Room for the local library, and DataStore for preferences. App modules are wired through the existing Hilt setup. Module names and available features may vary depending on the fork's current code.
+The Android app uses Jetpack Compose for UI, Media3 for playback, Room for the local library, and DataStore for preferences. App modules are wired through the existing Hilt setup. Module names and available features may vary between NexaMusic releases.
 
 ## Build locally
 
