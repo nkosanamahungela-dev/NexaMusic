@@ -45,10 +45,29 @@ class CoilBitmapLoader(
         }
     }
 
+    private fun calculateInSampleSize(width: Int, height: Int, reqWidth: Int, reqHeight: Int): Int {
+        var sampleSize = 1
+        if (width > reqWidth || height > reqHeight) {
+            var halfWidth = width / 2
+            var halfHeight = height / 2
+            while (halfWidth / sampleSize >= reqWidth && halfHeight / sampleSize >= reqHeight) {
+                sampleSize *= 2
+            }
+        }
+        return sampleSize.coerceAtLeast(1)
+    }
+
     override fun decodeBitmap(data: ByteArray): ListenableFuture<Bitmap> =
         scope.future(Dispatchers.IO) {
             try {
-                val bitmap = BitmapFactory.decodeByteArray(data, 0, data.size)
+                val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+                BitmapFactory.decodeByteArray(data, 0, data.size, bounds)
+                val sampleSize = calculateInSampleSize(bounds.outWidth, bounds.outHeight, 512, 512)
+                val options = BitmapFactory.Options().apply {
+                    inSampleSize = sampleSize
+                    inPreferredConfig = Bitmap.Config.ARGB_8888
+                }
+                val bitmap = BitmapFactory.decodeByteArray(data, 0, data.size, options)
                 bitmap?.copyIfNeeded() ?: createFallbackBitmap()
             } catch (e: Exception) {
                 Timber.tag("CoilBitmapLoader").w(e, "Failed to decode bitmap data")
@@ -60,6 +79,7 @@ class CoilBitmapLoader(
         scope.future(Dispatchers.IO) {
             val request = ImageRequest.Builder(context)
                 .data(uri)
+                .size(512)
                 .allowHardware(false)
                 .build()
 
