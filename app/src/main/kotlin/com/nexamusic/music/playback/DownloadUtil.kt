@@ -4,7 +4,6 @@
  */
 
 package com.nexamusic.music.playback
-import com.nexamusic.music.models.toMediaMetadata
 import timber.log.Timber
 import coil3.SingletonImageLoader
 import coil3.request.CachePolicy
@@ -41,13 +40,11 @@ import com.nexamusic.music.di.DownloadCache
 import com.nexamusic.music.di.PlayerCache
 import com.nexamusic.music.ui.utils.resize
 import com.nexamusic.music.constants.AutoDownloadOnLikeKey
-import com.nexamusic.music.constants.SaveDownloadsToMusicFolderKey
 import com.nexamusic.music.utils.YTPlayerUtils
 import com.nexamusic.music.utils.enumPreference
 import com.nexamusic.music.utils.get
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Runnable
@@ -90,7 +87,6 @@ constructor(
     val databaseProvider: DatabaseProvider,
     @DownloadCache val downloadCache: SimpleCache,
     @PlayerCache val playerCache: SimpleCache,
-    private val lyricsHelper: com.nexamusic.music.lyrics.LyricsHelper,
 ) {
     private val connectivityManager = context.getSystemService<ConnectivityManager>()!!
     private val audioQuality by enumPreference(context, AudioQualityKey, AudioQuality.AUTO)
@@ -196,7 +192,8 @@ constructor(
                 return@Factory dataSpec.withStream(it.first)
             }
 
-            val preferAac = appContext.dataStore.get(SaveDownloadsToMusicFolderKey, true)
+            // Keep the download format preference independent of public-folder export.
+            val preferAac = true
             val playbackData = resolvePlaybackData(videoId, preferAac, if (upgrade) AudioQuality.HIGH else audioQuality)
             // The stored format and song row keep describing the current copy until the upgrade completes.
             if (upgrade) pendingUpgrades[videoId] = formatEntity(videoId, playbackData)
@@ -403,9 +400,6 @@ constructor(
                                     return@launch
                                 }
                                 registerDuplicate(download.request.id)
-                                if (appContext.dataStore.get(SaveDownloadsToMusicFolderKey, true)) {
-                                    exportToMusicFolder(download.request.id)
-                                }
                             }
                             Download.STATE_FAILED,
                             Download.STATE_STOPPED,
@@ -491,38 +485,6 @@ constructor(
         }
         database.query { upsert(better) }
         downloadCache.removeResource(songId)
-        if (appContext.dataStore.get(SaveDownloadsToMusicFolderKey, true)) exportToMusicFolder(songId, key)
-    }
-
-    private suspend fun exportToMusicFolder(songId: String, cacheKey: String = songId) {
-        val song = database.song(songId).first() ?: return
-        val format = database.format(songId).first()
-        val lyrics = database.lyrics(songId).first()?.lyrics
-            ?: optionalSidecar { lyricsHelper.getLyrics(song.toMediaMetadata()).lyrics }
-        val video = if (song.song.isLocal) null else optionalSidecar { YTPlayerUtils.videoStream(songId) }
-        currentCoroutineContext().ensureActive()
-        DownloadExporter.export(
-            context = appContext,
-            cache = downloadCache,
-            pkg = DownloadExporter.Package(
-                songId = cacheKey,
-                title = song.song.title,
-                artist = song.artists.joinToString { it.name },
-                album = song.album?.title,
-                audioMimeType = format?.mimeType,
-                lyrics = lyrics?.takeUnless { it == com.nexamusic.music.db.entities.LyricsEntity.LYRICS_NOT_FOUND },
-                coverUrl = song.song.thumbnailUrl,
-                video = video,
-            ),
-        )
-    }
-
-    private suspend fun <T> optionalSidecar(fetch: suspend () -> T): T? = try {
-        fetch()
-    } catch (error: CancellationException) {
-        throw error
-    } catch (_: Exception) {
-        null
     }
 
     fun release() {
