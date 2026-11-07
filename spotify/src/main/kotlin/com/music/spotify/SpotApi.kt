@@ -65,12 +65,12 @@ data class SpotApiSearchResponse<T>(
 
 @Serializable
 data class SpotApiTrack(
-    val name: String = "",
-    val uri: String = "",
+    val name: String? = null,
+    val uri: String? = null,
     @SerialName("duration_ms") val durationMs: Long? = null,
     val artists: List<String> = emptyList(),
     val album: String? = null,
 ) {
     val id: String
-        get() = uri.substringAfterLast(':').takeIf { it != uri }.orEmpty()
+        get() = uri?.substringAfterLast(':')?.takeIf { it != uri }.orEmpty()
 }
