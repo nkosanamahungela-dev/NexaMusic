@@ -11,9 +11,12 @@ import androidx.compose.ui.res.painterResource
 import com.nexamusic.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -46,6 +49,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -72,6 +76,7 @@ import com.music.innertube.models.ArtistItem
 import com.music.innertube.models.PlaylistItem
 import com.music.innertube.models.SongItem
 import com.music.innertube.models.YTItem
+import com.music.innertube.YouTube
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.allowHardware
@@ -154,6 +159,16 @@ fun OnlineSearchResult(
     LaunchedEffect(decodedQuery) {
         if (navSearch.query.text != decodedQuery) {
             navSearch.onQueryChange(TextFieldValue(decodedQuery, TextRange(decodedQuery.length)))
+        }
+    }
+
+    LaunchedEffect(navSearch.query.text) {
+        val currentQuery = navSearch.query.text.trim()
+        if (currentQuery.length < 2) {
+            viewModel.searchSpotifyTracks("")
+        } else {
+            kotlinx.coroutines.delay(350L)
+            viewModel.searchSpotifyTracks(currentQuery)
         }
     }
 
