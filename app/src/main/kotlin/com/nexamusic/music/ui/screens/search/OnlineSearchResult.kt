@@ -451,7 +451,7 @@ fun OnlineSearchResult(
                                             Text(
                                                 text = track.name.orEmpty(),
                                                 style = AppTheme.typography.bodyLarge,
-                                                color = IosTheme.colors.primary,
+                                                color = IosTheme.colors.label,
                                                 maxLines = 1,
                                                 overflow = TextOverflow.Ellipsis,
                                             )
