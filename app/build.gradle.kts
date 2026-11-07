@@ -49,9 +49,12 @@ android {
         // LastFM API keys from local.properties or environment variables
         val lastFmKey = localProperties.getProperty("LASTFM_API_KEY") ?: System.getenv("LASTFM_API_KEY") ?: ""
         val lastFmSecret = localProperties.getProperty("LASTFM_SECRET") ?: System.getenv("LASTFM_SECRET") ?: ""
+        // SpotAPI gateway URL is supplied by deployment environment or local.properties.
+        val spotApiBaseUrl = localProperties.getProperty("SPOTAPI_BASE_URL") ?: System.getenv("SPOTAPI_BASE_URL") ?: ""
 
         buildConfigField("String", "LASTFM_API_KEY", "\"$lastFmKey\"")
         buildConfigField("String", "LASTFM_SECRET", "\"$lastFmSecret\"")
+        buildConfigField("String", "SPOTAPI_BASE_URL", "\\\"$spotApiBaseUrl\\\"")
 
         val isNightly = project.hasProperty("nightly") && project.property("nightly") == "true"
         buildConfigField("Boolean", "IS_NIGHTLY", isNightly.toString())
