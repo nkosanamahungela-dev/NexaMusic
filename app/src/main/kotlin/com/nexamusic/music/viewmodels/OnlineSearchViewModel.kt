@@ -14,6 +14,9 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.music.innertube.SearchFilter
+import com.music.spotify.SpotApi
+import com.music.spotify.SpotApiTrack
+import com.nexamusic.music.BuildConfig
 import com.music.innertube.YouTube
 import com.music.innertube.models.filterExplicit
 import com.music.innertube.models.filterVideoSongs
@@ -29,6 +32,9 @@ import com.nexamusic.music.utils.get
 import com.nexamusic.music.utils.reportException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import java.net.URLDecoder
@@ -51,11 +57,49 @@ constructor(
     var summaryPage by mutableStateOf<SearchSummaryPage?>(null)
     val viewStateMap = mutableStateMapOf<String, ItemsPage?>()
 
+    var spotifyTracks by mutableStateOf<List<SpotApiTrack>>(emptyList())
+        private set
+    var isSpotifyLoading by mutableStateOf(false)
+        private set
+    var spotifyError by mutableStateOf<String?>(null)
+        private set
+    private var spotifySearchJob: Job? = null
+
     init {
+        SpotApi.configure(BuildConfig.SPOTAPI_BASE_URL)
         viewModelScope.launch {
             // Only fetches what isn't cached yet — switching filters back and forth
             // must not re-hit the network. refresh() drops the cache entry first.
             filter.collect { load(it) }
+        }
+    }
+
+
+    /** Search the public Spotify catalogue through NexaMusic's hosted gateway. */
+    fun searchSpotifyTracks(searchQuery: String) {
+        spotifySearchJob?.cancel()
+        val normalizedQuery = searchQuery.trim()
+        if (normalizedQuery.length < 2 || !SpotApi.isConfigured()) {
+            spotifyTracks = emptyList()
+            spotifyError = null
+            isSpotifyLoading = false
+            return
+        }
+
+        spotifySearchJob = viewModelScope.launch(Dispatchers.IO) {
+            isSpotifyLoading = true
+            spotifyError = null
+            val result = SpotApi.searchTracks(normalizedQuery, limit = 8)
+            result.onSuccess { tracks ->
+                spotifyTracks = tracks
+                isSpotifyLoading = false
+            }.onFailure { error ->
+                if (error is CancellationException) throw error
+                spotifyTracks = emptyList()
+                spotifyError = "Spotify catalogue is temporarily unavailable."
+                isSpotifyLoading = false
+                reportException(error)
+            }
         }
     }
 
