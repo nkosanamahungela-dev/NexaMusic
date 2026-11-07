@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -437,6 +438,15 @@ fun OnlineSearchResult(
                                             .padding(horizontal = 16.dp, vertical = 11.dp),
                                         verticalAlignment = Alignment.CenterVertically,
                                     ) {
+                                        if (!track.imageUrl.isNullOrBlank()) {
+                                            AsyncImage(
+                                                model = track.imageUrl,
+                                                contentDescription = null,
+                                                contentScale = ContentScale.Crop,
+                                                modifier = Modifier.size(48.dp),
+                                            )
+                                            Spacer(modifier = Modifier.size(12.dp))
+                                        }
                                         Column(modifier = Modifier.weight(1f)) {
                                             Text(
                                                 text = track.name.orEmpty(),
