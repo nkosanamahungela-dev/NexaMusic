@@ -27,7 +27,9 @@ The service will be available at `http://127.0.0.1:8000`; interactive API docs a
 
 ## Deploy
 
-Build and run the included Dockerfile on a Python-capable host. Configure the deployed base URL in the Android app before enabling catalogue requests. Set `NEXAMUSIC_CORS_ORIGINS` only if browser clients need access; native Android requests do not use browser CORS.
+A Render Blueprint is included at the repository root (`render.yaml`). In Render, create a new Blueprint from this repository and deploy the `nexamusic-spotapi` web service. Wait for its `/health` check to pass, then copy the HTTPS service URL.
+
+Configure Android builds with `SPOTAPI_BASE_URL` in `local.properties` or as an environment variable. The app injects this into `BuildConfig`; leave it empty until the service has a real HTTPS URL. The Kotlin client intentionally refuses non-HTTPS URLs. Set `NEXAMUSIC_CORS_ORIGINS` only if browser clients need access; native Android requests do not use browser CORS.
 
 ## Scope and limitations
 
