@@ -5,6 +5,8 @@ import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.music.spotify.Spotify
+import com.music.spotify.SpotApi
+import com.music.spotify.models.SpotApiTrack
 import com.music.spotify.SpotifyAuth
 import com.music.spotify.SpotifyHomeItem
 import com.music.spotify.SpotifyHomeItemType
@@ -13,6 +15,7 @@ import com.music.spotify.SpotifyMapper
 import com.music.spotify.models.SpotifyPlaylist
 import com.music.spotify.models.SpotifyImage
 import com.music.spotify.models.SpotifyTrack
+import com.nexamusic.music.BuildConfig
 import com.nexamusic.music.constants.SpotifySessionKey
 import com.nexamusic.music.db.MusicDatabase
 import com.nexamusic.music.db.entities.ArtistEntity
@@ -115,8 +118,13 @@ class SpotifyImportViewModel @Inject constructor(
     }
 
     init {
+        SpotApi.configure(BuildConfig.SPOTAPI_BASE_URL)
         restoreSession()
     }
+
+    /** Public Spotify catalogue search through NexaMusic's SpotAPI service. */
+    suspend fun searchCatalogueTracks(query: String): Result<List<SpotApiTrack>> =
+        SpotApi.searchTracks(query)
 
     private suspend fun getSession(): SpotifySession? {
         val prefs = context.dataStore.data.first()
