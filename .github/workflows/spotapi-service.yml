@@ -36,3 +36,21 @@ jobs:
           bash install_spotapi.sh
       - name: Run adapter tests
         run: python -m unittest discover -s tests -v
+
+  live-smoke:
+    if: github.event_name != 'pull_request'
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify deployed health endpoint
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --retry 6 --retry-all-errors --retry-delay 10 --max-time 60 \
+            https://nexamusic-spotapi.onrender.com/health | tee health.json
+          python -c 'import json; d=json.load(open("health.json")); assert d.get("status") == "ok", d; print(d)'
+      - name: Verify live track search endpoint
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --retry 3 --retry-all-errors --retry-delay 10 --max-time 90 \
+            'https://nexamusic-spotapi.onrender.com/v1/search/tracks?q=Radiohead&limit=2' | tee search.json
+          python -c 'import json; d=json.load(open("search.json")); assert isinstance(d.get("items"), list) and len(d["items"]) > 0, d; assert all(x.get("name") and x.get("uri") for x in d["items"]), d; print(f"Live search returned {len(d['items'])} tracks")'
