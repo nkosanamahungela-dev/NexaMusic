@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: nexamusic-spotapi
+    runtime: docker
+    rootDir: spotapi-service
+    plan: free
+    healthCheckPath: /health
+    autoDeploy: true
