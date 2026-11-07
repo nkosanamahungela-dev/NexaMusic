@@ -1,4 +1,4 @@
-Convx bundles source vendored from third-party open-source projects.
+NexaMusic includes source adapted from and bundled with third-party open-source projects.
 
 ## Lyrics providers
 
@@ -34,5 +34,6 @@ Official music video matching is adapted from Square
 
 ## Base project
 
-Convx was originally built on an open-source GPL-3.0 music player and has since diverged
-completely. It remains licensed under the GNU General Public License v3.0 (see LICENSE).
+NexaMusic began as a fork of Convx, an Android music player originally built on an open-source
+GPL-3.0 music player. NexaMusic has since been independently developed and substantially
+modified. This project remains licensed under the GNU General Public License v3.0 (see LICENSE).
