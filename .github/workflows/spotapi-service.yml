@@ -53,4 +53,13 @@ jobs:
           set -euo pipefail
           curl --fail --silent --show-error --retry 3 --retry-all-errors --retry-delay 10 --max-time 90 \
             'https://nexamusic-spotapi.onrender.com/v1/search/tracks?q=Radiohead&limit=2' | tee search.json
-          python -c 'import json; d=json.load(open("search.json")); assert isinstance(d.get("items"), list) and len(d["items"]) > 0, d; assert all(x.get("name") and x.get("uri") for x in d["items"]), d; print(f"Live search returned {len(d['items'])} tracks")'
+          python - <<'PY'
+          import json
+
+          with open("search.json", encoding="utf-8") as stream:
+              data = json.load(stream)
+          items = data.get("items")
+          assert isinstance(items, list) and items, data
+          assert all(item.get("name") and item.get("uri") for item in items), data
+          print("Live search returned", len(items), "tracks")
+          PY
