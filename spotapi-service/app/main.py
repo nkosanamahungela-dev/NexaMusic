@@ -72,7 +72,13 @@ def _serialize_track(track: Any) -> dict[str, Any]:
         "uri": _read(track, "uri"),
         "duration_ms": duration,
         "artists": [name for name in artists if name],
-        "album": _read(track, "album", "name"),
+        "album": _read(track, "album_of_track", "name") or _read(track, "album", "name"),
+        "image_url": (
+            _read(
+                (_items(_read(track, "album_of_track", "cover_art", "sources")) or [None])[0],
+                "url",
+            )
+        ),
     }
 
 
