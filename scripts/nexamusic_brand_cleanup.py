@@ -11,9 +11,10 @@ import re
 import subprocess
 
 ROOT = Path.cwd()
-SKIP_CONTENT = {"LICENSE", "NOTICE"}
+SKIP_CONTENT = {"LICENSE"}
 MANIFEST = "app/src/main/AndroidManifest.xml"
 LEGACY_URI = 'android:scheme="convx"'
+LEGAL_ATTRIBUTION = "NexaMusic began as a fork of Convx"
 PATTERN = re.compile(r"convx", re.IGNORECASE)
 
 def brand(match: re.Match) -> str:
@@ -34,7 +35,7 @@ tracked = [p for p in tracked if p]
 changed_contents = 0
 for relative in tracked:
     path = ROOT / relative
-    if not path.is_file() or path.name in SKIP_CONTENT or relative == "scripts/nexamusic_brand_cleanup.py" or relative == MANIFEST:
+    if not path.is_file() or path.name in {"LICENSE", "NOTICE"} or relative == "scripts/nexamusic_brand_cleanup.py" or relative == MANIFEST:
         continue
     try:
         original = path.read_text(encoding="utf-8")
@@ -63,6 +64,7 @@ for relative in sorted(tracked, key=lambda p: (p.count("/"), len(p)), reverse=Tr
 # invite URI are exempt; the scanner itself contains the search pattern.
 remaining = []
 legacy_uri_count = 0
+legal_attribution_count = 0
 for path in ROOT.rglob("*"):
     if not path.is_file() or ".git" in path.parts:
         continue
@@ -75,6 +77,11 @@ for path in ROOT.rglob("*"):
         content = path.read_text(encoding="utf-8")
     except (UnicodeDecodeError, OSError):
         continue
+    if relative == "NOTICE":
+        legal_attribution_count = content.count(LEGAL_ATTRIBUTION)
+        if legal_attribution_count != 1:
+            remaining.append(f"{relative}: expected exactly one legal Convx provenance attribution, found {legal_attribution_count}")
+        content = content.replace(LEGAL_ATTRIBUTION, "")
     if relative == MANIFEST:
         legacy_uri_count = content.count(LEGACY_URI)
         if legacy_uri_count != 1:
@@ -85,10 +92,13 @@ for path in ROOT.rglob("*"):
 
 print(f"Updated text files: {changed_contents}")
 print(f"Remaining unexpected legacy-brand references: {len(remaining)}")
+print(f"Preserved legal provenance attributions: {legal_attribution_count}")
 print(f"Preserved legacy invite URI aliases: {legacy_uri_count}")
 for item in remaining[:100]:
     print(item)
 if remaining:
     raise SystemExit("NexaMusic branding audit incomplete; review remaining references.")
+if legal_attribution_count != 1:
+    raise SystemExit("Legal provenance attribution audit failed.")
 if legacy_uri_count != 1:
     raise SystemExit("Backward-compatibility URI audit failed.")
