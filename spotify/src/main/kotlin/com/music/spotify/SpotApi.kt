@@ -70,6 +70,7 @@ data class SpotApiTrack(
     @SerialName("duration_ms") val durationMs: Long? = null,
     val artists: List<String> = emptyList(),
     val album: String? = null,
+    @SerialName("image_url") val imageUrl: String? = null,
 ) {
     val id: String
         get() = uri?.substringAfterLast(':')?.takeIf { it != uri }.orEmpty()
