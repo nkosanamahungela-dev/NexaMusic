@@ -381,6 +381,94 @@ fun OnlineSearchResult(
                             .fillMaxWidth()
                             .heroPullZoom(heroZoom)
                     ) {
+                        if (searchFilter == null || searchFilter == FILTER_SONG) {
+                            if (viewModel.isSpotifyLoading || viewModel.spotifyTracks.isNotEmpty() || viewModel.spotifyError != null) {
+                                item(key = "spotify_catalogue_header") {
+                                    NavigationTitle(title = "Spotify")
+                                }
+                                if (viewModel.isSpotifyLoading) {
+                                    item(key = "spotify_catalogue_loading") {
+                                        Text(
+                                            text = "Searching Spotify catalogue…",
+                                            style = AppTheme.typography.bodyMedium,
+                                            color = IosTheme.colors.secondaryLabel,
+                                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                                        )
+                                    }
+                                }
+                                viewModel.spotifyError?.let { message ->
+                                    item(key = "spotify_catalogue_error") {
+                                        Text(
+                                            text = message,
+                                            style = AppTheme.typography.bodyMedium,
+                                            color = IosTheme.colors.secondaryLabel,
+                                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                                        )
+                                    }
+                                }
+                                itemsIndexed(
+                                    items = viewModel.spotifyTracks,
+                                    key = { index, track -> "spotify_catalogue_" + (track.uri ?: index.toString()) },
+                                ) { _, track ->
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                val playbackQuery = listOfNotNull(
+                                                    track.name?.takeIf { it.isNotBlank() },
+                                                    track.artists.firstOrNull(),
+                                                ).joinToString(" ")
+                                                if (playbackQuery.isNotBlank()) {
+                                                    coroutineScope.launch {
+                                                        val match = YouTube.search(
+                                                            query = playbackQuery,
+                                                            filter = com.music.innertube.SearchFilter.FILTER_SONG,
+                                                        ).getOrNull()?.items
+                                                            ?.filterIsInstance<SongItem>()
+                                                            ?.firstOrNull()
+                                                        if (match != null) {
+                                                            playerConnection.playQueue(
+                                                                searchResultQueue(match, listOf(match), searchedSongsTitle)
+                                                            )
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            .padding(horizontal = 16.dp, vertical = 11.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                    ) {
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(
+                                                text = track.name.orEmpty(),
+                                                style = AppTheme.typography.bodyLarge,
+                                                color = IosTheme.colors.primary,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis,
+                                            )
+                                            Text(
+                                                text = listOf(
+                                                    track.artists.joinToString(", ").takeIf { it.isNotBlank() },
+                                                    track.album?.takeIf { it.isNotBlank() },
+                                                ).filterNotNull().joinToString(" · "),
+                                                style = AppTheme.typography.bodySmall,
+                                                color = IosTheme.colors.secondaryLabel,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis,
+                                            )
+                                        }
+                                        track.durationMs?.let { duration ->
+                                            val seconds = duration / 1000
+                                            Text(
+                                                text = String.format("%d:%02d", seconds / 60, seconds % 60),
+                                                style = AppTheme.typography.bodySmall,
+                                                color = IosTheme.colors.secondaryLabel,
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
                         if (searchFilter == null) {
                             searchSummary?.summaries?.forEach { summary ->
                                 item {
