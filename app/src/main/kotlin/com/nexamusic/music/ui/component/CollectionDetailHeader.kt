@@ -341,31 +341,6 @@ fun CollectionDetailHeader(
                     }
                 }
 
-                if (onFavoriteAction != null) {
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(top = 10.dp)
-                            .clickable(role = Role.Button, onClick = onFavoriteAction)
-                            .padding(vertical = 6.dp),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        SymbolIcon(
-                            sf(if (favoriteActive) "star.fill" else "star"),
-                            stringResource(R.string.favorite),
-                            tint = if (favoriteActive) Color(0xFFFFD54F) else contentForeground.copy(alpha = .82f),
-                            size = 17.dp,
-                        )
-                        Spacer(Modifier.width(7.dp))
-                        Text(
-                            stringResource(R.string.favorite),
-                            style = SfStyle(13.sp, 17.sp, FontWeight.Medium),
-                            color = contentForeground.copy(alpha = .82f),
-                        )
-                    }
-                }
-
                 if (!description.isNullOrBlank()) {
                     Spacer(Modifier.height(if (immersiveArtwork) 12.dp else 20.dp))
                     CompositionLocalProvider(LocalContentColor provides contentForeground.copy(alpha = if (immersiveArtwork) .84f else .48f)) {
