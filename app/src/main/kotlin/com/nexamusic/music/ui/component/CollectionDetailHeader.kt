@@ -359,7 +359,7 @@ fun CollectionDetailHeader(
                         )
                         Spacer(Modifier.width(7.dp))
                         Text(
-                            stringResource(if (favoriteActive) R.string.favorite else R.string.add_to_favorites),
+                            stringResource(R.string.favorite),
                             style = SfStyle(13.sp, 17.sp, FontWeight.Medium),
                             color = contentForeground.copy(alpha = .82f),
                         )
