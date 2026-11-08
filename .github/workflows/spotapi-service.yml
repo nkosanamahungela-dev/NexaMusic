@@ -2,7 +2,7 @@ name: SpotAPI service tests
 
 on:
   push:
-    branches: [main]
+    branches: [ '**' ]
     paths:
       - "spotapi-service/**"
       - ".github/workflows/spotapi-service.yml"
