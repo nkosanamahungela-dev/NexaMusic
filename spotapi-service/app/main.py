@@ -92,12 +92,27 @@ def _serialize_artist(artist: Any) -> dict[str, Any]:
 
 def _serialize_album(album: Any) -> dict[str, Any]:
     artists = [_artist_name(item) for item in _items(_read(album, "artists"))]
+    sources = _items(_read(album, "cover_art", "sources"))
     return {
         "name": _read(album, "name"),
         "uri": _read(album, "uri"),
         "artists": [name for name in artists if name],
         "release_date": _read(album, "date", "iso_string")
         or _read(album, "date", "year"),
+        "image_url": _read(sources[0], "url") if sources else None,
+    }
+
+
+def _serialize_playlist(playlist: Any) -> dict[str, Any]:
+    image_items = _items(_read(playlist, "images", "items"))
+    image_sources = _items(_read(image_items[0], "sources")) if image_items else []
+    owner = _read(playlist, "owner_v2", "data")
+    return {
+        "name": _read(playlist, "name"),
+        "uri": _read(playlist, "uri"),
+        "description": _read(playlist, "description"),
+        "owner": _read(owner, "name"),
+        "image_url": _read(image_sources[0], "url") if image_sources else None,
     }
 
 
@@ -111,8 +126,12 @@ async def _search(kind: str, query: str, limit: int) -> list[dict[str, Any]]:
                     results.append(_serialize_track(item))
                 elif kind == "artists":
                     results.append(_serialize_artist(item))
-                else:
+                elif kind == "albums":
                     results.append(_serialize_album(item))
+                elif kind == "playlists":
+                    results.append(_serialize_playlist(item))
+                else:
+                    raise ValueError(f"Unsupported search type: {kind}")
                 if len(results) >= limit:
                     return results
         return results
@@ -151,3 +170,11 @@ async def search_albums(
     limit: int = Query(default=20, ge=1, le=50),
 ) -> dict[str, Any]:
     return {"query": q, "items": await _search("albums", q, limit)}
+
+
+@app.get("/v1/search/playlists")
+async def search_playlists(
+    q: str = Query(min_length=1, max_length=120),
+    limit: int = Query(default=20, ge=1, le=50),
+) -> dict[str, Any]:
+    return {"query": q, "items": await _search("playlists", q, limit)}
