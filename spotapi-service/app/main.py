@@ -83,10 +83,12 @@ def _serialize_track(track: Any) -> dict[str, Any]:
 
 
 def _serialize_artist(artist: Any) -> dict[str, Any]:
+    sources = _items(_read(artist, "visuals", "avatar_image", "sources"))
     return {
         "name": _artist_name(artist),
         "uri": _read(artist, "uri"),
         "followers": _read(artist, "followers", "total"),
+        "image_url": _read(sources[0], "url") if sources else None,
     }
 
 
