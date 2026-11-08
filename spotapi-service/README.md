@@ -8,6 +8,7 @@ This folder contains a small Python service that adapts SpotAPI's **public catal
 - `GET /v1/search/tracks?q=...`
 - `GET /v1/search/artists?q=...`
 - `GET /v1/search/albums?q=...`
+- `GET /v1/search/playlists?q=...`
 
 Each search accepts an optional `limit` from 1 to 50 (default 20). Responses use a small stable JSON shape for the Kotlin client.
 
