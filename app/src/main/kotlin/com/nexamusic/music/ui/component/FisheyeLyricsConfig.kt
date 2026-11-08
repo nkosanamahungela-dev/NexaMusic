@@ -37,6 +37,9 @@ internal object FisheyeLyricsConfig {
     const val LABEL_CORNER_DP = 6f
     const val LABEL_HORIZONTAL_PADDING_DP = 6f
     const val LABEL_VERTICAL_PADDING_DP = 2f
+    const val LABEL_NOTCH_COUNT = 3
+    const val LABEL_NOTCH_DEPTH_DP = 2.1f
+    const val LABEL_NOTCH_SPACING_FRACTION = 0.18f
     const val EDGE_SAFE_FRACTION = 0.92f
 
     val Upcoming = Color(0xFF8F8A84)
