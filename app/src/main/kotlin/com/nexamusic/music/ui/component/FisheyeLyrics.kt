@@ -2,7 +2,11 @@ package com.nexamusic.music.ui.component
 
 import android.provider.Settings
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloat\nimport androidx.compose.animation.core.animateFloatAsState\nimport androidx.compose.animation.core.infiniteRepeatable\nimport androidx.compose.animation.core.rememberInfiniteTransition\nimport androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
