@@ -287,7 +287,7 @@ fun AlbumMenu(
                     }
                 },
             ) {
-                SymbolIcon(symbol = if (album.album.bookmarkedAt != null) sf("heart.fill") else sf("heart"), contentDescription = null, tint = if (album.album.bookmarkedAt != null) AppTheme.colorScheme.error else LocalContentColor.current)
+                SymbolIcon(symbol = if (album.album.bookmarkedAt != null) sf("star.fill") else sf("star"), contentDescription = null, tint = if (album.album.bookmarkedAt != null) AppTheme.colorScheme.error else LocalContentColor.current)
             }
         },
     )
