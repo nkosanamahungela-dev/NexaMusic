@@ -1080,12 +1080,16 @@ class MusicService :
 
     private fun observeTransitionPreferences() {
         dataStore.data.map { prefs ->
-            val enabled = (prefs[CrossfadeEnabledKey] ?: false) && !(prefs[BitPerfectKey] ?: false)
-            val autoMix = enabled && (prefs[AutoDjMixingEnabledKey] ?: false)
+            val bitPerfect = prefs[BitPerfectKey] ?: false
+            val crossfadeEnabled = (prefs[CrossfadeEnabledKey] ?: false) && !bitPerfect
+            // DJ Mix is an independent opt-in transition mode; it must not require
+            // the standard Crossfade toggle to be enabled as well.
+            val autoMix = (prefs[AutoDjMixingEnabledKey] ?: false) && !bitPerfect
+            val transitionsEnabled = crossfadeEnabled || autoMix
             val seconds = (prefs[CrossfadeDurationKey] ?: DEFAULT_CROSSFADE_SECONDS)
                 .takeIf { it.isFinite() } ?: DEFAULT_CROSSFADE_SECONDS
             TransitionPreferences(
-                enabled = enabled,
+                enabled = transitionsEnabled,
                 durationSeconds = seconds.coerceIn(1f, 12f),
                 autoMix = autoMix,
                 creative = autoMix && (prefs[CreativeTransitionsEnabledKey] ?: false),
