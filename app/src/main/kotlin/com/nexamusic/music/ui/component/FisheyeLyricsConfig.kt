@@ -64,7 +64,7 @@ internal object FisheyeLyricsConfig {
     /** Lowercase keys are matched after Unicode punctuation is stripped. */
     val KeywordIcons: Map<String, KeywordIcon> = buildMap {
         listOf("wait", "waiting", "waited").forEach { put(it, KeywordIcon(Icon.HOURGLASS, "hourglass_top")) }
-        listOf("you", "your", "you're", "yours").forEach { put(it, KeywordIcon(Icon.PERSON, "person")) }
+        listOf("you", "your", "youre", "yours").forEach { put(it, KeywordIcon(Icon.PERSON, "person")) }
         listOf("heart", "hearts", "love", "loved").forEach { put(it, KeywordIcon(Icon.HEART, "favorite")) }
         listOf("fire", "burn", "burning", "flame").forEach { put(it, KeywordIcon(Icon.FLAME, "local_fire_department")) }
         listOf("sun", "sunshine", "sunrise").forEach { put(it, KeywordIcon(Icon.SUN, "sunny")) }
