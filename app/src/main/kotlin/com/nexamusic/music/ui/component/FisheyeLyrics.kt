@@ -519,3 +519,47 @@ private fun FisheyeKeywordIcon(
         }
     }
 }
+
+
+/** The style-sheet preview deliberately uses original placeholder copy, never track lyrics. */
+@Composable
+fun FisheyeLyricsPreview(
+    textPosition: LyricsPosition,
+    accent: Color = Color.White,
+    modifier: Modifier = Modifier,
+) {
+    val sampleLines = remember {
+        listOf(
+            LyricsEntry(0L, "Wait beside the window"),
+            LyricsEntry(2_800L, "You carry a little heart"),
+            LyricsEntry(5_600L, "Let the bright fire rise"),
+            LyricsEntry(8_400L, "We dance beneath the stars"),
+        )
+    }
+    var previewPosition by remember { mutableLongStateOf(0L) }
+    LaunchedEffect(Unit) {
+        var previousFrame = 0L
+        while (true) {
+            withFrameNanos { frame ->
+                if (previousFrame != 0L) {
+                    previewPosition = (previewPosition + ((frame - previousFrame) / 1_000_000L).coerceIn(0L, 50L)) % 11_200L
+                }
+                previousFrame = frame
+            }
+        }
+    }
+    FisheyeLyrics(
+        lines = sampleLines,
+        fontFamily = FontFamily.Default,
+        fontSize = 25f,
+        lineSpacing = 1.12f,
+        positionMs = { previewPosition },
+        isSynced = true,
+        autoScrollEnabled = true,
+        accent = accent,
+        modifier = modifier,
+        onSeek = {},
+        songId = "nexamusic-fisheye-preview",
+        textPosition = textPosition,
+    )
+}
