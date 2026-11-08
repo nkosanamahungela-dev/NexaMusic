@@ -894,11 +894,19 @@ fun ColumnScope.LyricsAnimationSheetContent() {
                         hero = false,
                         modifier = Modifier.fillMaxSize(),
                     )
-                    com.nexamusic.music.ui.player.InlineLyricsView(
-                        mediaMetadata = lyricsTrack,
-                        showLyrics = true,
-                        positionProvider = previewClock,
-                    )
+                    if (selected == LyricsAnimationStyle.FISHEYE) {
+                        com.nexamusic.music.ui.component.FisheyeLyricsPreview(
+                            textPosition = position,
+                            accent = Color.White,
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                    } else {
+                        com.nexamusic.music.ui.player.InlineLyricsView(
+                            mediaMetadata = lyricsTrack,
+                            showLyrics = true,
+                            positionProvider = previewClock,
+                        )
+                    }
                     Text(
                         lyricsTrack?.title.orEmpty(),
                         color = Color.White.copy(alpha = 0.6f),
@@ -917,40 +925,10 @@ fun ColumnScope.LyricsAnimationSheetContent() {
                         .background(androidx.compose.ui.graphics.Brush.verticalGradient(listOf(selectedColor.copy(alpha = 0.38f).compositeOver(Color(0xFF111217)), Color(0xFF111217)))),
                 ) {
                     if (selected == LyricsAnimationStyle.FISHEYE) {
-                        val sampleLines = remember {
-                            listOf(
-                                com.nexamusic.music.lyrics.LyricsEntry(0L, "Wait beside the window"),
-                                com.nexamusic.music.lyrics.LyricsEntry(2_800L, "You carry a little heart"),
-                                com.nexamusic.music.lyrics.LyricsEntry(5_600L, "Let the bright fire rise"),
-                                com.nexamusic.music.lyrics.LyricsEntry(8_400L, "We dance beneath the stars"),
-                            )
-                        }
-                        var fisheyePreviewPosition by remember { androidx.compose.runtime.mutableLongStateOf(0L) }
-                        LaunchedEffect(selected) {
-                            var previousFrame = 0L
-                            while (true) {
-                                androidx.compose.runtime.withFrameNanos { frame ->
-                                    if (previousFrame != 0L) {
-                                        fisheyePreviewPosition = (fisheyePreviewPosition +
-                                            ((frame - previousFrame) / 1_000_000L).coerceIn(0L, 50L)) % 11_200L
-                                    }
-                                    previousFrame = frame
-                                }
-                            }
-                        }
-                        com.nexamusic.music.ui.component.FisheyeLyrics(
-                            lines = sampleLines,
-                            fontFamily = androidx.compose.ui.text.font.FontFamily.Default,
-                            fontSize = 25f,
-                            lineSpacing = 1.12f,
-                            positionMs = { fisheyePreviewPosition },
-                            isSynced = true,
-                            autoScrollEnabled = true,
+                        com.nexamusic.music.ui.component.FisheyeLyricsPreview(
+                            textPosition = position,
                             accent = Color.White,
                             modifier = Modifier.fillMaxSize().padding(top = 8.dp, bottom = 8.dp),
-                            onSeek = {},
-                            songId = "nexamusic-fisheye-preview",
-                            textPosition = position,
                         )
                     } else {
                         Column(
