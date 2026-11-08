@@ -58,11 +58,15 @@ class DiscordRPC(
             buttonsList.add(resolvedText to "https://music.youtube.com/watch?v=${song.song.id}")
         }
         if (button2Visible) {
-            val resolvedText = resolveVariables(
-                button2Text.ifEmpty { "Visit NexaMusic" },
-                song
-            )
-            buttonsList.add(resolvedText to "https://github.com/cosmictaserdev-creator/NexaMusic")
+            // Older builds/users may have saved the former fork name as custom text.
+            // Normalize that legacy label so Discord always presents NexaMusic branding.
+            val configuredText = button2Text.trim()
+            val buttonLabel = if (
+                configuredText.isEmpty() ||
+                configuredText.equals("Visit Convx", ignoreCase = true)
+            ) "Visit NexaMusic" else configuredText
+            val resolvedText = resolveVariables(buttonLabel, song)
+            buttonsList.add(resolvedText to "https://github.com/nkosanamahungela-dev/NexaMusic")
         }
 
         val type = when (activityType) {
