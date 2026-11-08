@@ -461,6 +461,27 @@ fun AlbumScreen(
                         playerConnection.service.getAutomix(playlistId)
                         playerConnection.playQueue(LocalAlbumRadio(albumWithSongs.copy(songs = albumWithSongs.songs.shuffled())))
                     },
+                    favoriteActive = albumWithSongs.album.bookmarkedAt != null,
+                    onFavoriteAction = {
+                        coroutineScope.launch {
+                            val current = database.album(albumWithSongs.album.id).first()
+                            if (current != null) {
+                                database.query {
+                                    update(
+                                        current.copy(
+                                            album = current.album.copy(
+                                                bookmarkedAt = if (current.album.bookmarkedAt == null) {
+                                                    java.time.LocalDateTime.now()
+                                                } else {
+                                                    null
+                                                },
+                                            ),
+                                        ),
+                                    )
+                                }
+                            }
+                        }
+                    },
                     rightSymbol = "plus",
                     onRightAction = {
                         when (downloadState) {
