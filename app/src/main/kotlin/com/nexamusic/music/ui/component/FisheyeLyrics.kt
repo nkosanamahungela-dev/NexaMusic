@@ -199,6 +199,7 @@ fun FisheyeLyrics(
     }
 
     val lineGap = with(density) { (fontSize * lineSpacing * 0.65f).sp.toDp() }
+    val wordGap = with(density) { (fontSize * FisheyeLyricsConfig.WORD_GAP_EM).sp.toDp() }
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -297,6 +298,11 @@ fun FisheyeLyrics(
                                     wordSung || token.mutedBox -> FisheyeLyricsConfig.MutedLabel
                                     else -> null
                                 }
+                                val underlineProgress by animateFloatAsState(
+                                    targetValue = if (lineActive && token.underline) 1f else if (index < activeIndex && token.underline) 1f else 0f,
+                                    animationSpec = if (reduceMotion) tween(0) else tween(FisheyeLyricsConfig.UNDERLINE_DRAW_MS),
+                                    label = "fisheye_underline_progress",
+                                )
                                 val pop by animateFloatAsState(
                                     targetValue = if (wordActive && !reduceMotion) FisheyeLyricsConfig.WORD_POP_SCALE else 1f,
                                     animationSpec = if (reduceMotion) tween(0) else spring(
@@ -338,7 +344,20 @@ fun FisheyeLyrics(
                                                 drawPath(path, labelFill)
                                             } else Modifier
                                         )
-                                        .padding(horizontal = FisheyeLyricsConfig.WORD_GAP_EM.em, vertical = 2.dp),
+                                        .padding(horizontal = wordGap / 2, vertical = 2.dp)
+                                        .drawWithCache {
+                                            val underline = Path().apply {
+                                                val y = size.height - 1.dp.toPx()
+                                                moveTo(0f, y)
+                                                cubicTo(size.width * 0.25f, y - 2.dp.toPx(), size.width * 0.7f, y + 2.dp.toPx(), size.width, y)
+                                            }
+                                            onDrawWithContent {
+                                                drawContent()
+                                                if (token.underline && underlineProgress > 0f) {
+                                                    drawPath(underline, color.copy(alpha = 0.7f * underlineProgress), style = Stroke(FisheyeLyricsConfig.UNDERLINE_WIDTH_DP.dp.toPx(), cap = StrokeCap.Round))
+                                                }
+                                            }
+                                        },
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
                                     if (token.icon != null) {
@@ -361,159 +380,4 @@ fun FisheyeLyrics(
                                         maxLines = 2,
                                     )
                                 }
-                                if (token.underline) {
-                                    Spacer(
-                                        Modifier
-                                            .height(0.dp)
-                                            .drawWithCache {
-                                                val path = Path().apply {
-                                                    val y = size.height - 1.dp.toPx()
-                                                    moveTo(0f, y)
-                                                    cubicTo(size.width * 0.25f, y - 2.dp.toPx(), size.width * 0.7f, y + 2.dp.toPx(), size.width, y)
-                                                }
-                                                onDrawBehind {
-                                                    drawPath(path, color.copy(alpha = 0.7f), style = Stroke(FisheyeLyricsConfig.UNDERLINE_WIDTH_DP.dp.toPx(), cap = StrokeCap.Round))
-                                                }
-                                            }
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
 
-private fun splitFisheyeWords(text: String): List<String> {
-    if (text.isBlank()) return emptyList()
-    if (isCjk(text)) return text.filterNot(Char::isWhitespace).chunked(2)
-    return Regex("\\S+").findAll(text).map { it.value }.toList()
-}
-
-private fun isCjk(text: String): Boolean = cjkRegex.containsMatchIn(text)
-
-private fun lensScale(distance: Float, x: Float, height: Float, reduceMotion: Boolean): Float {
-    if (reduceMotion || height <= 0f) return 1f
-    val y = (distance / 5f).coerceIn(-1f, 1f)
-    val r2 = x * x + y * y
-    return (1f / (1f + FisheyeLyricsConfig.LENS_K * r2)).coerceIn(FisheyeLyricsConfig.MIN_WORD_SCALE, 1f)
-}
-
-@Composable
-private fun FisheyeInterlude(scale: Float, color: Color) {
-    val dots = remember { listOf(0, 1, 2) }
-    Row(
-        Modifier.fillMaxWidth().padding(vertical = 12.dp).graphicsLayer {
-            scaleX = scale
-            scaleY = scale
-        },
-        horizontalArrangement = Arrangement.Center,
-    ) {
-        dots.forEach {
-            Box(Modifier.padding(horizontal = 3.dp).size(5.dp).background(color.copy(alpha = 0.72f), RoundedCornerShape(50)))
-        }
-    }
-}
-
-/** Small vector-only keyword glyphs; decorative and excluded from accessibility traversal. */
-@Composable
-private fun FisheyeKeywordIcon(
-    icon: FisheyeLyricsConfig.Icon,
-    tint: Color,
-    modifier: Modifier = Modifier,
-    active: Boolean,
-) {
-    val scale by animateFloatAsState(
-        targetValue = if (active) 1f else 0.9f,
-        animationSpec = tween(if (active) FisheyeLyricsConfig.ICON_ENTER_MS else 120),
-        label = "fisheye_icon_scale",
-    )
-    androidx.compose.foundation.Canvas(
-        modifier = modifier.graphicsLayer { scaleX = scale; scaleY = scale }
-            .clearAndSetSemantics { },
-    ) {
-        val w = size.width
-        val h = size.height
-        val stroke = Stroke(width = size.minDimension * 0.12f, cap = StrokeCap.Round)
-        when (icon) {
-            FisheyeLyricsConfig.Icon.HOURGLASS -> {
-                val p = Path().apply {
-                    moveTo(w * .22f, h * .12f); lineTo(w * .78f, h * .12f)
-                    lineTo(w * .7f, h * .38f); lineTo(w * .5f, h * .52f)
-                    lineTo(w * .3f, h * .68f); lineTo(w * .22f, h * .88f)
-                    lineTo(w * .78f, h * .88f); lineTo(w * .7f, h * .68f)
-                    lineTo(w * .5f, h * .52f); lineTo(w * .3f, h * .38f); close()
-                }
-                drawPath(p, tint, style = stroke)
-            }
-            FisheyeLyricsConfig.Icon.PERSON -> {
-                drawCircle(tint, radius = w * .19f, center = androidx.compose.ui.geometry.Offset(w * .5f, h * .28f))
-                val p = Path().apply { moveTo(w*.16f,h*.9f); cubicTo(w*.18f,h*.56f,w*.82f,h*.56f,w*.84f,h*.9f); close() }
-                drawPath(p, tint)
-            }
-            FisheyeLyricsConfig.Icon.HEART -> {
-                val p = Path().apply {
-                    moveTo(w*.5f,h*.88f); cubicTo(w*.35f,h*.72f,w*.05f,h*.48f,w*.12f,h*.27f)
-                    cubicTo(w*.2f,h*.04f,w*.43f,h*.12f,w*.5f,h*.3f)
-                    cubicTo(w*.57f,h*.12f,w*.8f,h*.04f,w*.88f,h*.27f)
-                    cubicTo(w*.95f,h*.48f,w*.65f,h*.72f,w*.5f,h*.88f); close()
-                }
-                drawPath(p, tint)
-            }
-            FisheyeLyricsConfig.Icon.FLAME -> {
-                val p = Path().apply { moveTo(w*.5f,h*.08f); cubicTo(w*.9f,h*.42f,w*.82f,h*.76f,w*.5f,h*.92f); cubicTo(w*.14f,h*.82f,w*.16f,h*.48f,w*.5f,h*.08f); close() }
-                drawPath(p,tint)
-            }
-            FisheyeLyricsConfig.Icon.SUN, FisheyeLyricsConfig.Icon.STAR -> {
-                drawCircle(tint, w*.22f, androidx.compose.ui.geometry.Offset(w*.5f,h*.5f))
-                if (icon == FisheyeLyricsConfig.Icon.SUN) {
-                    repeat(8) { i ->
-                        val a = i * Math.PI / 4
-                        val x1 = w*.5f + kotlin.math.cos(a).toFloat()*w*.32f
-                        val y1 = h*.5f + kotlin.math.sin(a).toFloat()*h*.32f
-                        val x2 = w*.5f + kotlin.math.cos(a).toFloat()*w*.46f
-                        val y2 = h*.5f + kotlin.math.sin(a).toFloat()*h*.46f
-                        drawLine(tint, androidx.compose.ui.geometry.Offset(x1,y1), androidx.compose.ui.geometry.Offset(x2,y2), strokeWidth=stroke.width)
-                    }
-                }
-            }
-            FisheyeLyricsConfig.Icon.MOON -> drawArc(tint, 40f, 280f, false, topLeft = androidx.compose.ui.geometry.Offset(w*.12f,h*.12f), size = androidx.compose.ui.geometry.Size(w*.76f,h*.76f), style = stroke)
-            FisheyeLyricsConfig.Icon.RAIN, FisheyeLyricsConfig.Icon.DROP -> {
-                val p = Path().apply { moveTo(w*.5f,h*.08f); cubicTo(w*.9f,h*.52f,w*.82f,h*.88f,w*.5f,h*.9f); cubicTo(w*.18f,h*.88f,w*.1f,h*.52f,w*.5f,h*.08f); close() }
-                drawPath(p,tint)
-            }
-            FisheyeLyricsConfig.Icon.DANCE, FisheyeLyricsConfig.Icon.RUN -> {
-                drawCircle(tint,w*.14f,androidx.compose.ui.geometry.Offset(w*.58f,h*.18f))
-                drawLine(tint,androidx.compose.ui.geometry.Offset(w*.52f,h*.34f),androidx.compose.ui.geometry.Offset(w*.38f,h*.62f),strokeWidth=stroke.width)
-                drawLine(tint,androidx.compose.ui.geometry.Offset(w*.46f,h*.44f),androidx.compose.ui.geometry.Offset(w*.82f,h*.48f),strokeWidth=stroke.width)
-                drawLine(tint,androidx.compose.ui.geometry.Offset(w*.38f,h*.62f),androidx.compose.ui.geometry.Offset(w*.16f,h*.9f),strokeWidth=stroke.width)
-                drawLine(tint,androidx.compose.ui.geometry.Offset(w*.38f,h*.62f),androidx.compose.ui.geometry.Offset(w*.76f,h*.86f),strokeWidth=stroke.width)
-            }
-            FisheyeLyricsConfig.Icon.HOME -> {
-                val p=Path().apply { moveTo(w*.08f,h*.48f); lineTo(w*.5f,h*.12f); lineTo(w*.92f,h*.48f); lineTo(w*.82f,h*.48f); lineTo(w*.82f,h*.9f); lineTo(w*.18f,h*.9f); lineTo(w*.18f,h*.48f); close() }
-                drawPath(p,tint)
-            }
-            FisheyeLyricsConfig.Icon.EYE -> {
-                val p=Path().apply { moveTo(w*.05f,h*.5f); cubicTo(w*.28f,h*.18f,w*.72f,h*.18f,w*.95f,h*.5f); cubicTo(w*.72f,h*.82f,w*.28f,h*.82f,w*.05f,h*.5f); close() }
-                drawPath(p,tint,style=stroke); drawCircle(tint,w*.12f,androidx.compose.ui.geometry.Offset(w*.5f,h*.5f))
-            }
-            FisheyeLyricsConfig.Icon.CLOCK -> {
-                drawCircle(tint,w*.38f,androidx.compose.ui.geometry.Offset(w*.5f,h*.5f),style=stroke)
-                drawLine(tint,androidx.compose.ui.geometry.Offset(w*.5f,h*.5f),androidx.compose.ui.geometry.Offset(w*.5f,h*.28f),strokeWidth=stroke.width)
-                drawLine(tint,androidx.compose.ui.geometry.Offset(w*.5f,h*.5f),androidx.compose.ui.geometry.Offset(w*.68f,h*.58f),strokeWidth=stroke.width)
-            }
-            FisheyeLyricsConfig.Icon.PHONE -> {
-                val p=Path().apply { moveTo(w*.28f,h*.12f); cubicTo(w*.1f,h*.18f,w*.22f,h*.68f,w*.74f,h*.88f); lineTo(w*.9f,h*.68f); lineTo(w*.68f,h*.5f); lineTo(w*.52f,h*.62f); lineTo(w*.38f,h*.4f); lineTo(w*.48f,h*.26f); close() }
-                drawPath(p,tint)
-            }
-            FisheyeLyricsConfig.Icon.MUSIC -> {
-                drawLine(tint,androidx.compose.ui.geometry.Offset(w*.62f,h*.12f),androidx.compose.ui.geometry.Offset(w*.62f,h*.72f),strokeWidth=stroke.width)
-                drawLine(tint,androidx.compose.ui.geometry.Offset(w*.62f,h*.12f),androidx.compose.ui.geometry.Offset(w*.9f,h*.06f),strokeWidth=stroke.width)
-                drawCircle(tint,w*.17f,androidx.compose.ui.geometry.Offset(w*.38f,h*.78f))
-                drawCircle(tint,w*.17f,androidx.compose.ui.geometry.Offset(w*.78f,h*.7f))
-            }
-        }
-    }
-}
