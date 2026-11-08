@@ -332,20 +332,37 @@ fun CollectionDetailHeader(
                             color = inverse,
                         )
                     }
-                    if (onFavoriteAction != null) {
-                        ContrastCircleButton(contentForeground, onFavoriteAction, size = 54.dp) {
-                            SymbolIcon(
-                                sf(if (favoriteActive) "star.fill" else "star"),
-                                stringResource(R.string.favorite),
-                                tint = if (favoriteActive) Color(0xFFFFD54F) else contentForeground,
-                                size = 25.dp,
-                            )
-                        }
-                    }
+                    // Favorite is kept out of the oversized transport controls.
+                    // A compact control is rendered alongside the collection title below.
                     if (onRightAction != null) {
                         ContrastCircleButton(contentForeground, onRightAction, size = 54.dp) {
                             SymbolIcon(sf(rightSymbol), stringResource(R.string.more_options), size = 26.dp)
                         }
+                    }
+                }
+
+                if (onFavoriteAction != null) {
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(top = 10.dp)
+                            .clickable(role = Role.Button, onClick = onFavoriteAction)
+                            .padding(vertical = 6.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        SymbolIcon(
+                            sf(if (favoriteActive) "star.fill" else "star"),
+                            stringResource(R.string.favorite),
+                            tint = if (favoriteActive) Color(0xFFFFD54F) else contentForeground.copy(alpha = .82f),
+                            size = 17.dp,
+                        )
+                        Spacer(Modifier.width(7.dp))
+                        Text(
+                            stringResource(if (favoriteActive) R.string.favorite else R.string.add_to_favorites),
+                            style = SfStyle(13.sp, 17.sp, FontWeight.Medium),
+                            color = contentForeground.copy(alpha = .82f),
+                        )
                     }
                 }
 
