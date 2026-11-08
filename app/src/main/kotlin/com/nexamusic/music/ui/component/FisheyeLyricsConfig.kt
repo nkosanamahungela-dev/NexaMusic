@@ -78,7 +78,17 @@ internal object FisheyeLyricsConfig {
         listOf("cry", "tears", "crying").forEach { put(it, KeywordIcon(Icon.DROP, "water_drop")) }
         put("time", KeywordIcon(Icon.CLOCK, "schedule"))
         listOf("call", "phone").forEach { put(it, KeywordIcon(Icon.PHONE, "call")) }
-        listOf("sing", "song", "music").forEach { put(it, KeywordIcon(Icon.MUSIC, "music_note")) }
+        listOf("sing", "song", "music", "melody", "rhythm").forEach { put(it, KeywordIcon(Icon.MUSIC, "music_note")) }
+        listOf("sky", "cloud", "clouds").forEach { put(it, KeywordIcon(Icon.RAIN, "cloud")) }
+        listOf("ocean", "sea", "wave", "waves").forEach { put(it, KeywordIcon(Icon.RAIN, "water")) }
+        listOf("wind", "breeze").forEach { put(it, KeywordIcon(Icon.SUN, "air")) }
+        listOf("dream", "dreams", "sleep", "sleeping").forEach { put(it, KeywordIcon(Icon.MOON, "bedtime")) }
+        listOf("smile", "smiling", "laugh", "laughter").forEach { put(it, KeywordIcon(Icon.HEART, "sentiment_satisfied")) }
+        listOf("angel", "angels", "heaven").forEach { put(it, KeywordIcon(Icon.STAR, "brightness_5")) }
+        listOf("light", "shine", "shining", "glow").forEach { put(it, KeywordIcon(Icon.SUN, "light_mode")) }
+        listOf("dark", "darkness", "shadow").forEach { put(it, KeywordIcon(Icon.MOON, "dark_mode")) }
+        listOf("road", "street", "drive", "driving").forEach { put(it, KeywordIcon(Icon.RUN, "route")) }
+        listOf("rainbow", "color").forEach { put(it, KeywordIcon(Icon.SUN, "palette")) }
     }
 
     /** Stable FNV-style hash; no frame/time/random input is allowed. */
