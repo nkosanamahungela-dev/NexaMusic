@@ -307,6 +307,8 @@ private val OutputPriority = listOf(
 )
 private const val INSTANT_SILENCE_SKIP_STEP_MS = 15_000L
 private const val DEFAULT_CROSSFADE_SECONDS = 5f
+// Do not interpret a naturally quiet outro as a lossless stream stall.
+private const val LOSSLESS_STALL_END_GUARD_MS = 10_000L
 private const val INSTANT_SILENCE_SKIP_SETTLE_MS = 350L
 
 // Throttle repeated writes triggered by frequent playback-stat reports.
