@@ -892,6 +892,8 @@ fun Lyrics(
                 accent = expressiveAccent,
                 modifier = Modifier.fillMaxSize().fadingEdge(vertical = 64.dp),
                 onSeek = { if (isSynced && changeLyrics && !isGuest) playerConnection.player.seekTo((it.toLong() - lyricsOffset).coerceAtLeast(0)) },
+                songId = mediaMetadata?.id.orEmpty(),
+                textPosition = lyricsTextPosition,
             )
         } else if (
             // This renderer needs API 29; older devices use the regular list below.
