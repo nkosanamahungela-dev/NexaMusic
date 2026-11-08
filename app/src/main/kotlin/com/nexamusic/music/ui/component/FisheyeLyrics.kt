@@ -319,7 +319,7 @@ fun FisheyeLyrics(
                                             scaleY = wordScale * pop
                                             rotationZ = rotation
                                             // Keep the active word away from the clipped viewport edges.
-                                            if (wordActive) translationX = 0f
+                                            translationX = if (wordActive) 0f else xNorm * (1f - lens) * (viewportHeight * 0.28f)\n                                            translationY = yNorm * (1f - lens) * (viewportHeight * 0.12f)
                                         }
                                         .then(
                                             if (labelFill != null) Modifier.drawBehind {
