@@ -26,10 +26,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
@@ -240,7 +242,6 @@ fun FisheyeLyrics(
                 val singerAlign = singerLineAlignment(line.entry.agent, line.entry.isBackground, textPosition)
                 val singerTextAlign = singerTextAlign(line.entry.agent, line.entry.isBackground, textPosition)
                 val lineTime = line.entry.time
-                val nextLineTime = lines.getOrNull(index + 1)?.time ?: (lineTime + FisheyeLyricsConfig.DEFAULT_LINE_MS)
                 val isInterlude = line.entry.text.isBlank()
                 val now = positionMs()
                 val lineActive = active && isSynced
@@ -259,7 +260,7 @@ fun FisheyeLyrics(
                         .clearAndSetSemantics { contentDescription = line.entry.text },
                     horizontalAlignment = singerAlign,
                 ) {
-                    if (isInterlude || inInterlude) {
+                    if (isInterlude) {
                         FisheyeInterlude(
                             scale = lensScale(distance.toFloat(), 0f, viewportHeight.toFloat(), reduceMotion),
                             color = accent,
