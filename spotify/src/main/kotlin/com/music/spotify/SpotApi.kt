@@ -44,17 +44,32 @@ object SpotApi {
     fun isConfigured(): Boolean = baseUrl.startsWith("https://")
 
     suspend fun searchTracks(query: String, limit: Int = 20): Result<List<SpotApiTrack>> =
-        runCatching {
-            require(query.isNotBlank()) { "Search query cannot be empty" }
-            require(query.length <= 120) { "Search query is too long" }
-            require(limit in 1..50) { "Limit must be between 1 and 50" }
-            val endpoint = baseUrl.takeIf { it.startsWith("https://") }
-                ?: error("SpotAPI service is not configured")
-            client.get("$endpoint/v1/search/tracks") {
-                parameter("q", query)
-                parameter("limit", limit)
-            }.body<SpotApiSearchResponse<SpotApiTrack>>().items
-        }
+        search("tracks", query, limit)
+
+    suspend fun searchArtists(query: String, limit: Int = 20): Result<List<SpotApiArtist>> =
+        search("artists", query, limit)
+
+    suspend fun searchAlbums(query: String, limit: Int = 20): Result<List<SpotApiAlbum>> =
+        search("albums", query, limit)
+
+    suspend fun searchPlaylists(query: String, limit: Int = 20): Result<List<SpotApiPlaylist>> =
+        search("playlists", query, limit)
+
+    private suspend inline fun <reified T> search(
+        type: String,
+        query: String,
+        limit: Int,
+    ): Result<List<T>> = runCatching {
+        require(query.isNotBlank()) { "Search query cannot be empty" }
+        require(query.length <= 120) { "Search query is too long" }
+        require(limit in 1..50) { "Limit must be between 1 and 50" }
+        val endpoint = baseUrl.takeIf { it.startsWith("https://") }
+            ?: error("SpotAPI service is not configured")
+        client.get("$endpoint/v1/search/$type") {
+            parameter("q", query)
+            parameter("limit", limit)
+        }.body<SpotApiSearchResponse<T>>().items
+    }
 }
 
 @Serializable
@@ -70,6 +85,42 @@ data class SpotApiTrack(
     @SerialName("duration_ms") val durationMs: Long? = null,
     val artists: List<String> = emptyList(),
     val album: String? = null,
+    @SerialName("image_url") val imageUrl: String? = null,
+) {
+    val id: String
+        get() = uri?.substringAfterLast(':')?.takeIf { it != uri }.orEmpty()
+}
+
+
+@Serializable
+data class SpotApiArtist(
+    val name: String? = null,
+    val uri: String? = null,
+    val followers: Long? = null,
+    @SerialName("image_url") val imageUrl: String? = null,
+) {
+    val id: String
+        get() = uri?.substringAfterLast(':')?.takeIf { it != uri }.orEmpty()
+}
+
+@Serializable
+data class SpotApiAlbum(
+    val name: String? = null,
+    val uri: String? = null,
+    val artists: List<String> = emptyList(),
+    @SerialName("release_date") val releaseDate: String? = null,
+    @SerialName("image_url") val imageUrl: String? = null,
+) {
+    val id: String
+        get() = uri?.substringAfterLast(':')?.takeIf { it != uri }.orEmpty()
+}
+
+@Serializable
+data class SpotApiPlaylist(
+    val name: String? = null,
+    val uri: String? = null,
+    val description: String? = null,
+    val owner: String? = null,
     @SerialName("image_url") val imageUrl: String? = null,
 ) {
     val id: String
