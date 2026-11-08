@@ -1384,7 +1384,15 @@ class MusicService :
         val stallWatchdog = LosslessStallWatchdogAudioProcessor(
             onStallDetected = {
                 if (playerInitialized.value && createdPlayer === this@MusicService.player) {
-                    losslessStallGuard.handleLosslessStallDetected()
+                    // A quiet outro is valid audio, not a failed stream. Do not retry or
+                    // downgrade lossless playback when the track is already near its end.
+                    val duration = createdPlayer?.duration ?: C.TIME_UNSET
+                    val remaining = duration - (createdPlayer?.currentPosition ?: 0L)
+                    if (duration == C.TIME_UNSET || remaining > LOSSLESS_STALL_END_GUARD_MS) {
+                        losslessStallGuard.handleLosslessStallDetected()
+                    } else {
+                        Timber.tag(TAG).d("Ignoring lossless silence watchdog near end of track (${remaining}ms remaining)")
+                    }
                 }
             }
         )
