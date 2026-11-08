@@ -2,7 +2,7 @@ package com.nexamusic.music.ui.component
 
 import android.provider.Settings
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateFloat\nimport androidx.compose.animation.core.animateFloatAsState\nimport androidx.compose.animation.core.infiniteRepeatable\nimport androidx.compose.animation.core.rememberInfiniteTransition\nimport androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -255,7 +255,7 @@ fun FisheyeLyrics(
                         .clearAndSetSemantics { contentDescription = line.entry.text },
                     horizontalAlignment = singerAlign,
                 ) {
-                    if (isInterlude) {
+                    if (isInterlude || inInterlude) {
                         FisheyeInterlude(
                             scale = lensScale(distance.toFloat(), 0f, viewportHeight.toFloat(), reduceMotion),
                             color = accent,
@@ -409,6 +409,7 @@ private fun lensScale(distance: Float, x: Float, height: Float, reduceMotion: Bo
 
 @Composable
 private fun FisheyeInterlude(scale: Float, color: Color) {
+    val transition = rememberInfiniteTransition(label = "fisheye_interlude")
     Row(
         Modifier.fillMaxWidth().padding(vertical = 12.dp).graphicsLayer {
             scaleX = scale
@@ -416,8 +417,21 @@ private fun FisheyeInterlude(scale: Float, color: Color) {
         },
         horizontalArrangement = Arrangement.Center,
     ) {
-        repeat(3) {
-            Box(Modifier.padding(horizontal = 3.dp).size(5.dp).background(color.copy(alpha = 0.72f), RoundedCornerShape(50)))
+        repeat(3) { index ->
+            val pulse by transition.animateFloat(
+                initialValue = 0.35f,
+                targetValue = 1f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(720, delayMillis = index * 150),
+                    repeatMode = RepeatMode.Reverse,
+                ),
+                label = "fisheye_interlude_dot_$index",
+            )
+            Box(
+                Modifier.padding(horizontal = 3.dp).size(5.dp)
+                    .graphicsLayer { alpha = pulse; scaleX = 0.8f + pulse * 0.2f; scaleY = 0.8f + pulse * 0.2f }
+                    .background(color.copy(alpha = 0.85f), RoundedCornerShape(50)),
+            )
         }
     }
 }
