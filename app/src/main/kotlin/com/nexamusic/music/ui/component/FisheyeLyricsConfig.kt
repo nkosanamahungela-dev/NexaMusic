@@ -93,5 +93,5 @@ internal object FisheyeLyricsConfig {
     }
 
     fun normalizedWord(word: String): String =
-        word.lowercase().replace(Regex("[^\\p{L}\\p{N}']"), "")
+        word.lowercase().replace(Regex("[^\\p{L}\\p{N}]"), "")
 }
