@@ -28,6 +28,22 @@ def make_track(name: str = "Test Song"):
     )
 
 
+def make_playlist(name: str = "Test Playlist"):
+    return SimpleNamespace(
+        name=name,
+        uri="spotify:playlist:playlist123",
+        description="A test playlist",
+        owner_v2=SimpleNamespace(data=SimpleNamespace(name="Test Owner")),
+        images=SimpleNamespace(
+            items=[
+                SimpleNamespace(
+                    sources=[SimpleNamespace(url="https://images.example/playlist.jpg")]
+                )
+            ]
+        ),
+    )
+
+
 class SpotApiAdapterTests(IsolatedAsyncioTestCase):
 
     def test_get_at_depth_traverses_wrapped_search_response(self):
@@ -65,6 +81,25 @@ class SpotApiAdapterTests(IsolatedAsyncioTestCase):
 
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]["name"], "First")
+
+    def test_serialize_playlist_uses_spotapi_v2_model_shape(self):
+        result = service._serialize_playlist(make_playlist())
+
+        self.assertEqual(result["name"], "Test Playlist")
+        self.assertEqual(result["uri"], "spotify:playlist:playlist123")
+        self.assertEqual(result["description"], "A test playlist")
+        self.assertEqual(result["owner"], "Test Owner")
+        self.assertEqual(result["image_url"], "https://images.example/playlist.jpg")
+
+    async def test_search_supports_public_playlists(self):
+        async def fake_search(_query):
+            yield [make_playlist("First playlist"), make_playlist("Second playlist")]
+
+        with patch.object(service.Public, "search_playlists", new=fake_search):
+            result = await service._search("playlists", "test", 1)
+
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]["name"], "First playlist")
 
     async def test_search_translates_upstream_failure_to_502(self):
         async def failing_search(_query):
