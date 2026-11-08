@@ -71,6 +71,7 @@ import androidx.core.net.toUri
 import androidx.media3.exoplayer.offline.DownloadRequest
 import androidx.media3.exoplayer.offline.DownloadService
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -469,14 +470,12 @@ fun AlbumScreen(
                             if (current != null) {
                                 database.query {
                                     update(
-                                        current.copy(
-                                            album = current.album.copy(
-                                                bookmarkedAt = if (current.album.bookmarkedAt == null) {
-                                                    java.time.LocalDateTime.now()
-                                                } else {
-                                                    null
-                                                },
-                                            ),
+                                        current.album.copy(
+                                            bookmarkedAt = if (current.album.bookmarkedAt == null) {
+                                                java.time.LocalDateTime.now()
+                                            } else {
+                                                null
+                                            },
                                         ),
                                     )
                                 }
