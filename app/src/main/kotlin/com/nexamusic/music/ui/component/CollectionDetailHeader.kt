@@ -59,6 +59,8 @@ fun CollectionDetailHeader(
     descriptionRuns: List<LinkSegment>? = null,
     rightSymbol: String = "ellipsis",
     onRightAction: (() -> Unit)? = null,
+    favoriteActive: Boolean = false,
+    onFavoriteAction: (() -> Unit)? = null,
     onEditCover: (() -> Unit)? = null,
     onSearch: (() -> Unit)? = null,
     searchValue: TextFieldValue? = null,
@@ -329,6 +331,16 @@ fun CollectionDetailHeader(
                             style = SfStyle(19.sp, 23.sp, FontWeight.Bold),
                             color = inverse,
                         )
+                    }
+                    if (onFavoriteAction != null) {
+                        ContrastCircleButton(contentForeground, onFavoriteAction, size = 54.dp) {
+                            SymbolIcon(
+                                sf(if (favoriteActive) "star.fill" else "star"),
+                                stringResource(R.string.favorite),
+                                tint = if (favoriteActive) Color(0xFFFFD54F) else contentForeground,
+                                size = 25.dp,
+                            )
+                        }
                     }
                     if (onRightAction != null) {
                         ContrastCircleButton(contentForeground, onRightAction, size = 54.dp) {
