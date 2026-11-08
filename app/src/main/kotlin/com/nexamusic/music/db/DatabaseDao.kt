@@ -1405,7 +1405,7 @@ interface DatabaseDao {
     }.map { it.reversed(descending) }
 
     @Transaction
-    @Query("SELECT * FROM song WHERE title LIKE '%' || :query || '%' AND inLibrary IS NOT NULL AND (:localOnly = 0 OR isLocal = 1) LIMIT :previewSize")
+    @Query("SELECT * FROM song WHERE title LIKE '%' || :query || '%' AND (inLibrary IS NOT NULL OR liked = 1 OR isDownloaded = 1) AND (:localOnly = 0 OR isLocal = 1 OR isDownloaded = 1) LIMIT :previewSize")
     fun searchSongs(
         query: String,
         previewSize: Int = Int.MAX_VALUE,
@@ -1426,7 +1426,7 @@ interface DatabaseDao {
     @Transaction
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
-        "SELECT * FROM album WHERE title LIKE '%' || :query || '%' AND EXISTS(SELECT * FROM song WHERE song.albumId = album.id AND song.inLibrary IS NOT NULL AND (:localOnly = 0 OR song.isLocal = 1)) LIMIT :previewSize",
+        "SELECT * FROM album WHERE title LIKE '%' || :query || '%' AND (bookmarkedAt IS NOT NULL OR EXISTS(SELECT * FROM song WHERE song.albumId = album.id AND (song.inLibrary IS NOT NULL OR song.isDownloaded = 1) AND (:localOnly = 0 OR song.isLocal = 1 OR song.isDownloaded = 1))) LIMIT :previewSize",
     )
     fun searchAlbums(
         query: String,
@@ -1448,7 +1448,7 @@ interface DatabaseDao {
     // in LocalSearchViewModel scores these in Kotlin when the exact substring search (a typo)
     // comes back empty, so this must stay in sync with whatever "in library" means up there.
     @Transaction
-    @Query("SELECT * FROM song WHERE inLibrary IS NOT NULL AND (:localOnly = 0 OR isLocal = 1)")
+    @Query("SELECT * FROM song WHERE (inLibrary IS NOT NULL OR liked = 1 OR isDownloaded = 1) AND (:localOnly = 0 OR isLocal = 1 OR isDownloaded = 1)")
     fun allSearchableSongs(localOnly: Boolean = false): Flow<List<Song>>
 
     @Transaction
@@ -1461,7 +1461,7 @@ interface DatabaseDao {
     @Transaction
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
-        "SELECT * FROM album WHERE EXISTS(SELECT * FROM song WHERE song.albumId = album.id AND song.inLibrary IS NOT NULL AND (:localOnly = 0 OR song.isLocal = 1))",
+        "SELECT * FROM album WHERE bookmarkedAt IS NOT NULL OR EXISTS(SELECT * FROM song WHERE song.albumId = album.id AND (song.inLibrary IS NOT NULL OR song.isDownloaded = 1) AND (:localOnly = 0 OR song.isLocal = 1 OR song.isDownloaded = 1))",
     )
     fun allSearchableAlbums(localOnly: Boolean = false): Flow<List<Album>>
 
