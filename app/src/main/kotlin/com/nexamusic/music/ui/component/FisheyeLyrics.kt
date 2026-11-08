@@ -61,7 +61,7 @@ import com.nexamusic.music.ui.ios.compat.Text
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.sqrt
+import kotlin.math.sqrt\nimport kotlin.math.min
 
 private data class FisheyeToken(
     val text: String,
@@ -110,7 +110,7 @@ fun FisheyeLyrics(
     val density = LocalDensity.current
     val listState = rememberLazyListState()
     var activeIndex by remember(lines) { mutableIntStateOf(-1) }
-    var viewportHeight by remember { mutableIntStateOf(0) }
+    var viewportHeight by remember { mutableIntStateOf(0) }\n    var viewportWidth by remember { mutableIntStateOf(0) }
     val reduceMotion = remember(context) {
         runCatching {
             Settings.Global.getFloat(context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f
@@ -203,7 +203,7 @@ fun FisheyeLyrics(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .onSizeChanged { viewportHeight = it.height }
+            .onSizeChanged { viewportHeight = it.height; viewportWidth = it.width }
             .background(Color.Transparent),
     ) {
         LazyColumn(
@@ -285,7 +285,7 @@ fun FisheyeLyrics(
                                 val radius = sqrt(xNorm * xNorm + yNorm * yNorm)
                                 val lens = if (reduceMotion) 1f else (1f / (1f + FisheyeLyricsConfig.LENS_K * radius * radius))
                                 val vertical = if (reduceMotion) 1f else 1f - FisheyeLyricsConfig.VERTICAL_COMPRESSION * yNorm * yNorm
-                                val wordScale = (lens * vertical * token.scale).coerceIn(FisheyeLyricsConfig.MIN_WORD_SCALE, FisheyeLyricsConfig.MAX_WORD_SCALE)
+                                val edgeFit = if (wordActive && viewportWidth > 0) {\n                                    min(1f, viewportWidth * FisheyeLyricsConfig.EDGE_SAFE_FRACTION /\n                                        (token.text.length.coerceAtLeast(1) * fontSize * density.density * 0.58f))\n                                } else 1f\n                                val wordScale = (lens * vertical * token.scale).coerceIn(FisheyeLyricsConfig.MIN_WORD_SCALE, FisheyeLyricsConfig.MAX_WORD_SCALE)
                                 val rotation = if (reduceMotion) 0f else -xNorm * yNorm * FisheyeLyricsConfig.MAX_ROTATION_DEGREES
                                 val color = when {
                                     wordActive -> FisheyeLyricsConfig.ActiveInk
@@ -332,7 +332,7 @@ fun FisheyeLyrics(
                                                 val path = Path().apply {
                                                     moveTo(left, top)
                                                     lineTo(right - 2.dp.toPx(), top)
-                                                    val notch = (token.seed % 3 + 3) * 0.7.dp.toPx()
+                                                    val notch = FisheyeLyricsConfig.LABEL_NOTCH_DEPTH_DP.dp.toPx()
                                                     lineTo(right - notch, top + size.height * 0.22f)
                                                     lineTo(right, top + size.height * 0.38f)
                                                     lineTo(right - notch * 0.55f, top + size.height * 0.56f)
