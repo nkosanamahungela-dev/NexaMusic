@@ -444,8 +444,9 @@ fun UpdateScreen(navController: androidx.navigation.NavHostController) {
         ErrorSnackbar(
             hostState = snackbarHostState,
             modifier = Modifier
-                .align(Alignment.TopCenter)
-                .windowInsetsPadding(WindowInsets.statusBars)
+                .align(Alignment.BottomCenter)
+                .windowInsetsPadding(WindowInsets.navigationBars)
+                .padding(bottom = 126.dp)
         )
     }
 }
