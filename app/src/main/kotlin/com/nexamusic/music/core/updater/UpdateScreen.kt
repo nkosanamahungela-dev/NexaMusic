@@ -1,5 +1,8 @@
 package com.nexamusic.music.core.updater
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -117,7 +120,7 @@ fun UpdateScreen(navController: androidx.navigation.NavHostController) {
 
     // The resolved app Appearance theme controls status/navigation icon contrast.
     SideEffect {
-        (context as? android.app.Activity)?.window?.let { window ->
+        context.findUpdateScreenActivity()?.window?.let { window ->
             window.statusBarColor = android.graphics.Color.TRANSPARENT
             window.navigationBarColor = android.graphics.Color.TRANSPARENT
             WindowCompat.getInsetsController(window, view).apply {
@@ -744,7 +747,7 @@ private fun UpdateReleaseNotesCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(UpdateScreenTokens.noteCardCorner))
             .background(palette.noteCard)
-            .border(1.dp, palette.noteBorder, RoundedCornerShape(20.dp))
+            .border(1.dp, palette.noteBorder, RoundedCornerShape(UpdateScreenTokens.noteCardCorner))
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
         var noteIndex = 0
@@ -966,4 +969,11 @@ private fun formatUpdateDate(value: String): String {
             .format(DateTimeFormatter.ofPattern("d MMM yyyy · h:mm a"))
             .lowercase()
     }.getOrDefault(value)
+}
+
+/** Resolve the Activity through Compose's ContextThemeWrapper for system-bar control. */
+private tailrec fun Context.findUpdateScreenActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findUpdateScreenActivity()
+    else -> null
 }
