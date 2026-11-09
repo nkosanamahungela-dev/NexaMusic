@@ -130,32 +130,59 @@ private fun parseSyllable(element: JsonElement): SpicyTimedSyllable? {
 }
 
 /**
- * Converts parsed timing to NexaMusic's existing rich-sync LRC wire format.
- * LyricsUtils.parseLyrics() already understands this format and creates
- * LyricsEntry/WordTimestamp values consumed by AppleMusicV3Lyrics.
- *
- * IsPartOfWord marks syllables that continue a word. A false value closes
- * the current word. The final syllable is also flushed at the end of a line.
+ * Converts lead and background timing to NexaMusic's rich-sync LRC format.
+ * LyricsUtils.parseLyrics() consumes this format and creates LyricsEntry /
+ * WordTimestamp values for the existing Apple Music V3 renderer.
  */
-fun List<SpicyTimedLine>.toNexaMusicRichSyncLyrics(): String =
-    mapNotNull { line ->
-        val words = line.toTimedWords()
-        if (words.isEmpty()) return@mapNotNull null
-
-        val lineStart = words.minOf { it.startMs }
-        buildString {
-            append('[').append(formatTimestamp(lineStart)).append(']')
-            words.forEachIndexed { index, word ->
-                if (index > 0) append(' ')
-                append('<')
-                    .append(formatTimestamp(word.startMs))
-                    .append('|')
-                    .append(formatTimestamp(word.endMs))
-                    .append('>')
-                    .append(word.text)
+fun SpicyLyricsDocument.toNexaMusicRichSyncLyrics(): String =
+    lines.flatMap { line ->
+        buildList {
+            line.toRichSyncRow(background = false)?.let(::add)
+            line.backgrounds.forEach { background ->
+                background.toRichSyncRow(
+                    background = true,
+                    oppositeAligned = line.oppositeAligned,
+                )?.let(::add)
             }
         }
     }.joinToString("\n")
+
+/** Convenience overload for callers that only have lead lines. */
+fun List<SpicyTimedLine>.toNexaMusicRichSyncLyrics(): String =
+    SpicyLyricsDocument(this, SpicyLyricsAttribution(null, null, null))
+        .toNexaMusicRichSyncLyrics()
+
+private fun SpicyTimedLine.toRichSyncRow(background: Boolean): String? =
+    toRichSyncRow(syllables, background, oppositeAligned)
+
+private fun SpicyTimedBackground.toRichSyncRow(
+    background: Boolean,
+    oppositeAligned: Boolean,
+): String? = toRichSyncRow(syllables, background, oppositeAligned)
+
+private fun toRichSyncRow(
+    syllables: List<SpicyTimedSyllable>,
+    background: Boolean,
+    oppositeAligned: Boolean,
+): String? {
+    val words = syllables.toTimedWords()
+    if (words.isEmpty()) return null
+    val lineStart = words.minOf { it.startMs }
+    return buildString {
+        append('[').append(formatTimestamp(lineStart)).append(']')
+        if (background) append("{bg}")
+        if (oppositeAligned) append(if (background) "{agent:v2}" else "{agent:v1}")
+        words.forEachIndexed { index, word ->
+            if (index > 0) append(' ')
+            append('<')
+                .append(formatTimestamp(word.startMs))
+                .append('|')
+                .append(formatTimestamp(word.endMs))
+                .append('>')
+                .append(word.text)
+        }
+    }
+}
 
 private data class SpicyTimedWord(
     val text: String,
