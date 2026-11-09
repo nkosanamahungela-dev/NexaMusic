@@ -283,7 +283,8 @@ fun AlbumMenu(
             IconButton(
                 onClick = {
                     database.query {
-                        update(album.album.toggleLike())
+                        // Upsert so starring an album also creates its Library row when needed.
+                        upsert(album.album.toggleLike())
                     }
                 },
             ) {
