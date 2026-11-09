@@ -4,6 +4,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.nexamusic.music.R
 
 /** Update-screen-only palette, typography fallbacks, sizes and motion timings. */
@@ -65,8 +67,25 @@ internal object UpdateScreenTokens {
     val displayFont = FontFamily(Font(R.font.outfit, weight = FontWeight.ExtraBold))
     val bodyFont = FontFamily(Font(R.font.google_sans_flex))
 
-    val heroMinHeight = 252
-    val heroCorner = 32
+    val pageSideMargin = 20.dp
+    val heroMinHeight = 252.dp
+    val heroCorner = 32.dp
+    val heroHorizontalPadding = 22.dp
+    val logoSize = 92.dp
+    val versionMaxFontSize = 66.sp
+    val noteCardCorner = 20.dp
+    val noteTileSize = 36.dp
+    val noteTileCorner = 10.dp
+    val noteIconSize = 20.dp
+    val actionHeight = 56.dp
+    val actionGap = 12.dp
+    val actionIconSize = 22.dp
+    val bottomEdgeSpacing = 30.dp
+    val bottomFadeHeight = 38.dp
+    val heroProgressHeight = 10.dp
+    val bodyFontSize = 14.sp
+    val summaryFontSize = 15.sp
+    val buttonFontSize = 17.sp
     const val entryDurationMs = 250
     const val progressDurationMs = 200
     const val readyPopDurationMs = 220
