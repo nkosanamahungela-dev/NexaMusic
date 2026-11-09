@@ -48,6 +48,7 @@ internal object UpdateScreenTokens {
 
     val Hero = Color(0xFFC9E4C8)
     val HeroInk = Color(0xFF17120E)
+    val HeroBorder = Color(0x1A17120E)
     val Action = Color(0xFFE5173F)
     val TileLyrics = Color(0xFFFA243C)
     val TileDuets = Color(0xFF0A9FD8)
