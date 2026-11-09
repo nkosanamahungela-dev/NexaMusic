@@ -375,6 +375,7 @@ fun UpdateScreen(navController: NavHostController) {
                     modifier = Modifier.weight(1f),
                     palette = palette,
                     reduceMotion = reduceMotion,
+                    enabled = !isDownloading,
                     onClick = { navController.navigateUp() }
                 )
 
@@ -407,7 +408,12 @@ fun UpdateScreen(navController: NavHostController) {
                                     downloadError = null
                                     isDownloading = false
                                     val release = available
-                                    if (release != null) enqueueUpdateDownload(context, release)
+                                    if (release != null) {
+                                        enqueueUpdateDownload(context, release)
+                                        isDownloading = true
+                                        downloadProgressState.floatValue = 0f
+                                        downloadedFile = null
+                                    }
                                 }
                             }
                             isDownloadComplete -> {
@@ -441,7 +447,12 @@ fun UpdateScreen(navController: NavHostController) {
                                     }
                                 }
                             }
-                            currentStatus is NexaMusicUpdateStatus.Available -> enqueueUpdateDownload(context, currentStatus)
+                            currentStatus is NexaMusicUpdateStatus.Available -> {
+                                enqueueUpdateDownload(context, currentStatus)
+                                isDownloading = true
+                                downloadProgressState.floatValue = 0f
+                                downloadedFile = null
+                            }
                             else -> triggerUpdateCheck()
                         }
                     }
@@ -797,6 +808,7 @@ private fun LaterGlassButton(
     modifier: Modifier,
     palette: UpdateScreenTokens.Palette,
     reduceMotion: Boolean,
+    enabled: Boolean,
     onClick: () -> Unit
 ) {
     val interaction = remember { MutableInteractionSource() }
@@ -810,6 +822,7 @@ private fun LaterGlassButton(
     val useLiquidGlass = glassConfig.isEnabledFor(GlassComponent.NAV_BAR) && isGlassAllowed()
     Surface(
         onClick = onClick,
+        enabled = enabled,
         modifier = modifier
             .height(UpdateScreenTokens.ButtonHeight)
             .graphicsLayer { scaleX = scale; scaleY = scale }
