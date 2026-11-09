@@ -38,7 +38,7 @@ class AutomaticUpdateCheckWorker(
             var detectedUpdate: DetectedUpdate? = null
             checkForUpdate(
                 context = context,
-                onSuccess = { tag, available, _, size, _, _, _, apkUrl ->
+                onSuccess = { tag, available, _, _, size, _, _, _, apkUrl ->
                     detectedUpdate = DetectedUpdate(tag, available, size, apkUrl)
                 },
                 onError = {
