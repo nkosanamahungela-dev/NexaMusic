@@ -19,45 +19,77 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
-/** One timed syllable as returned by the Spicy Lyrics API. Times are normalized to milliseconds. */
+/** One timed syllable as returned by the API. API times are seconds, stored here as milliseconds. */
 data class SpicyTimedSyllable(
     val text: String,
     val startMs: Long,
     val endMs: Long,
+    /** True means this syllable has no trailing space and continues the current word group. */
     val isPartOfWord: Boolean,
 )
 
-/** A lead-vocal segment. Keeping segment boundaries avoids joining separate lyric lines. */
+data class SpicyTimedBackground(val syllables: List<SpicyTimedSyllable>)
+
 data class SpicyTimedLine(
     val syllables: List<SpicyTimedSyllable>,
+    val backgrounds: List<SpicyTimedBackground> = emptyList(),
+    val oppositeAligned: Boolean = false,
 ) {
     val text: String get() = syllables.joinToString("") { it.text }
 }
 
+data class SpicyLyricsAttribution(
+    val source: String?,
+    val uploader: String?,
+    val maker: String?,
+)
+
+data class SpicyLyricsDocument(
+    val lines: List<SpicyTimedLine>,
+    val attribution: SpicyLyricsAttribution,
+)
+
 /**
- * Small, tolerant parser for Body.Content[].Lead.Syllables[].
- *
- * The parser deliberately preserves IsPartOfWord instead of guessing word
- * boundaries. The renderer adapter can use that flag without losing the
- * provider's original syllable timing.
+ * Independent parser for the documented Spicy Lyrics response contract.
+ * No renderer implementation or source from Spicy Lyrics Mobile/Square is copied.
  */
 object SpicyLyricsResponseParser {
     private val json = Json { ignoreUnknownKeys = true; isLenient = true }
 
-    fun parse(response: String): List<SpicyTimedLine> {
-        val root = runCatching { json.parseToJsonElement(response).jsonObject }.getOrNull()
-            ?: return emptyList()
-        val body = root.objectAt("Body") ?: return emptyList()
-        val content = body.arrayAt("Content") ?: return emptyList()
+    fun parse(response: String): List<SpicyTimedLine> = parseDocument(response)?.lines.orEmpty()
 
-        return content.mapNotNull { item ->
-            val lead = item.asObject()?.objectAt("Lead") ?: return@mapNotNull null
+    fun parseDocument(response: String): SpicyLyricsDocument? {
+        val root = runCatching { json.parseToJsonElement(response).jsonObject }.getOrNull()
+            ?: return null
+        val body = root.objectAt("Body") ?: return null
+        val content = body.arrayAt("Content") ?: return null
+        val lines = content.mapNotNull { item ->
+            val row = item.asObject() ?: return@mapNotNull null
+            val lead = row.objectAt("Lead") ?: return@mapNotNull null
             val syllables = lead.arrayAt("Syllables").orEmpty().mapNotNull(::parseSyllable)
-            syllables.takeIf { it.isNotEmpty() }?.let(::SpicyTimedLine)
+            if (syllables.isEmpty()) return@mapNotNull null
+            val backgrounds = row.arrayAt("Background").orEmpty().mapNotNull { background ->
+                val parts = background.asObject()?.arrayAt("Syllables").orEmpty().mapNotNull(::parseSyllable)
+                parts.takeIf { it.isNotEmpty() }?.let(::SpicyTimedBackground)
+            }
+            SpicyTimedLine(
+                syllables = syllables,
+                backgrounds = backgrounds,
+                oppositeAligned = row.booleanAt("OppositeAligned") ?: false,
+            )
         }
+        val attribution = body.objectAt("UploadAttribution")
+        return SpicyLyricsDocument(
+            lines = lines,
+            attribution = SpicyLyricsAttribution(
+                source = body.stringAt("source"),
+                uploader = attribution?.objectAt("Uploader")?.stringAt("username"),
+                maker = attribution?.objectAt("Maker")?.stringAt("username"),
+            ),
+        )
     }
 
-    private fun parseSyllable(element: JsonElement): SpicyTimedSyllable? {
+private fun parseSyllable(element: JsonElement): SpicyTimedSyllable? {
         val value = element.asObject() ?: return null
         val text = value.stringAt("Text")?.takeIf(String::isNotEmpty) ?: return null
         val start = value.numberAt("StartTime") ?: return null
