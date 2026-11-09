@@ -462,10 +462,6 @@ private fun UpdateHeroCard(
     palette: UpdateScreenTokens.Palette,
     reduceMotion: Boolean
 ) {
-    val progress = progressState.value.coerceIn(0f, 1f)
-    val percent = (progress * 100f).roundToInt().coerceIn(0, 100)
-    val downloadedMb = remember(size, progress) { totalSizeInMb(size) * progress }
-    val downloadedSize = String.format(Locale.getDefault(), "%.1f MB of %s", downloadedMb, size)
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(UpdateScreenTokens.HeroCorner),
@@ -584,34 +580,7 @@ private fun UpdateHeroCard(
                     )
                 }
 
-                downloading -> {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            "Downloading…",
-                            color = UpdateScreenTokens.HeroInk,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(Modifier.weight(1f))
-                        Text(
-                            "$percent%",
-                            color = UpdateScreenTokens.HeroInk,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            style = androidx.compose.ui.text.TextStyle(fontFeatureSettings = "tnum")
-                        )
-                    }
-                    HeroProgressBar(progress = progress)
-                    Text(
-                        downloadedSize,
-                        color = UpdateScreenTokens.HeroInk.copy(alpha = 0.78f),
-                        fontSize = 13.sp,
-                        modifier = Modifier.padding(top = 7.dp)
-                    )
-                }
+                downloading -> DownloadingHeroState(progressState = progressState, size = size)
 
                 else -> {
                     Row(
@@ -628,6 +597,47 @@ private fun UpdateHeroCard(
 }
 
 /** Existing single-colour NexaMusic N mark, tinted without changing its path. */
+
+@Composable
+private fun DownloadingHeroState(
+    progressState: State<Float>,
+    size: String
+) {
+    val progress = progressState.value.coerceIn(0f, 1f)
+    val percent = (progress * 100f).roundToInt().coerceIn(0, 100)
+    val downloadedMb = totalSizeInMb(size) * progress
+    val downloadedSize = String.format(Locale.getDefault(), "%.1f MB of %s", downloadedMb, size)
+
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                "Downloading…",
+                color = UpdateScreenTokens.HeroInk,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(Modifier.weight(1f))
+            Text(
+                "$percent%",
+                color = UpdateScreenTokens.HeroInk,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                style = androidx.compose.ui.text.TextStyle(fontFeatureSettings = "tnum")
+            )
+        }
+        HeroProgressBar(progress = progress)
+        Text(
+            downloadedSize,
+            color = UpdateScreenTokens.HeroInk.copy(alpha = 0.78f),
+            fontSize = 13.sp,
+            modifier = Modifier.padding(top = 7.dp)
+        )
+    }
+}
+
 @Composable
 private fun NexaLogo() {
     Icon(
