@@ -44,7 +44,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -75,6 +74,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalDensity
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.WindowCompat
@@ -91,6 +91,11 @@ import com.nexamusic.music.R
 import com.nexamusic.music.core.updater.downloadmanager.UpdateDownloadWorker
 import com.nexamusic.music.core.updater.downloadmanager.DownloadNotificationManager
 import com.nexamusic.music.ui.ios.compat.AppTheme
+import com.nexamusic.music.ui.component.GlassComponent
+import com.nexamusic.music.ui.component.LocalGlassEffectConfig
+import com.nexamusic.music.ui.component.isGlassAllowed
+import com.nexamusic.music.ui.component.liquidGlass
+import com.nexamusic.music.ui.component.withFixedStyle
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
@@ -516,6 +521,7 @@ private fun UpdateHeroCard(
                 NexaLogo()
             }
 
+            val fontScale = LocalDensity.current.fontScale
             Text(
                 text = if (version.startsWith("v")) version else "v$version",
                 modifier = Modifier
@@ -523,7 +529,7 @@ private fun UpdateHeroCard(
                     .semantics { heading() },
                 color = UpdateScreenTokens.HeroInk,
                 fontFamily = UpdateScreenTokens.DisplayFont,
-                fontSize = UpdateScreenTokens.VersionSize,
+                fontSize = (UpdateScreenTokens.VersionSize.value / fontScale.coerceAtLeast(1f)).sp,
                 fontWeight = FontWeight.ExtraBold,
                 letterSpacing = (-2.6).sp,
                 maxLines = 1,
@@ -556,7 +562,7 @@ private fun UpdateHeroCard(
                         )
                         Spacer(Modifier.weight(1f))
                         val checkScale by animateFloatAsState(
-                            targetValue = if (reduceMotion) 1f else 1f,
+                            targetValue = 1f,
                             animationSpec = if (reduceMotion) tween(0) else keyframes {
                                 durationMillis = UpdateScreenTokens.ReadyPopDurationMs
                                 0.6f at 0
@@ -791,13 +797,22 @@ private fun LaterGlassButton(
         tween(UpdateScreenTokens.PressDurationMs),
         label = "laterPressedScale"
     )
+    val glassConfig = LocalGlassEffectConfig.current.withFixedStyle().forAccessory()
+    val useLiquidGlass = glassConfig.isEnabledFor(GlassComponent.NAV_BAR) && isGlassAllowed()
     Surface(
         onClick = onClick,
         modifier = modifier
             .height(UpdateScreenTokens.ButtonHeight)
-            .graphicsLayer { scaleX = scale; scaleY = scale },
+            .graphicsLayer { scaleX = scale; scaleY = scale }
+            .then(
+                if (useLiquidGlass) {
+                    Modifier.liquidGlass(config = glassConfig, shape = RoundedCornerShape(50))
+                } else {
+                    Modifier.background(palette.glass, RoundedCornerShape(50))
+                }
+            ),
         shape = RoundedCornerShape(50),
-        color = palette.glass,
+        color = Color.Transparent,
         contentColor = palette.primaryText,
         border = BorderStroke(1.dp, palette.glassBorder),
         interactionSource = interaction
