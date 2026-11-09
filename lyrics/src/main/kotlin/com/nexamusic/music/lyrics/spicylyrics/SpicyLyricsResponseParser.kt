@@ -62,6 +62,15 @@ object SpicyLyricsResponseParser {
             ?: return null
         val body = root.objectAt("Body") ?: return null
         val content = body.arrayAt("Content") ?: return null
+        // This adapter is specifically for word-timed syllable responses.
+        // Line/static results remain eligible for the existing providers.
+        if (body.stringAt("Type")?.let { it != "Syllable" } == true) {
+            return SpicyLyricsDocument(emptyList(), SpicyLyricsAttribution(
+                source = body.stringAt("source"),
+                uploader = null,
+                maker = null,
+            ))
+        }
         val lines = content.mapNotNull { item ->
             val row = item.asObject() ?: return@mapNotNull null
             val lead = row.objectAt("Lead") ?: return@mapNotNull null
