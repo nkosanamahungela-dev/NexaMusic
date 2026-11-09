@@ -15,7 +15,6 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.doubleOrNull
-import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
@@ -89,7 +88,7 @@ object SpicyLyricsResponseParser {
         )
     }
 
-private fun parseSyllable(element: JsonElement): SpicyTimedSyllable? {
+    private fun parseSyllable(element: JsonElement): SpicyTimedSyllable? {
         val value = element.asObject() ?: return null
         val text = value.stringAt("Text")?.takeIf(String::isNotEmpty) ?: return null
         val start = value.numberAt("StartTime") ?: return null
