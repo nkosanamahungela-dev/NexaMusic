@@ -496,7 +496,7 @@ private fun UpdateHeroCard(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = "NEW UPDATE",
+                        text = if (status is NexaMusicUpdateStatus.Available) "NEW UPDATE" else "NEXAMUSIC UPDATE",
                         color = UpdateScreenTokens.heroInk,
                         fontFamily = UpdateScreenTokens.bodyFont,
                         fontSize = 12.sp,
