@@ -15,12 +15,12 @@ fun lyricsStyleLabel(style: LyricsAnimationStyle): String = when (style) {
     LyricsAnimationStyle.KARAOKE -> stringResource(R.string.karaoke)
     LyricsAnimationStyle.APPLE -> stringResource(R.string.apple_music_style)
     LyricsAnimationStyle.APPLE_V2 -> stringResource(R.string.apple_music_style_letter)
-    LyricsAnimationStyle.APPLE_V3 -> "Apple Music Style V3 (Beta)"
+    LyricsAnimationStyle.APPLE_V3 -> "Apple Music V3 (BETA)"
     LyricsAnimationStyle.BITCHORD -> stringResource(R.string.lyrics_animation_bitchord)
     LyricsAnimationStyle.NEXAMUSIC_1 -> stringResource(R.string.nexamusic_1)
     LyricsAnimationStyle.LYRICS_V2 -> stringResource(R.string.lyrics_v2_fluid)
     LyricsAnimationStyle.METRO_LYRICS -> stringResource(R.string.lyrics_animation_metro)
     LyricsAnimationStyle.ARCHIVE_TUNE -> stringResource(R.string.lyrics_animation_karaoke_apple)
-    LyricsAnimationStyle.FISHEYE -> stringResource(R.string.lyrics_animation_fisheye)
+    LyricsAnimationStyle.FISHEYE -> "${stringResource(R.string.lyrics_animation_fisheye)} (BETA)"
     LyricsAnimationStyle.STAR_CRAWL -> stringResource(R.string.lyrics_animation_star_crawl)
 }
