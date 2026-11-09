@@ -53,7 +53,7 @@ internal object UpdateScreenTokens {
     val noteTileColors = listOf(
         Color(0xFFFA243C), // lyrics
         Color(0xFF0A9FD8), // duets
-        Color(0xFFF57C00), // interludes
+        Color(0xFFE96F00), // interludes; darkened slightly so white icon contrast exceeds 3:1
         Color(0xFFAF52DE), // new look
         Color(0xFF0A84FF), // playlist sync
         Color(0xFF1F9D4A)  // fixes
