@@ -96,3 +96,68 @@ object SpicyLyricsResponseParser {
     private fun JsonElement.asObject(): JsonObject? =
         runCatching { jsonObject }.getOrNull()
 }
+
+/**
+ * Converts parsed timing to NexaMusic's existing rich-sync LRC wire format.
+ * LyricsUtils.parseLyrics() already understands this format and creates
+ * LyricsEntry/WordTimestamp values consumed by AppleMusicV3Lyrics.
+ *
+ * IsPartOfWord marks syllables that continue a word. A false value closes
+ * the current word. The final syllable is also flushed at the end of a line.
+ */
+fun List<SpicyTimedLine>.toNexaMusicRichSyncLyrics(): String =
+    mapNotNull { line ->
+        val words = line.toTimedWords()
+        if (words.isEmpty()) return@mapNotNull null
+
+        val lineStart = words.minOf { it.startMs }
+        buildString {
+            append('[').append(formatTimestamp(lineStart)).append(']')
+            words.forEachIndexed { index, word ->
+                if (index > 0) append(' ')
+                append('<')
+                    .append(formatTimestamp(word.startMs))
+                    .append('|')
+                    .append(formatTimestamp(word.endMs))
+                    .append('>')
+                    .append(word.text)
+            }
+        }
+    }.joinToString("\n")
+
+private data class SpicyTimedWord(
+    val text: String,
+    val startMs: Long,
+    val endMs: Long,
+)
+
+private fun SpicyTimedLine.toTimedWords(): List<SpicyTimedWord> {
+    val result = mutableListOf<SpicyTimedWord>()
+    val current = mutableListOf<SpicyTimedSyllable>()
+
+    fun flush() {
+        if (current.isEmpty()) return
+        val text = current.joinToString("") { it.text }.trim()
+        val start = current.minOf { it.startMs }
+        val end = current.maxOf { it.endMs }
+        if (text.isNotEmpty() && end > start) {
+            result += SpicyTimedWord(text, start, end)
+        }
+        current.clear()
+    }
+
+    syllables.forEach { syllable ->
+        current += syllable
+        if (!syllable.isPartOfWord) flush()
+    }
+    flush()
+    return result
+}
+
+private fun formatTimestamp(milliseconds: Long): String {
+    val safe = milliseconds.coerceAtLeast(0L)
+    val minutes = safe / 60_000L
+    val seconds = safe / 1_000L % 60L
+    val millis = safe % 1_000L
+    return "%02d:%02d.%03d".format(java.util.Locale.ROOT, minutes, seconds, millis)
+}
