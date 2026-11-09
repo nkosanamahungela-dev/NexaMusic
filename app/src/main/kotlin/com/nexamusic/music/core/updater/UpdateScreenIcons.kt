@@ -1,33 +1,25 @@
 package com.nexamusic.music.core.updater
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.CheckCircle
-import androidx.compose.material.icons.rounded.Download
-import androidx.compose.material.icons.rounded.FormatQuote
-import androidx.compose.material.icons.rounded.GraphicEq
-import androidx.compose.material.icons.rounded.Group
-import androidx.compose.material.icons.rounded.Palette
-import androidx.compose.material.icons.rounded.Sync
-import androidx.compose.material.icons.rounded.Verified
-import androidx.compose.ui.graphics.vector.ImageVector
+import com.nexamusic.music.R
 
 /**
- * Android uses one Material Symbols Rounded-style family at medium weight.
- * Edit an icon in this file only; note order follows the release data order.
+ * Official Google Material Symbols Rounded Android VectorDrawable assets.
+ * Note tiles use weight 500 / fill 1; the download action uses weight 500 / fill 0.
+ * Each icon can be replaced in this one mapping table.
  */
 internal object UpdateScreenIcons {
-    private val releaseNotes: List<Pair<String, ImageVector>> = listOf(
-        "lyrics" to Icons.Rounded.FormatQuote,  // format_quote
-        "duets" to Icons.Rounded.Group,         // group
-        "interludes" to Icons.Rounded.GraphicEq,// graphic_eq
-        "new-look" to Icons.Rounded.Palette,    // palette
-        "playlist-sync" to Icons.Rounded.Sync,  // sync
-        "fixes" to Icons.Rounded.Verified       // verified
+    private val releaseNotes = listOf(
+        "lyrics" to R.drawable.update_ms_format_quote,
+        "duets" to R.drawable.update_ms_group,
+        "interludes" to R.drawable.update_ms_graphic_eq,
+        "new-look" to R.drawable.update_ms_palette,
+        "playlist-sync" to R.drawable.update_ms_sync,
+        "fixes" to R.drawable.update_ms_verified
     )
 
-    val update: ImageVector = Icons.Rounded.Download // download
-    val install: ImageVector = Icons.Rounded.CheckCircle // check_circle
+    val update: Int = R.drawable.update_ms_download
+    val install: Int = R.drawable.update_ms_check_circle
 
-    fun noteIcon(index: Int): ImageVector =
+    fun noteIcon(index: Int): Int =
         releaseNotes[index.coerceIn(0, releaseNotes.lastIndex)].second
 }
