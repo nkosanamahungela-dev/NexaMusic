@@ -374,6 +374,7 @@ fun UpdateScreen(navController: NavHostController) {
                 LaterGlassButton(
                     modifier = Modifier.weight(1f),
                     palette = palette,
+                    reduceMotion = reduceMotion,
                     onClick = { navController.navigateUp() }
                 )
 
@@ -395,6 +396,7 @@ fun UpdateScreen(navController: NavHostController) {
                     },
                     progressState = if (isDownloading) downloadProgressState else null,
                     enabled = status !is NexaMusicUpdateStatus.Checking && (!isDownloading || isDownloadComplete),
+                    reduceMotion = reduceMotion,
                     onClick = {
                         val currentStatus = status
                         when {
@@ -794,13 +796,14 @@ private fun ReleaseNotesCard(
 private fun LaterGlassButton(
     modifier: Modifier,
     palette: UpdateScreenTokens.Palette,
+    reduceMotion: Boolean,
     onClick: () -> Unit
 ) {
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
     val scale by animateFloatAsState(
         if (pressed) 0.97f else 1f,
-        tween(UpdateScreenTokens.PressDurationMs),
+        tween(if (reduceMotion) 0 else UpdateScreenTokens.PressDurationMs),
         label = "laterPressedScale"
     )
     val glassConfig = LocalGlassEffectConfig.current.withFixedStyle().forAccessory()
@@ -842,13 +845,14 @@ private fun UpdateMainButton(
     icon: androidx.compose.ui.graphics.vector.ImageVector?,
     progressState: State<Float>?,
     enabled: Boolean,
+    reduceMotion: Boolean,
     onClick: () -> Unit
 ) {
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
     val scale by animateFloatAsState(
         if (pressed) 0.97f else 1f,
-        tween(UpdateScreenTokens.PressDurationMs),
+        tween(if (reduceMotion) 0 else UpdateScreenTokens.PressDurationMs),
         label = "updatePressedScale"
     )
     val progress = progressState?.value
