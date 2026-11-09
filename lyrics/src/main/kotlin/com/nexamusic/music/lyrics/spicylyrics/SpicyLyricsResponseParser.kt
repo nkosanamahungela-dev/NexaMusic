@@ -190,7 +190,7 @@ private data class SpicyTimedWord(
     val endMs: Long,
 )
 
-private fun SpicyTimedLine.toTimedWords(): List<SpicyTimedWord> {
+private fun List<SpicyTimedSyllable>.toTimedWords(): List<SpicyTimedWord> {
     val result = mutableListOf<SpicyTimedWord>()
     val current = mutableListOf<SpicyTimedSyllable>()
 
@@ -205,7 +205,7 @@ private fun SpicyTimedLine.toTimedWords(): List<SpicyTimedWord> {
         current.clear()
     }
 
-    syllables.forEach { syllable ->
+    forEach { syllable ->
         current += syllable
         if (!syllable.isPartOfWord) flush()
     }
