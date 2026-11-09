@@ -11,11 +11,9 @@ import androidx.compose.ui.res.painterResource
 import com.nexamusic.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -25,7 +23,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -49,7 +46,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -60,7 +56,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -77,7 +72,6 @@ import com.music.innertube.models.ArtistItem
 import com.music.innertube.models.PlaylistItem
 import com.music.innertube.models.SongItem
 import com.music.innertube.models.YTItem
-import com.music.innertube.YouTube
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.allowHardware
@@ -160,16 +154,6 @@ fun OnlineSearchResult(
     LaunchedEffect(decodedQuery) {
         if (navSearch.query.text != decodedQuery) {
             navSearch.onQueryChange(TextFieldValue(decodedQuery, TextRange(decodedQuery.length)))
-        }
-    }
-
-    LaunchedEffect(navSearch.query.text) {
-        val currentQuery = navSearch.query.text.trim()
-        if (currentQuery.length < 2) {
-            viewModel.searchSpotifyTracks("")
-        } else {
-            kotlinx.coroutines.delay(350L)
-            viewModel.searchSpotifyTracks(currentQuery)
         }
     }
 
@@ -382,103 +366,6 @@ fun OnlineSearchResult(
                             .fillMaxWidth()
                             .heroPullZoom(heroZoom)
                     ) {
-                        if (searchFilter == null || searchFilter == FILTER_SONG) {
-                            if (viewModel.isSpotifyLoading || viewModel.spotifyTracks.isNotEmpty() || viewModel.spotifyError != null) {
-                                item(key = "spotify_catalogue_header") {
-                                    NavigationTitle(title = "Spotify")
-                                }
-                                if (viewModel.isSpotifyLoading) {
-                                    item(key = "spotify_catalogue_loading") {
-                                        Text(
-                                            text = "Searching Spotify catalogue…",
-                                            style = AppTheme.typography.bodyMedium,
-                                            color = IosTheme.colors.secondaryLabel,
-                                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-                                        )
-                                    }
-                                }
-                                viewModel.spotifyError?.let { message ->
-                                    item(key = "spotify_catalogue_error") {
-                                        Text(
-                                            text = message,
-                                            style = AppTheme.typography.bodyMedium,
-                                            color = IosTheme.colors.secondaryLabel,
-                                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-                                        )
-                                    }
-                                }
-                                itemsIndexed(
-                                    items = viewModel.spotifyTracks,
-                                    key = { index, track -> "spotify_catalogue_" + (track.uri ?: index.toString()) },
-                                ) { _, track ->
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clickable {
-                                                val playbackQuery = listOfNotNull(
-                                                    track.name?.takeIf { it.isNotBlank() },
-                                                    track.artists.firstOrNull(),
-                                                ).joinToString(" ")
-                                                if (playbackQuery.isNotBlank()) {
-                                                    coroutineScope.launch {
-                                                        val match = YouTube.search(
-                                                            query = playbackQuery,
-                                                            filter = com.music.innertube.SearchFilter.FILTER_SONG,
-                                                        ).getOrNull()?.items
-                                                            ?.filterIsInstance<SongItem>()
-                                                            ?.firstOrNull()
-                                                        if (match != null) {
-                                                            playerConnection.playQueue(
-                                                                searchResultQueue(match, listOf(match), searchedSongsTitle)
-                                                            )
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                            .padding(horizontal = 16.dp, vertical = 11.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                    ) {
-                                        if (!track.imageUrl.isNullOrBlank()) {
-                                            AsyncImage(
-                                                model = track.imageUrl,
-                                                contentDescription = null,
-                                                contentScale = ContentScale.Crop,
-                                                modifier = Modifier.size(48.dp),
-                                            )
-                                            Spacer(modifier = Modifier.size(12.dp))
-                                        }
-                                        Column(modifier = Modifier.weight(1f)) {
-                                            Text(
-                                                text = track.name.orEmpty(),
-                                                style = AppTheme.typography.bodyLarge,
-                                                color = IosTheme.colors.label,
-                                                maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis,
-                                            )
-                                            Text(
-                                                text = listOf(
-                                                    track.artists.joinToString(", ").takeIf { it.isNotBlank() },
-                                                    track.album?.takeIf { it.isNotBlank() },
-                                                ).filterNotNull().joinToString(" · "),
-                                                style = AppTheme.typography.bodySmall,
-                                                color = IosTheme.colors.secondaryLabel,
-                                                maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis,
-                                            )
-                                        }
-                                        track.durationMs?.let { duration ->
-                                            val seconds = duration / 1000
-                                            Text(
-                                                text = String.format("%d:%02d", seconds / 60, seconds % 60),
-                                                style = AppTheme.typography.bodySmall,
-                                                color = IosTheme.colors.secondaryLabel,
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
                         if (searchFilter == null) {
                             searchSummary?.summaries?.forEach { summary ->
                                 item {
