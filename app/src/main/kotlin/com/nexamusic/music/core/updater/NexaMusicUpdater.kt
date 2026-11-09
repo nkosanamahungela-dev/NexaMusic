@@ -125,7 +125,8 @@ sealed class NexaMusicUpdateStatus {
         val releaseDate: String,
         val description: String?,
         val imageUrl: String?,
-        val apkUrl: String?
+        val apkUrl: String?,
+        val isBeta: Boolean = false
     ) : NexaMusicUpdateStatus()
 
     data class NoUpdate(val version: String) : NexaMusicUpdateStatus()
@@ -751,7 +752,7 @@ private fun fetchNightlyArtifactSize(runId: Long): String = try {
 // Finds the newest release eligible for the user's update preference.
 suspend fun checkForUpdate(
     context: Context,
-    onSuccess: (tag: String, isAvailable: Boolean, changelog: List<ChangelogSection>, size: String, date: String, description: String?, imageUrl: String?, apkUrl: String?) -> Unit,
+    onSuccess: (tag: String, isAvailable: Boolean, isBeta: Boolean, changelog: List<ChangelogSection>, size: String, date: String, description: String?, imageUrl: String?, apkUrl: String?) -> Unit,
     onError: () -> Unit,
 ) {
     withContext(Dispatchers.IO) {
@@ -804,7 +805,7 @@ suspend fun checkForUpdate(
                 val apkSize = fetchNightlyArtifactSize(nightlyRunObject.getLong("id"))
 
                 withContext(Dispatchers.Main) {
-                    onSuccess(displayTag, true, changelogList, apkSize, formattedReleaseDate, "Bleeding-edge nightly build from main branch.", null, apkDownloadUrl)
+                    onSuccess(displayTag, true, true, changelogList, apkSize, formattedReleaseDate, "Bleeding-edge nightly build from main branch.", null, apkDownloadUrl)
                 }
                 return@withContext
             }
@@ -892,7 +893,7 @@ suspend fun checkForUpdate(
 
                     if (apkDownloadUrl.isNotEmpty()) {
                         withContext(Dispatchers.Main) {
-                            onSuccess(displayTag, true, changelogList, apkSizeInMB, formattedReleaseDate, description, imageUrl, apkDownloadUrl)
+                            onSuccess(displayTag, true, targetRelease.optBoolean("prerelease", false), changelogList, apkSizeInMB, formattedReleaseDate, description, imageUrl, apkDownloadUrl)
                         }
                         return@withContext
                     }
@@ -900,7 +901,7 @@ suspend fun checkForUpdate(
             }
 
             withContext(Dispatchers.Main) {
-                onSuccess(currentVersion, false, emptyList(), "", "", null, null, null)
+                onSuccess(currentVersion, false, false, emptyList(), "", "", null, null, null)
             }
         } catch (e: Exception) {
             Timber.tag("UpdateCheck").e(e, "Error checking for updates: ${e.message}")
