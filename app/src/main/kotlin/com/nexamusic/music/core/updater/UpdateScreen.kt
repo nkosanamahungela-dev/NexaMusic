@@ -666,7 +666,7 @@ private fun UpdateHeroCard(
                     text = (status as NexaMusicUpdateStatus.Error).message,
                     color = UpdateScreenTokens.heroInk,
                     fontFamily = UpdateScreenTokens.bodyFont,
-                    fontSize = 14.sp,
+                    fontSize = UpdateScreenTokens.bodyFontSize,
                     fontWeight = FontWeight.SemiBold
                 )
             }
@@ -741,7 +741,7 @@ private fun UpdateReleaseNotesCard(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
+            .clip(RoundedCornerShape(UpdateScreenTokens.noteCardCorner))
             .background(palette.noteCard)
             .border(1.dp, palette.noteBorder, RoundedCornerShape(20.dp))
             .padding(horizontal = 16.dp, vertical = 8.dp)
@@ -794,7 +794,7 @@ private fun UpdateReleaseNoteRow(
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(UpdateScreenTokens.actionGap),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
@@ -891,7 +891,7 @@ private fun UpdateMainButton(
     )
     Box(
         modifier = modifier
-            .height(56.dp)
+            .height(UpdateScreenTokens.actionHeight)
             .graphicsLayer { scaleX = scale; scaleY = scale }
             .clip(CircleShape)
             .background(
@@ -940,7 +940,7 @@ private fun UpdateMainButton(
                 text = visibleLabel,
                 color = Color.White,
                 fontFamily = UpdateScreenTokens.bodyFont,
-                fontSize = 17.sp,
+                fontSize = UpdateScreenTokens.buttonFontSize,
                 fontWeight = FontWeight.Bold,
                 style = if (progress != null) androidx.compose.ui.text.TextStyle(fontFeatureSettings = "tnum") else androidx.compose.ui.text.TextStyle.Default,
                 maxLines = 1
