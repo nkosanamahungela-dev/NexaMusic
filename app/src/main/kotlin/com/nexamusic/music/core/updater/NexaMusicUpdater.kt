@@ -134,7 +134,7 @@ sealed class NexaMusicUpdateStatus {
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun UpdateScreen(navController: NavHostController) {
+private fun LegacyUpdateScreen(navController: NavHostController) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var status by remember { mutableStateOf<NexaMusicUpdateStatus>(NexaMusicUpdateStatus.NoUpdate(BuildConfig.VERSION_NAME)) }
