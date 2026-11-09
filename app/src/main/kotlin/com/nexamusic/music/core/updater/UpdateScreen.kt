@@ -347,8 +347,8 @@ fun UpdateScreen(navController: androidx.navigation.NavHostController) {
                     translationY = entryRise.toPx()
                 },
             contentPadding = PaddingValues(
-                start = 20.dp,
-                end = 20.dp,
+                start = UpdateScreenTokens.pageSideMargin,
+                end = UpdateScreenTokens.pageSideMargin,
                 top = 8.dp,
                 bottom = 188.dp
             ),
@@ -375,7 +375,7 @@ fun UpdateScreen(navController: androidx.navigation.NavHostController) {
                     modifier = Modifier.fillMaxWidth(),
                     color = palette.secondaryText,
                     fontFamily = UpdateScreenTokens.bodyFont,
-                    fontSize = 15.sp,
+                    fontSize = UpdateScreenTokens.summaryFontSize,
                     lineHeight = 21.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -409,15 +409,15 @@ fun UpdateScreen(navController: androidx.navigation.NavHostController) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(38.dp)
+                    .height(UpdateScreenTokens.bottomFadeHeight)
                     .background(Brush.verticalGradient(listOf(Color.Transparent, palette.page)))
             )
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
-                    .padding(bottom = 30.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    .padding(horizontal = UpdateScreenTokens.pageSideMargin)
+                    .padding(bottom = UpdateScreenTokens.bottomEdgeSpacing),
+                horizontalArrangement = Arrangement.spacedBy(UpdateScreenTokens.actionGap),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 UpdateLaterButton(
@@ -455,7 +455,7 @@ private fun NexaLogo(modifier: Modifier = Modifier) {
         painter = painterResource(R.drawable.nexamusic_logo_mark),
         contentDescription = null,
         tint = UpdateScreenTokens.heroInk,
-        modifier = modifier.size(92.dp)
+        modifier = modifier.size(UpdateScreenTokens.logoSize)
     )
 }
 
@@ -478,10 +478,10 @@ private fun UpdateHeroCard(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = UpdateScreenTokens.heroMinHeight.dp)
-            .clip(RoundedCornerShape(UpdateScreenTokens.heroCorner.dp))
+            .heightIn(min = UpdateScreenTokens.heroMinHeight)
+            .clip(RoundedCornerShape(UpdateScreenTokens.heroCorner))
             .background(UpdateScreenTokens.hero)
-            .padding(horizontal = 22.dp, vertical = 18.dp)
+            .padding(horizontal = UpdateScreenTokens.heroHorizontalPadding, vertical = 18.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -527,7 +527,7 @@ private fun UpdateHeroCard(
 
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
             val fittedSize = minOf(
-                66f,
+                UpdateScreenTokens.versionMaxFontSize.value,
                 maxWidth.value / (displayVersion.length.coerceAtLeast(1) * 0.60f * fontScale)
             ).coerceAtLeast(34f)
             Text(
@@ -550,7 +550,7 @@ private fun UpdateHeroCard(
                     text = downloadError,
                     color = UpdateScreenTokens.heroInk,
                     fontFamily = UpdateScreenTokens.bodyFont,
-                    fontSize = 14.sp,
+                    fontSize = UpdateScreenTokens.bodyFontSize,
                     fontWeight = FontWeight.SemiBold,
                     lineHeight = 19.sp
                 )
@@ -712,7 +712,7 @@ private fun UpdateHeroProgressBar(progress: Float, reduceMotion: Boolean) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(10.dp)
+            .height(UpdateScreenTokens.heroProgressHeight)
             .clip(RoundedCornerShape(50))
             .background(UpdateScreenTokens.heroInk.copy(alpha = 0.18f))
             .semantics {
@@ -796,8 +796,8 @@ private fun UpdateReleaseNoteRow(
     ) {
         Box(
             modifier = Modifier
-                .size(36.dp)
-                .clip(RoundedCornerShape(10.dp))
+                .size(UpdateScreenTokens.noteTileSize)
+                .clip(RoundedCornerShape(UpdateScreenTokens.noteTileCorner))
                 .background(tileColor),
             contentAlignment = Alignment.Center
         ) {
@@ -805,7 +805,7 @@ private fun UpdateReleaseNoteRow(
                 imageVector = icon,
                 contentDescription = null,
                 tint = Color.White,
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(UpdateScreenTokens.noteIconSize)
             )
         }
         Text(
@@ -835,7 +835,7 @@ private fun UpdateLaterButton(
     )
     Box(
         modifier = modifier
-            .height(56.dp)
+            .height(UpdateScreenTokens.actionHeight)
             .graphicsLayer { scaleX = scale; scaleY = scale }
             .clip(CircleShape)
             .background(palette.glass)
@@ -852,7 +852,7 @@ private fun UpdateLaterButton(
             text = stringResource(R.string.later),
             color = palette.text,
             fontFamily = UpdateScreenTokens.bodyFont,
-            fontSize = 17.sp,
+            fontSize = UpdateScreenTokens.buttonFontSize,
             fontWeight = FontWeight.Bold
         )
     }
@@ -928,7 +928,7 @@ private fun UpdateMainButton(
                     imageVector = icon,
                     contentDescription = null,
                     tint = Color.White,
-                    modifier = Modifier.size(22.dp)
+                    modifier = Modifier.size(UpdateScreenTokens.actionIconSize)
                 )
             }
             Text(
