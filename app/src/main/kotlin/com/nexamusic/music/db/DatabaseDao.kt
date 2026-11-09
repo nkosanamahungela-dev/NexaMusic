@@ -1652,6 +1652,10 @@ interface DatabaseDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insert(album: AlbumEntity): Long
 
+    // A favourite can be created from an album page before its row exists locally.
+    @Upsert
+    fun upsert(album: AlbumEntity)
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insert(playlist: PlaylistEntity)
 
