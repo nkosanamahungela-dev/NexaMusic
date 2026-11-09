@@ -61,6 +61,9 @@ jobs:
               -dname "CN=Android Debug,O=Android,C=US"
           fi
 
+      - name: Run lyrics module unit tests
+        run: ./gradlew :lyrics:testDebugUnitTest --no-configuration-cache --console=plain --warning-mode summary
+
       - name: Build Debug APK
         env:
           LASTFM_API_KEY: ${{ secrets.LASTFM_API_KEY }}
