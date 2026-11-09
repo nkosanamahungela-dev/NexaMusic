@@ -42,6 +42,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -102,7 +104,7 @@ fun UpdateScreen(navController: androidx.navigation.NavHostController) {
     val scope = rememberCoroutineScope()
     var status by remember { mutableStateOf<NexaMusicUpdateStatus>(NexaMusicUpdateStatus.NoUpdate(BuildConfig.VERSION_NAME)) }
     var isDownloading by remember { mutableStateOf(false) }
-    var downloadProgress by remember { mutableStateOf(0f) }
+    val downloadProgress = remember { mutableFloatStateOf(0f) }
     var isDownloadComplete by remember { mutableStateOf(false) }
     var downloadedFile by remember { mutableStateOf<File?>(null) }
     var downloadError by remember { mutableStateOf<String?>(null) }
@@ -138,12 +140,12 @@ fun UpdateScreen(navController: androidx.navigation.NavHostController) {
                 WorkInfo.State.ENQUEUED, WorkInfo.State.RUNNING -> {
                     isDownloading = true
                     downloadError = null
-                    downloadProgress = info.progress.getFloat("progress", 0f).coerceIn(0f, 1f)
+                    downloadProgress.floatValue = info.progress.getFloat("progress", 0f).coerceIn(0f, 1f)
                 }
                 WorkInfo.State.SUCCEEDED -> {
                     isDownloading = false
                     isDownloadComplete = true
-                    downloadProgress = 1f
+                    downloadProgress.floatValue = 1f
                     val filePath = info.outputData.getString("file_path")
                     downloadedFile = filePath?.let(::File)
                     if (downloadedFile?.exists() != true) {
@@ -161,7 +163,7 @@ fun UpdateScreen(navController: androidx.navigation.NavHostController) {
                 }
                 WorkInfo.State.CANCELLED -> {
                     isDownloading = false
-                    downloadProgress = 0f
+                    downloadProgress.floatValue = 0f
                 }
                 else -> Unit
             }
@@ -320,7 +322,7 @@ fun UpdateScreen(navController: androidx.navigation.NavHostController) {
     }
 
     val mainLabel = when {
-        isDownloading -> (downloadProgress * 100f).toInt().coerceIn(0, 100).toString() + "%"
+        isDownloading -> ""
         isDownloadComplete -> "Install now"
         downloadError != null || status is NexaMusicUpdateStatus.Error -> "Try again"
         available != null -> "Update"
@@ -360,7 +362,7 @@ fun UpdateScreen(navController: androidx.navigation.NavHostController) {
                     isBeta = beta,
                     status = status,
                     isDownloading = isDownloading,
-                    progress = downloadProgress,
+                    progressState = downloadProgress,
                     isDownloadComplete = isDownloadComplete,
                     downloadError = downloadError,
                     releaseDate = available?.releaseDate.orEmpty(),
@@ -430,7 +432,7 @@ fun UpdateScreen(navController: androidx.navigation.NavHostController) {
                     modifier = Modifier.weight(1.4f),
                     label = mainLabel,
                     icon = mainIcon,
-                    progress = if (isDownloading) downloadProgress else null,
+                    progressState = if (isDownloading) downloadProgress else null,
                     enabled = !isDownloading && status !is NexaMusicUpdateStatus.Checking,
                     reduceMotion = reduceMotion,
                     palette = palette,
@@ -465,7 +467,7 @@ private fun UpdateHeroCard(
     isBeta: Boolean,
     status: NexaMusicUpdateStatus,
     isDownloading: Boolean,
-    progress: Float,
+    progressState: State<Float>,
     isDownloadComplete: Boolean,
     downloadError: String?,
     releaseDate: String,
@@ -473,6 +475,7 @@ private fun UpdateHeroCard(
     reduceMotion: Boolean,
     readyPopStarted: Boolean
 ) {
+    val progress = progressState.value
     val displayVersion = "v" + version.removePrefix("v").substringBefore("-")
     val fontScale = LocalDensity.current.fontScale
     Column(
@@ -863,12 +866,14 @@ private fun UpdateMainButton(
     modifier: Modifier,
     label: String,
     icon: ImageVector?,
-    progress: Float?,
+    progressState: State<Float>?,
     enabled: Boolean,
     reduceMotion: Boolean,
     palette: UpdateScreenTokens.Palette,
     onClick: () -> Unit
 ) {
+    val progress = progressState?.value
+    val visibleLabel = if (progress != null) (progress * 100f).toInt().coerceIn(0, 100).toString() + "%" else label
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
     val scale by animateFloatAsState(
@@ -932,7 +937,7 @@ private fun UpdateMainButton(
                 )
             }
             Text(
-                text = label,
+                text = visibleLabel,
                 color = Color.White,
                 fontFamily = UpdateScreenTokens.bodyFont,
                 fontSize = 17.sp,
