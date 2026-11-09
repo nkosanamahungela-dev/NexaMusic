@@ -705,8 +705,7 @@ private fun HeroProgressBar(progress: Float) {
             .semantics {
                 progressBarRangeInfo = ProgressBarRangeInfo(
                     animated,
-                    0f..1f,
-                    (animated * 100).roundToInt()
+                    0f..1f
                 )
                 contentDescription = if (animated >= 1f) "Download complete" else
                     "Downloading, ${(animated * 100).roundToInt()} percent"
