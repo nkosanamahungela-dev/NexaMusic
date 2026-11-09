@@ -176,7 +176,7 @@ fun UpdateScreen(navController: androidx.navigation.NavHostController) {
         if (isDownloadComplete && downloadedFile?.exists() == false) {
             isDownloadComplete = false
             downloadedFile = null
-            downloadProgress = 0f
+            downloadProgress.floatValue = 0f
             downloadError = context.getString(R.string.download_failed)
         }
     }
@@ -272,7 +272,7 @@ fun UpdateScreen(navController: androidx.navigation.NavHostController) {
                 if (file == null || !file.exists()) {
                     isDownloadComplete = false
                     downloadedFile = null
-                    downloadProgress = 0f
+                    downloadProgress.floatValue = 0f
                     downloadError = context.getString(R.string.download_failed)
                 } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
                     !context.packageManager.canRequestPackageInstalls()
