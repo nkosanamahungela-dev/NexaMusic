@@ -33,6 +33,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -88,6 +89,7 @@ import androidx.work.workDataOf
 import com.nexamusic.music.BuildConfig
 import com.nexamusic.music.R
 import com.nexamusic.music.core.updater.downloadmanager.UpdateDownloadWorker
+import com.nexamusic.music.core.updater.downloadmanager.DownloadNotificationManager
 import com.nexamusic.music.ui.ios.compat.AppTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -601,7 +603,7 @@ private fun UpdateHeroCard(
                             color = UpdateScreenTokens.HeroInk,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
-                            fontFeatureSettings = "tnum"
+                            style = androidx.compose.ui.text.TextStyle(fontFeatureSettings = "tnum")
                         )
                     }
                     HeroProgressBar(progress = progress)
