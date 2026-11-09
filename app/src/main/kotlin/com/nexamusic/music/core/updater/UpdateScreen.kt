@@ -621,7 +621,7 @@ private fun UpdateHeroCard(
                         fontFamily = UpdateScreenTokens.bodyFont,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        fontFeatureSettings = "tnum"
+                        style = androidx.compose.ui.text.TextStyle(fontFeatureSettings = "tnum")
                     )
                 }
                 Spacer(Modifier.height(8.dp))
@@ -938,7 +938,7 @@ private fun UpdateMainButton(
                 fontFamily = UpdateScreenTokens.bodyFont,
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Bold,
-                fontFeatureSettings = if (progress != null) "tnum" else null,
+                style = if (progress != null) androidx.compose.ui.text.TextStyle(fontFeatureSettings = "tnum") else androidx.compose.ui.text.TextStyle.Default,
                 maxLines = 1
             )
         }
