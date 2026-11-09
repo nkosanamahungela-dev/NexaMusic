@@ -39,7 +39,6 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -58,7 +57,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -332,7 +330,7 @@ fun UpdateScreen(navController: androidx.navigation.NavHostController) {
         status is NexaMusicUpdateStatus.Checking -> "Checking…"
         else -> stringResource(R.string.check_for_update)
     }
-    val mainIcon = when {
+    val mainIcon: Int? = when {
         isDownloading -> null
         isDownloadComplete -> UpdateScreenIcons.install
         else -> UpdateScreenIcons.update
@@ -586,7 +584,7 @@ private fun UpdateHeroCard(
                         label = "readyCheckPop"
                     )
                     Icon(
-                        imageVector = UpdateScreenIcons.install,
+                        painter = painterResource(UpdateScreenIcons.install),
                         contentDescription = null,
                         tint = UpdateScreenTokens.heroInk,
                         modifier = Modifier
@@ -791,7 +789,7 @@ private fun UpdateReleaseNotesCard(
 @Composable
 private fun UpdateReleaseNoteRow(
     text: String,
-    icon: ImageVector,
+    icon: Int,
     tileColor: Color,
     textColor: Color,
     modifier: Modifier = Modifier
@@ -809,7 +807,7 @@ private fun UpdateReleaseNoteRow(
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = icon,
+                painter = painterResource(icon),
                 contentDescription = null,
                 tint = UpdateScreenTokens.white,
                 modifier = Modifier.size(UpdateScreenTokens.noteIconSize)
@@ -869,7 +867,7 @@ private fun UpdateLaterButton(
 private fun UpdateMainButton(
     modifier: Modifier,
     label: String,
-    icon: ImageVector?,
+    icon: Int?,
     progressState: State<Float>?,
     enabled: Boolean,
     reduceMotion: Boolean,
@@ -934,7 +932,7 @@ private fun UpdateMainButton(
         ) {
             if (icon != null) {
                 Icon(
-                    imageVector = icon,
+                    painter = painterResource(icon),
                     contentDescription = null,
                     tint = Color.White,
                     modifier = Modifier.size(UpdateScreenTokens.actionIconSize)
