@@ -415,7 +415,7 @@ fun UpdateScreen(navController: androidx.navigation.NavHostController) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(UpdateScreenTokens.bottomFadeHeight)
-                    .background(Brush.verticalGradient(listOf(Color.Transparent, palette.page)))
+                    .background(Brush.verticalGradient(listOf(UpdateScreenTokens.transparent, palette.page)))
             )
             Row(
                 modifier = Modifier
@@ -811,7 +811,7 @@ private fun UpdateReleaseNoteRow(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = Color.White,
+                tint = UpdateScreenTokens.white,
                 modifier = Modifier.size(UpdateScreenTokens.noteIconSize)
             )
         }
@@ -942,7 +942,7 @@ private fun UpdateMainButton(
             }
             Text(
                 text = visibleLabel,
-                color = Color.White,
+                color = UpdateScreenTokens.white,
                 fontFamily = UpdateScreenTokens.bodyFont,
                 fontSize = UpdateScreenTokens.buttonFontSize,
                 fontWeight = FontWeight.Bold,
