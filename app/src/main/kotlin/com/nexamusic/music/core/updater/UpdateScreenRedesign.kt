@@ -297,7 +297,7 @@ fun UpdateScreen(navController: NavHostController) {
                     )
 
                     Text(
-                        text = "NexaMusic \${current.version.removePrefix("v")} Beta — a major lyrics, interface, playback, and performance update.",
+                        text = "NexaMusic ${current.version.removePrefix("v")} Beta — a major lyrics, interface, playback, and performance update.",
                         fontFamily = UpdateScreenTokens.BodyFont,
                         fontSize = UpdateScreenTokens.SummarySize,
                         color = palette.secondaryText,
@@ -430,13 +430,13 @@ fun UpdateScreen(navController: NavHostController) {
                                         val permissionIntent = Intent(
                                             android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES
                                         ).apply {
-                                            data = Uri.parse("package:\${context.packageName}")
+                                            data = Uri.parse("package:${context.packageName}")
                                         }
                                         context.startActivity(permissionIntent)
                                     } else {
                                         val uri = FileProvider.getUriForFile(
                                             context,
-                                            "\${context.packageName}.FileProvider",
+                                            "${context.packageName}.FileProvider",
                                             file
                                         )
                                         val installIntent = Intent(Intent.ACTION_VIEW).apply {
@@ -626,7 +626,7 @@ private fun UpdateHeroCard(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        HeroMetaPill(releaseDate, Modifier.weight(1.15f))
+                        HeroMetaPill(compactReleaseDate(releaseDate), Modifier.weight(1.15f))
                         HeroMetaPill(size, Modifier.weight(0.85f))
                     }
                 }
@@ -694,7 +694,7 @@ private fun HeroProgressBar(progress: Float) {
                     (animated * 100).roundToInt()
                 )
                 contentDescription = if (animated >= 1f) "Download complete" else
-                    "Downloading, \${(animated * 100).roundToInt()} percent"
+                    "Downloading, ${(animated * 100).roundToInt()} percent"
             }
     ) {
         Box(
@@ -953,7 +953,7 @@ private fun enqueueUpdateDownload(
     release: NexaMusicUpdateStatus.Available
 ) {
     val url = release.apkUrl
-        ?: "https://github.com/nkosanamahungela-dev/NexaMusic/releases/download/\${release.version}/nexamusic-\${release.version}.apk"
+        ?: "https://github.com/nkosanamahungela-dev/NexaMusic/releases/download/${release.version}/nexamusic-${release.version}.apk"
     val request = OneTimeWorkRequestBuilder<UpdateDownloadWorker>()
         .setInputData(
             workDataOf(
@@ -978,4 +978,15 @@ private fun Context.findActivity(): Activity? {
         current = current.baseContext
     }
     return current as? Activity
+}
+
+
+/** Converts the updater's existing long date string to the compact hero-pill format. */
+private fun compactReleaseDate(value: String): String = try {
+    LocalDateTime.parse(
+        value,
+        DateTimeFormatter.ofPattern("d MMMM yyyy, h:mm a", Locale.getDefault())
+    ).format(DateTimeFormatter.ofPattern("d MMM yyyy · h:mm a", Locale.getDefault()))
+} catch (_: Exception) {
+    value
 }
