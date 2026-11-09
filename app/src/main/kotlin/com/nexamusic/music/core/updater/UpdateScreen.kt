@@ -65,6 +65,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -537,11 +538,12 @@ private fun UpdateHeroCard(
             ).coerceAtLeast(34f)
             Text(
                 text = displayVersion,
+                modifier = Modifier.semantics { heading() },
                 color = UpdateScreenTokens.heroInk,
                 fontFamily = UpdateScreenTokens.displayFont,
                 fontWeight = FontWeight.ExtraBold,
                 fontSize = fittedSize.sp,
-                letterSpacing = (-2.64).sp,
+                letterSpacing = (fittedSize * -0.04f).sp,
                 maxLines = 1,
                 softWrap = false
             )
@@ -934,7 +936,7 @@ private fun UpdateMainButton(
                 Icon(
                     painter = painterResource(icon),
                     contentDescription = null,
-                    tint = Color.White,
+                    tint = UpdateScreenTokens.white,
                     modifier = Modifier.size(UpdateScreenTokens.actionIconSize)
                 )
             }
