@@ -186,7 +186,7 @@ fun UpdateScreen(navController: androidx.navigation.NavHostController) {
             delay(1000L)
             checkForUpdate(
                 context = context,
-                onSuccess = { tag, isAvailable, changelog, size, date, description, imageUrl, apkUrl ->
+                onSuccess = { tag, isAvailable, isBetaRelease, changelog, size, date, description, imageUrl, apkUrl ->
                     saveLastCheckedTime(
                         context,
                         LocalDateTime.now().format(DateTimeFormatter.ofPattern("d MMMM yyyy, h:mm a"))
@@ -200,7 +200,8 @@ fun UpdateScreen(navController: androidx.navigation.NavHostController) {
                             releaseDate = date,
                             description = description,
                             imageUrl = imageUrl,
-                            apkUrl = apkUrl
+                            apkUrl = apkUrl,
+                            isBeta = isBetaRelease
                         )
                     } else {
                         NexaMusicUpdateStatus.NoUpdate(tag)
@@ -223,9 +224,7 @@ fun UpdateScreen(navController: androidx.navigation.NavHostController) {
         is NexaMusicUpdateStatus.NoUpdate -> (status as NexaMusicUpdateStatus.NoUpdate).version
         else -> currentVersion
     }
-    val beta = available?.version?.lowercase()?.let {
-        it.contains("beta") || it.contains("nightly") || it.contains("preview") || it.contains("-rc")
-    } == true
+    val beta = available?.isBeta == true
     val cleanVersion = version.removePrefix("v").substringBefore("-")
     val summary = when {
         available != null -> "NexaMusic " + cleanVersion + (if (beta) " Beta" else "") +
