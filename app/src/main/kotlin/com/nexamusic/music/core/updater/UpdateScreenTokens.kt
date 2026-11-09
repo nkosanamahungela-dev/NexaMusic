@@ -51,6 +51,8 @@ internal object UpdateScreenTokens {
     val hero = Color(0xFFC9E4C8)
     val heroInk = Color(0xFF17120E)
     val actionRed = Color(0xFFE5173F)
+    val white = Color(0xFFFFFFFF)
+    val transparent = Color(0x00000000)
 
     val noteTileColors = listOf(
         Color(0xFFFA243C), // lyrics
