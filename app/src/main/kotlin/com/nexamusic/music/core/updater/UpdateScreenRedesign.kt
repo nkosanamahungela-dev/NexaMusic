@@ -47,6 +47,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -59,6 +60,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.graphicsLayer
@@ -121,7 +123,7 @@ fun UpdateScreen(navController: NavHostController) {
         mutableStateOf<NexaMusicUpdateStatus>(NexaMusicUpdateStatus.NoUpdate(BuildConfig.VERSION_NAME))
     }
     var isDownloading by remember { mutableStateOf(false) }
-    var downloadProgress by remember { mutableFloatStateOf(0f) }
+    val downloadProgressState = remember { mutableFloatStateOf(0f) }
     var isDownloadComplete by remember { mutableStateOf(false) }
     var downloadedFile by remember { mutableStateOf<File?>(null) }
     var downloadError by remember { mutableStateOf<String?>(null) }
@@ -140,12 +142,12 @@ fun UpdateScreen(navController: NavHostController) {
                     isDownloading = true
                     isDownloadComplete = false
                     downloadError = null
-                    downloadProgress = info.progress.getFloat("progress", 0f).coerceIn(0f, 1f)
+                    downloadProgressState.floatValue = info.progress.getFloat("progress", 0f).coerceIn(0f, 1f)
                 }
                 WorkInfo.State.SUCCEEDED -> {
                     isDownloading = false
                     isDownloadComplete = true
-                    downloadProgress = 1f
+                    downloadProgressState.floatValue = 1f
                     val path = info.outputData.getString("file_path")
                     downloadedFile = path?.let(::File)
                 }
@@ -157,7 +159,7 @@ fun UpdateScreen(navController: NavHostController) {
                 }
                 WorkInfo.State.CANCELLED -> {
                     isDownloading = false
-                    downloadProgress = 0f
+                    downloadProgressState.floatValue = 0f
                 }
                 else -> Unit
             }
@@ -248,14 +250,11 @@ fun UpdateScreen(navController: NavHostController) {
 
     val available = status as? NexaMusicUpdateStatus.Available
     val notes = available?.changelog.orEmpty().flatMap { it.items }
-    val progressPercent = (downloadProgress * 100f).roundToInt().coerceIn(0, 100)
     val totalMb = remember(available?.size) {
         Regex("""([\d]+(?:\.[\d]+)?)""").find(available?.size.orEmpty())
             ?.groupValues?.getOrNull(1)?.toFloatOrNull() ?: 119.4f
     }
-    val downloadedMb = totalMb * downloadProgress
     val totalSizeLabel = available?.size?.takeIf { it.isNotBlank() } ?: "119.4 MB"
-    val downloadedSizeLabel = String.format(Locale.getDefault(), "%.1f MB of %s", downloadedMb, totalSizeLabel)
 
     Box(
         modifier = Modifier
@@ -287,9 +286,7 @@ fun UpdateScreen(navController: NavHostController) {
                         releaseDate = current.releaseDate,
                         size = totalSizeLabel,
                         downloading = isDownloading,
-                        progress = downloadProgress,
-                        percent = progressPercent,
-                        downloadedSize = downloadedSizeLabel,
+                        progressState = downloadProgressState,
                         ready = isDownloadComplete,
                         error = downloadError,
                         palette = palette,
@@ -390,7 +387,7 @@ fun UpdateScreen(navController: NavHostController) {
                     modifier = Modifier.weight(1.4f),
                     label = when {
                         status is NexaMusicUpdateStatus.Error || downloadError != null -> "Try again"
-                        isDownloading -> "$progressPercent%"
+                        isDownloading -> ""
                         isDownloadComplete -> "Install now"
                         status is NexaMusicUpdateStatus.Available -> "Update"
                         status is NexaMusicUpdateStatus.Checking -> "Checking…"
@@ -402,7 +399,7 @@ fun UpdateScreen(navController: NavHostController) {
                         status is NexaMusicUpdateStatus.Available -> UpdateScreenIcons.update
                         else -> null
                     },
-                    progress = if (isDownloading) downloadProgress else null,
+                    progressState = if (isDownloading) downloadProgressState else null,
                     enabled = status !is NexaMusicUpdateStatus.Checking && (!isDownloading || isDownloadComplete),
                     onClick = {
                         val currentStatus = status
@@ -465,19 +462,21 @@ private fun UpdateHeroCard(
     releaseDate: String,
     size: String,
     downloading: Boolean,
-    progress: Float,
-    percent: Int,
-    downloadedSize: String,
+    progressState: State<Float>,
     ready: Boolean,
     error: String?,
     palette: UpdateScreenTokens.Palette,
     reduceMotion: Boolean
 ) {
+    val progress = progressState.value.coerceIn(0f, 1f)
+    val percent = (progress * 100f).roundToInt().coerceIn(0, 100)
+    val downloadedMb = remember(size, progress) { totalSizeInMb(size) * progress }
+    val downloadedSize = String.format(Locale.getDefault(), "%.1f MB of %s", downloadedMb, size)
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(UpdateScreenTokens.HeroCorner),
         color = UpdateScreenTokens.Hero,
-        border = BorderStroke(1.dp, Color(0x1A17120E))
+        border = BorderStroke(1.dp, UpdateScreenTokens.HeroBorder)
     ) {
         Column(
             modifier = Modifier
@@ -561,16 +560,15 @@ private fun UpdateHeroCard(
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(Modifier.weight(1f))
-                        val checkScale by animateFloatAsState(
-                            targetValue = 1f,
-                            animationSpec = if (reduceMotion) tween(0) else keyframes {
-                                durationMillis = UpdateScreenTokens.ReadyPopDurationMs
-                                0.6f at 0
-                                1.1f at 120
-                                1f at 220
-                            },
-                            label = "readyCheckPop"
-                        )
+                        val checkScale = remember(reduceMotion) {
+                            Animatable(if (reduceMotion) 1f else 0.6f)
+                        }
+                        LaunchedEffect(checkScale) {
+                            if (!reduceMotion) {
+                                checkScale.animateTo(1.1f, tween(120))
+                                checkScale.animateTo(1f, tween(100))
+                            }
+                        }
                         Icon(
                             imageVector = UpdateScreenIcons.ready,
                             contentDescription = null,
@@ -578,8 +576,8 @@ private fun UpdateHeroCard(
                             modifier = Modifier
                                 .size(24.dp)
                                 .graphicsLayer {
-                                    scaleX = checkScale
-                                    scaleY = checkScale
+                                    scaleX = checkScale.value
+                                    scaleY = checkScale.value
                                 }
                         )
                     }
@@ -699,8 +697,12 @@ private fun HeroProgressBar(progress: Float) {
     ) {
         Box(
             modifier = Modifier
-                .fillMaxWidth(animated)
+                .fillMaxWidth()
                 .height(10.dp)
+                .graphicsLayer {
+                    scaleX = animated
+                    transformOrigin = TransformOrigin(0f, 0.5f)
+                }
                 .clip(RoundedCornerShape(50))
                 .background(UpdateScreenTokens.HeroInk)
         )
@@ -834,7 +836,7 @@ private fun UpdateMainButton(
     modifier: Modifier,
     label: String,
     icon: androidx.compose.ui.graphics.vector.ImageVector?,
-    progress: Float?,
+    progressState: State<Float>?,
     enabled: Boolean,
     onClick: () -> Unit
 ) {
@@ -845,6 +847,8 @@ private fun UpdateMainButton(
         tween(UpdateScreenTokens.PressDurationMs),
         label = "updatePressedScale"
     )
+    val progress = progressState?.value
+    val buttonLabel = if (progress != null) "${(progress * 100f).roundToInt()}%" else label
     val animatedProgress by animateFloatAsState(
         targetValue = progress?.coerceIn(0f, 1f) ?: 0f,
         animationSpec = tween(UpdateScreenTokens.ProgressDurationMs, easing = LinearEasing),
@@ -870,8 +874,11 @@ private fun UpdateMainButton(
             if (progress != null) {
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth(animatedProgress)
                         .fillMaxSize()
+                        .graphicsLayer {
+                            scaleX = animatedProgress
+                            transformOrigin = TransformOrigin(0f, 0.5f)
+                        }
                         .background(UpdateScreenTokens.Action)
                         .align(Alignment.CenterStart)
                 )
@@ -890,7 +897,7 @@ private fun UpdateMainButton(
                     Spacer(Modifier.width(8.dp))
                 }
                 Text(
-                    text = label,
+                    text = buttonLabel,
                     color = Color.White,
                     fontFamily = UpdateScreenTokens.BodyFont,
                     fontSize = UpdateScreenTokens.ButtonSize,
@@ -990,3 +997,8 @@ private fun compactReleaseDate(value: String): String = try {
 } catch (_: Exception) {
     value
 }
+
+
+private fun totalSizeInMb(label: String): Float =
+    Regex("""([\d]+(?:\.[\d]+)?)""").find(label)
+        ?.groupValues?.getOrNull(1)?.toFloatOrNull() ?: 119.4f
