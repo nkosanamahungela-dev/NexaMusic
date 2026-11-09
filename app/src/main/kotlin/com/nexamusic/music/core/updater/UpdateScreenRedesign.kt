@@ -172,7 +172,7 @@ fun UpdateScreen(navController: NavHostController) {
         if (isDownloadComplete && downloadedFile?.exists() == false) {
             isDownloadComplete = false
             downloadedFile = null
-            downloadProgress = 0f
+            downloadProgressState.floatValue = 0f
         }
     }
 
@@ -250,10 +250,6 @@ fun UpdateScreen(navController: NavHostController) {
 
     val available = status as? NexaMusicUpdateStatus.Available
     val notes = available?.changelog.orEmpty().flatMap { it.items }
-    val totalMb = remember(available?.size) {
-        Regex("""([\d]+(?:\.[\d]+)?)""").find(available?.size.orEmpty())
-            ?.groupValues?.getOrNull(1)?.toFloatOrNull() ?: 119.4f
-    }
     val totalSizeLabel = available?.size?.takeIf { it.isNotBlank() } ?: "119.4 MB"
 
     Box(
@@ -334,9 +330,7 @@ fun UpdateScreen(navController: NavHostController) {
                         releaseDate = "",
                         size = "",
                         downloading = false,
-                        progress = 0f,
-                        percent = 0,
-                        downloadedSize = "",
+                        progressState = downloadProgressState,
                         ready = false,
                         error = current.message,
                         palette = palette,
@@ -419,7 +413,7 @@ fun UpdateScreen(navController: NavHostController) {
                                 if (file == null || !file.exists()) {
                                     isDownloadComplete = false
                                     downloadedFile = null
-                                    downloadProgress = 0f
+                                    downloadProgressState.floatValue = 0f
                                 } else {
                                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
                                         !context.packageManager.canRequestPackageInstalls()
@@ -903,7 +897,7 @@ private fun UpdateMainButton(
                     fontSize = UpdateScreenTokens.ButtonSize,
                     fontWeight = FontWeight.Bold,
                     maxLines = 1,
-                    fontFeatureSettings = "tnum"
+                    style = androidx.compose.ui.text.TextStyle(fontFeatureSettings = "tnum")
                 )
             }
         }
