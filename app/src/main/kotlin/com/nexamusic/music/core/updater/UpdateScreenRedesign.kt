@@ -127,6 +127,7 @@ fun UpdateScreen(navController: NavHostController) {
     var isDownloadComplete by remember { mutableStateOf(false) }
     var downloadedFile by remember { mutableStateOf<File?>(null) }
     var downloadError by remember { mutableStateOf<String?>(null) }
+    var isPreviewMode by remember { mutableStateOf(false) }
 
     val workManager = remember(context) { WorkManager.getInstance(context) }
     val workLiveData = remember(workManager) {
@@ -177,6 +178,33 @@ fun UpdateScreen(navController: NavHostController) {
     }
 
     val autoUpdateCheckEnabled = remember(context) { getAutoUpdateCheckSetting(context) }
+
+    fun showUpdatePreview() {
+        isPreviewMode = true
+        isDownloading = false
+        isDownloadComplete = false
+        downloadedFile = null
+        downloadError = null
+        downloadProgressState.floatValue = 0f
+        status = NexaMusicUpdateStatus.Available(
+            version = "v0.1.3",
+            changelog = listOf(
+                ChangelogSection(
+                    title = "WHAT'S NEW",
+                    items = listOf(
+                        "A refreshed NexaMusic update experience",
+                        "Smoother interface and visual refinements",
+                        "Bug fixes and performance improvements"
+                    )
+                )
+            ),
+            size = "119.4 MB",
+            releaseDate = "Preview release",
+            description = "Demo preview only",
+            imageUrl = null,
+            apkUrl = null
+        )
+    }
 
     fun triggerUpdateCheck() {
         status = NexaMusicUpdateStatus.Checking
@@ -275,6 +303,16 @@ fun UpdateScreen(navController: NavHostController) {
         ) {
             when (val current = status) {
                 is NexaMusicUpdateStatus.Available -> {
+                    if (isPreviewMode) {
+                        Text(
+                            text = "PREVIEW MODE · NO DOWNLOAD WILL START",
+                            fontFamily = UpdateScreenTokens.BodyFont,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = palette.sectionLabel,
+                            letterSpacing = 1.sp
+                        )
+                    }
                     UpdateHeroCard(
                         version = current.version,
                         isBeta = current.version.contains("beta", true) ||
@@ -321,6 +359,11 @@ fun UpdateScreen(navController: NavHostController) {
                         palette = palette,
                         loading = false
                     )
+                    PreviewUpdateButton(
+                        palette = palette,
+                        enabled = !isDownloading,
+                        onClick = { showUpdatePreview() }
+                    )
                 }
 
                 is NexaMusicUpdateStatus.Error -> {
@@ -344,6 +387,11 @@ fun UpdateScreen(navController: NavHostController) {
                         detail = "",
                         palette = palette,
                         loading = false
+                    )
+                    PreviewUpdateButton(
+                        palette = palette,
+                        enabled = !isDownloading,
+                        onClick = { showUpdatePreview() }
                     )
                 }
             }
@@ -382,6 +430,7 @@ fun UpdateScreen(navController: NavHostController) {
                 UpdateMainButton(
                     modifier = Modifier.weight(1.4f),
                     label = when {
+                        isPreviewMode -> "Exit preview"
                         status is NexaMusicUpdateStatus.Error || downloadError != null -> "Try again"
                         isDownloading -> ""
                         isDownloadComplete -> "Install now"
@@ -396,11 +445,15 @@ fun UpdateScreen(navController: NavHostController) {
                         else -> null
                     },
                     progressState = if (isDownloading) downloadProgressState else null,
-                    enabled = status !is NexaMusicUpdateStatus.Checking && (!isDownloading || isDownloadComplete),
+                    enabled = isPreviewMode || (status !is NexaMusicUpdateStatus.Checking && (!isDownloading || isDownloadComplete)),
                     reduceMotion = reduceMotion,
                     onClick = {
                         val currentStatus = status
                         when {
+                            isPreviewMode -> {
+                                isPreviewMode = false
+                                status = NexaMusicUpdateStatus.NoUpdate(BuildConfig.VERSION_NAME)
+                            }
                             downloadError != null || currentStatus is NexaMusicUpdateStatus.Error -> {
                                 if (currentStatus is NexaMusicUpdateStatus.Error) {
                                     triggerUpdateCheck()
@@ -459,6 +512,34 @@ fun UpdateScreen(navController: NavHostController) {
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun PreviewUpdateButton(
+    palette: UpdateScreenTokens.Palette,
+    enabled: Boolean,
+    onClick: () -> Unit
+) {
+    Button(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        border = BorderStroke(1.dp, palette.cardBorder),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = palette.card,
+            contentColor = palette.primaryText,
+            disabledContainerColor = palette.card.copy(alpha = 0.55f),
+            disabledContentColor = palette.secondaryText
+        )
+    ) {
+        Text(
+            text = "Preview v0.1.3",
+            fontFamily = UpdateScreenTokens.BodyFont,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 15.sp
+        )
     }
 }
 
