@@ -397,6 +397,17 @@ fun UpdateScreen(navController: NavHostController) {
             }
         }
 
+        // Paint the edge-to-edge top inset last so content from the previous
+        // destination cannot ghost through the transparent status-bar region.
+        // The scrim ends exactly where the hero content begins.
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .fillMaxWidth()
+                .height(WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 8.dp)
+                .background(pageColor)
+        )
+
         // Bottom fade is intentionally below the status bar and above the fixed
         // action row; it never overlays the hero title or version.
         Column(
