@@ -102,7 +102,7 @@ import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
 
 /** The five player designs a listener picks between; each maps onto existing preferences. */
-enum class PlayerDesign { CARD, VINYL, CLOVER, APPLE_MUSIC, APPLE_MUSIC_V2 }
+enum class PlayerDesign { CARD, VINYL, CLOVER, APPLE_MUSIC, APPLE_MUSIC_V2, POD }
 
 /** The track a preview shows: the real one playing, or the last one played. */
 data class PreviewTrack(
