@@ -34,6 +34,8 @@ import com.nexamusic.music.constants.EnableGoogleCastKey
 import com.nexamusic.music.constants.KeepScreenOn
 import com.nexamusic.music.constants.PauseOnMute
 import com.nexamusic.music.constants.PersistentQueueKey
+import com.nexamusic.music.constants.PlayerStyle
+import com.nexamusic.music.constants.PlayerStyleKey
 import com.nexamusic.music.constants.RememberShuffleAndRepeatKey
 import com.nexamusic.music.constants.ResumeOnBluetoothConnectKey
 import com.nexamusic.music.constants.SimilarContent
@@ -118,8 +120,24 @@ fun PlayerSettings(
         KeepScreenOn,
         defaultValue = false
     )
+    val (playerStyle, onPlayerStyleChange) = rememberEnumPreference(PlayerStyleKey, PlayerStyle.DEFAULT)
+    var showPlayerStyleDialog by remember { mutableStateOf(false) }
     var showAudioQualityDialog by remember {
         mutableStateOf(false)
+    }
+
+    if (showPlayerStyleDialog) {
+        EnumDialog(
+            onDismiss = { showPlayerStyleDialog = false },
+            onSelect = {
+                onPlayerStyleChange(it)
+                showPlayerStyleDialog = false
+            },
+            title = "Player style",
+            current = playerStyle,
+            values = PlayerStyle.entries,
+            valueText = { if (it == PlayerStyle.POD) "Pod" else "Default" }
+        )
     }
 
     if (showAudioQualityDialog) {
@@ -149,6 +167,20 @@ fun PlayerSettings(
     ) {
         item(key = "player_settings_content") {
             Column {
+                IosSettingsGroup(
+                    title = "Player appearance",
+                    items = listOf(
+                        IosSettingsItem(
+                            icon = painterResource(R.drawable.graphic_eq),
+                            title = { Text("Player style") },
+                            description = { Text(if (playerStyle == PlayerStyle.POD) "Pod" else "Default") },
+                            onClick = { showPlayerStyleDialog = true }
+                        )
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(27.dp))
+
                 IosSettingsGroup(
                     title = "Sound",
                     items = buildList {
