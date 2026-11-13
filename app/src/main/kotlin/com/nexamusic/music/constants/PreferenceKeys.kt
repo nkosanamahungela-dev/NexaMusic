@@ -113,6 +113,14 @@ enum class PlayerLook {
     HERO,
 }
 
+/** Full-screen player skin. DEFAULT keeps the existing NexaMusic player. */
+enum class PlayerStyle {
+    DEFAULT,
+    POD,
+}
+
+val PlayerStyleKey = stringPreferencesKey("playerStyle")
+
 val PlayerLookKey = stringPreferencesKey("playerLook")
 val ShowUpNextKey = booleanPreferencesKey("showUpNext")
 /** Tab view only: caps the expanded player to a phone-like width instead of stretching
