@@ -248,7 +248,7 @@ fun ColumnScope.PlayerDesignSheetContent(onMoreOptions: () -> Unit) {
                         }
                     }
                 }
-                val classic = shown == PlayerDesign.CARD || shown == PlayerDesign.VINYL || shown == PlayerDesign.CLOVER
+                val classic = shown == PlayerDesign.CARD || shown == PlayerDesign.VINYL || shown == PlayerDesign.CLOVER || shown == PlayerDesign.POD
                 // Classic designs and V2's square layout take a background; full bleed and Apple Music paint their own.
                 if (classic || (shown == PlayerDesign.APPLE_MUSIC_V2 && look == PlayerLook.SQUARED)) {
                     OptionSection("Background") {
