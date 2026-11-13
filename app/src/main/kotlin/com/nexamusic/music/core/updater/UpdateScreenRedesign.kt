@@ -62,6 +62,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -251,7 +252,7 @@ fun UpdateScreen(navController: NavHostController) {
     androidx.compose.runtime.SideEffect {
         activity?.window?.let { window ->
             WindowCompat.setDecorFitsSystemWindows(window, false)
-            window.statusBarColor = AndroidColor.TRANSPARENT
+            window.statusBarColor = pageColor.toArgb()
             window.navigationBarColor = AndroidColor.TRANSPARENT
             if (Build.VERSION.SDK_INT >= 29) {
                 window.isNavigationBarContrastEnforced = false
@@ -397,14 +398,14 @@ fun UpdateScreen(navController: NavHostController) {
             }
         }
 
-        // Paint the edge-to-edge top inset last so content from the previous
-        // destination cannot ghost through the transparent status-bar region.
-        // The scrim ends exactly where the hero content begins.
+        // Paint a full opaque top scrim over the status-bar inset and the exposed
+        // transition gap. The system status bar also uses pageColor so content
+        // from the previous destination cannot show through either layer.
         Box(
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .fillMaxWidth()
-                .height(WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 8.dp)
+                .height(WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 56.dp)
                 .background(pageColor)
         )
 
