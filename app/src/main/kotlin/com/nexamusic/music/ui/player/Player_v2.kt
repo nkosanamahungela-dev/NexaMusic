@@ -75,6 +75,8 @@ import com.nexamusic.music.constants.PlayerBackgroundStyle
 import com.nexamusic.music.constants.PlayerBackgroundStyleKey
 import com.nexamusic.music.constants.PlayerLook
 import com.nexamusic.music.constants.PlayerLookKey
+import com.nexamusic.music.constants.PlayerStyle
+import com.nexamusic.music.constants.PlayerStyleKey
 import com.nexamusic.music.constants.PlayerStaticColorKey
 import com.nexamusic.music.constants.PlayerGradientStopsKey
 import com.nexamusic.music.ui.theme.decodeGradientStops
@@ -186,6 +188,11 @@ fun PlayerV2(
     /** Classic player uses these same squared panes, retaining its own cover. */
     auxiliaryPageState: PlayerAuxiliaryPageState? = null,
 ) {
+    val selectedPlayerStyle by rememberEnumPreference(PlayerStyleKey, PlayerStyle.DEFAULT)
+    if (selectedPlayerStyle == PlayerStyle.POD && !isPreviewOnly && auxiliaryPageState == null) {
+        PodPlayer(sheetState = state, navController = navController, modifier = modifier)
+        return
+    }
     val deviceDensity = androidx.compose.ui.platform.LocalDensity.current
     BoxWithConstraints(modifier.fillMaxSize()) {
         val wide = forcedOrientation?.let { it == DiyOrientation.LANDSCAPE } ?: (maxWidth > maxHeight)
