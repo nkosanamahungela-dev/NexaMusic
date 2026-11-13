@@ -296,7 +296,7 @@ private fun TopBar(color: Color, hero: Boolean) {
 @Composable
 private fun Artwork(spec: PlayerLookSpec, track: PreviewTrack?, isPlaying: Boolean, v2: Boolean) {
     val cover = when (spec.design) {
-        PlayerDesign.VINYL -> PlayerArtworkStyle.VINYL
+        PlayerDesign.VINYL, PlayerDesign.POD -> PlayerArtworkStyle.VINYL
         PlayerDesign.CLOVER -> PlayerArtworkStyle.CLOVER
         else -> PlayerArtworkStyle.CARD
     }.coverStyle()
