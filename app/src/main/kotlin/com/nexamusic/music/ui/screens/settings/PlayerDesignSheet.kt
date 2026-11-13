@@ -70,6 +70,8 @@ import com.nexamusic.music.constants.PlayerGradientAngleKey
 import com.nexamusic.music.constants.PlayerGradientStopsKey
 import com.nexamusic.music.constants.PlayerLook
 import com.nexamusic.music.constants.PlayerLookKey
+import com.nexamusic.music.constants.PlayerStyle
+import com.nexamusic.music.constants.PlayerStyleKey
 import com.nexamusic.music.constants.PlayerStaticColorKey
 import com.nexamusic.music.constants.ShowPlayerThumbnailShadowKey
 import com.nexamusic.music.constants.ShowUpNextKey
@@ -119,8 +121,10 @@ fun ColumnScope.PlayerDesignSheetContent(onMoreOptions: () -> Unit) {
     val (shadow, setShadow) = rememberPreference(ShowPlayerThumbnailShadowKey, false)
     val (showUpNext, setShowUpNext) = rememberPreference(ShowUpNextKey, false)
     val (hideVolumeBar, setHideVolumeBar) = rememberPreference(HideVolumeBarKey, false)
+    val (playerStyle, setPlayerStyle) = rememberEnumPreference(PlayerStyleKey, PlayerStyle.DEFAULT)
 
     val design = when {
+        playerStyle == PlayerStyle.POD -> PlayerDesign.POD
         useV2 -> PlayerDesign.APPLE_MUSIC_V2
         background == PlayerBackgroundStyle.APPLE_MUSIC -> PlayerDesign.APPLE_MUSIC
         artworkStyle == PlayerArtworkStyle.VINYL -> PlayerDesign.VINYL
@@ -146,7 +150,11 @@ fun ColumnScope.PlayerDesignSheetContent(onMoreOptions: () -> Unit) {
     fun apply(d: PlayerDesign) {
         val leaveAppleBackground = background == PlayerBackgroundStyle.APPLE_MUSIC
         when (d) {
+            PlayerDesign.POD -> {
+                setPlayerStyle(PlayerStyle.POD)
+            }
             PlayerDesign.CARD, PlayerDesign.VINYL, PlayerDesign.CLOVER -> {
+                setPlayerStyle(PlayerStyle.DEFAULT)
                 setUseV2(false)
                 setArtworkStyle(
                     when (d) {
@@ -158,10 +166,12 @@ fun ColumnScope.PlayerDesignSheetContent(onMoreOptions: () -> Unit) {
                 if (leaveAppleBackground) setBackground(PlayerBackgroundStyle.GRADIENT)
             }
             PlayerDesign.APPLE_MUSIC -> {
+                setPlayerStyle(PlayerStyle.DEFAULT)
                 setUseV2(false)
                 setBackground(PlayerBackgroundStyle.APPLE_MUSIC)
             }
             PlayerDesign.APPLE_MUSIC_V2 -> {
+                setPlayerStyle(PlayerStyle.DEFAULT)
                 setUseV2(true)
                 if (leaveAppleBackground) setBackground(PlayerBackgroundStyle.LIVE_MESH)
             }
@@ -557,6 +567,7 @@ private fun designName(d: PlayerDesign) = when (d) {
     PlayerDesign.CLOVER -> "Clover"
     PlayerDesign.APPLE_MUSIC -> "Apple Music"
     PlayerDesign.APPLE_MUSIC_V2 -> "Apple Music v2"
+    PlayerDesign.POD -> "Pod"
 }
 
 private fun backgroundName(style: PlayerBackgroundStyle) = when (style) {
