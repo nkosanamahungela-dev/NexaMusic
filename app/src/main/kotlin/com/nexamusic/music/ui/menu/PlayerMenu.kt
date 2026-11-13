@@ -100,12 +100,16 @@ import com.nexamusic.music.playback.ExoDownloadService
 import com.nexamusic.music.core.AudioDeviceMenu
 import com.nexamusic.music.ui.component.BottomSheetState
 import com.nexamusic.music.ui.component.ListDialog
+import com.nexamusic.music.ui.component.EnumDialog
 import com.nexamusic.music.ui.component.IosMenuGroup
 import com.nexamusic.music.ui.component.IosMenuItemData
 import com.nexamusic.music.ui.component.NewAction
 import com.nexamusic.music.ui.component.NewActionGrid
 import com.nexamusic.music.constants.EnableSaavnStreamingKey
+import com.nexamusic.music.constants.PlayerStyle
+import com.nexamusic.music.constants.PlayerStyleKey
 import com.nexamusic.music.utils.rememberPreference
+import com.nexamusic.music.utils.rememberEnumPreference
 import com.nexamusic.music.ui.player.rememberSleepTimerState
 import com.nexamusic.music.ui.player.SleepTimerDialogHost
 import kotlinx.coroutines.Dispatchers
@@ -136,6 +140,21 @@ fun PlayerMenu(
     val librarySong by database.song(mediaMetadata.id).collectAsState(initial = null)
     val coroutineScope = rememberCoroutineScope()
     val (saavnEnabled) = rememberPreference(EnableSaavnStreamingKey, defaultValue = false)
+    val (playerStyle, onPlayerStyleChange) = rememberEnumPreference(PlayerStyleKey, PlayerStyle.DEFAULT)
+    var showPlayerStyleDialog by rememberSaveable { mutableStateOf(false) }
+    if (showPlayerStyleDialog) {
+        EnumDialog(
+            onDismiss = { showPlayerStyleDialog = false },
+            onSelect = {
+                onPlayerStyleChange(it)
+                showPlayerStyleDialog = false
+            },
+            title = "Player style",
+            current = playerStyle,
+            values = PlayerStyle.entries,
+            valueText = { if (it == PlayerStyle.POD) "Pod" else "Default" }
+        )
+    }
 
     val download by LocalDownloadUtil.current.get().getDownload(mediaMetadata.id)
         .collectAsState(initial = null)
@@ -295,6 +314,16 @@ fun PlayerMenu(
         item {
             IosMenuGroup(
                 items = buildList {
+                    add(
+                        IosMenuItemData(
+                            title = { Text("Player style") },
+                            description = { Text(if (playerStyle == PlayerStyle.POD) "Pod" else "Default") },
+                            icon = {
+                                SymbolIcon(symbol = sf("dial.low"), contentDescription = null, size = 24.dp)
+                            },
+                            onClick = { showPlayerStyleDialog = true }
+                        )
+                    )
                     // Always visible. Re-triggers the full resolution chain.
                     add(
                         IosMenuItemData(
