@@ -330,8 +330,8 @@ fun SearchScreen(
                             } else {
                                 val move = if (targetState == SearchSource.LOCAL) 1 else -1
                                 val rtlMove = if (searchLayoutDirection == androidx.compose.ui.unit.LayoutDirection.Rtl) -move else move
-                                (fadeIn(tween(180)) + slideInHorizontally(tween(180)) { -rtlMove * 12.dp.roundToPx() }) togetherWith
-                                    (fadeOut(tween(120)) + slideOutHorizontally(tween(120)) { rtlMove * 12.dp.roundToPx() })
+                                (fadeIn(tween(180)) + slideInHorizontally(tween(180)) { -rtlMove * contentSlidePx }) togetherWith
+                                    (fadeOut(tween(120)) + slideOutHorizontally(tween(120)) { rtlMove * contentSlidePx })
                             }
                         },
                     ) { source ->
