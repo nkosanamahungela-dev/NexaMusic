@@ -38,7 +38,6 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
-import androidx.compose.ui.platform.LocalAccessibilityManager
 import androidx.compose.ui.platform.LocalDensity
 import com.nexamusic.music.ui.component.GlassSegmentedControl
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -315,7 +314,7 @@ fun SearchScreen(
                     )
                 }
                 val searchStateHolder = rememberSaveableStateHolder()
-                val reduceMotion = LocalAccessibilityManager.current?.animationsEnabled == false
+                val reduceMotion = !android.animation.ValueAnimator.areAnimatorsEnabled()
                 val searchLayoutDirection = LocalLayoutDirection.current
                 val contentSlidePx = with(LocalDensity.current) { 12.dp.roundToPx() }
                 Box(Modifier.weight(1f).background(pageColor)
@@ -597,6 +596,6 @@ private fun SourceSwitch(
             onSelect(if (index == 0) SearchSource.ONLINE else SearchSource.LOCAL)
         },
         modifier = modifier,
-        reduceMotion = LocalAccessibilityManager.current?.animationsEnabled == false,
+        reduceMotion = !android.animation.ValueAnimator.areAnimatorsEnabled(),
     )
 }
