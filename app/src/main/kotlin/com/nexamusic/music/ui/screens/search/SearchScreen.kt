@@ -317,7 +317,7 @@ fun SearchScreen(
                 val searchStateHolder = rememberSaveableStateHolder()
                 val reduceMotion = LocalAccessibilityManager.current?.animationsEnabled == false
                 val searchLayoutDirection = LocalLayoutDirection.current
-                val contentSlidePx = with(LocalDensity.current) { contentSlidePx }
+                val contentSlidePx = with(LocalDensity.current) { 12.dp.roundToPx() }
                 Box(Modifier.weight(1f).background(pageColor)
                     .layerBackdrop(searchBackdrop)) {
                     AnimatedContent(
