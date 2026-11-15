@@ -39,12 +39,10 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.platform.LocalAccessibilityManager
+import androidx.compose.ui.platform.LocalDensity
 import com.nexamusic.music.ui.component.GlassSegmentedControl
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -313,12 +311,13 @@ fun SearchScreen(
                     SourceSwitch(
                         source = navSearch.searchSource,
                         onSelect = { if (it != navSearch.searchSource) navSearch.onToggleSource() },
-                        backdrop = searchBackdrop,
                         modifier = Modifier.padding(start = sideInset + 20.dp, end = 20.dp),
                     )
                 }
                 val searchStateHolder = rememberSaveableStateHolder()
                 val reduceMotion = LocalAccessibilityManager.current?.animationsEnabled == false
+                val searchLayoutDirection = LocalLayoutDirection.current
+                val contentSlidePx = with(LocalDensity.current) { contentSlidePx }
                 Box(Modifier.weight(1f).background(pageColor)
                     .layerBackdrop(searchBackdrop)) {
                     AnimatedContent(
@@ -330,7 +329,7 @@ fun SearchScreen(
                                 fadeIn(tween(100)) togetherWith fadeOut(tween(100))
                             } else {
                                 val move = if (targetState == SearchSource.LOCAL) 1 else -1
-                                val rtlMove = if (LocalLayoutDirection.current == androidx.compose.ui.unit.LayoutDirection.Rtl) -move else move
+                                val rtlMove = if (searchLayoutDirection == androidx.compose.ui.unit.LayoutDirection.Rtl) -move else move
                                 (fadeIn(tween(180)) + slideInHorizontally(tween(180)) { -rtlMove * 12.dp.roundToPx() }) togetherWith
                                     (fadeOut(tween(120)) + slideOutHorizontally(tween(120)) { rtlMove * 12.dp.roundToPx() })
                             }
@@ -586,7 +585,6 @@ private fun AppleSearchHeader(
 private fun SourceSwitch(
     source: SearchSource,
     onSelect: (SearchSource) -> Unit,
-    backdrop: com.nexamusic.music.ui.component.backdrop.Backdrop,
     modifier: Modifier = Modifier,
 ) {
     GlassSegmentedControl(
