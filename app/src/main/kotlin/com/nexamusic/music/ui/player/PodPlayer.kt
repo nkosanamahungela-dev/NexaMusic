@@ -210,7 +210,12 @@ private fun PodPlayerDesign(
     }
 
     BoxWithConstraints(
-        modifier.fillMaxSize().background(pageBrush),
+        modifier
+            .fillMaxSize()
+            .background(pageBrush)
+            // The live player is edge-to-edge; keep all controls below the real status bar
+            // and above gesture/navigation areas. The picker preview draws its own mock status bar.
+            .then(if (preview) Modifier else Modifier.windowInsetsPadding(WindowInsets.safeDrawing)),
     ) {
         val compact = maxHeight < 760.dp
         Column(
@@ -406,7 +411,7 @@ private fun PodPlayerDesign(
                 Spacer(Modifier.width(18.dp))
                 PodStatusDot("Disk", active = false)
                 Spacer(Modifier.weight(1f))
-                Text("POD", color = PodMuted.copy(.6f), fontSize = 10.sp, letterSpacing = 4.sp)
+                Text("POD  •  BETA", color = PodMuted.copy(.72f), fontSize = 10.sp, letterSpacing = 2.5.sp, fontWeight = FontWeight.SemiBold)
             }
             Spacer(Modifier.height(14.dp))
         }
