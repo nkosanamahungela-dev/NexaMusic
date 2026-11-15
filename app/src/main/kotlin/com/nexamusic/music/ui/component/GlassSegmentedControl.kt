@@ -75,7 +75,7 @@ object GlassSegmentedTokens {
     val minLabelSize = 13.sp
     val labelWeight = FontWeight.SemiBold
     val springDamping = 0.78f
-    val springStiffness = 820f
+    val springStiffness = 320f
     const val springResponseSeconds = 0.35f
     const val stretchX = 1.08f
     const val stretchY = 0.96f
@@ -262,13 +262,13 @@ fun GlassSegmentedControl(
                 val isSelected = index == safeIndex
                 val labelAlpha by animateFloatAsState(
                     targetValue = if (pressed) GlassSegmentedTokens.labelPressAlpha else 1f,
-                    animationSpec = androidx.compose.animation.core.tween(120),
+                    animationSpec = androidx.compose.animation.core.tween(if (noMotion) GlassSegmentedTokens.reduceMotionFadeMs else 120),
                     label = "segmentPressAlpha$index",
                 )
                 val selectionFraction = if (maxIndex == 0) 1f else (1f - abs(position.value - index)).coerceIn(0f, 1f)
                 val color by animateColorAsState(
                     targetValue = androidx.compose.ui.graphics.lerp(unselectedText, selectedText, if (noMotion) if (isSelected) 1f else 0f else selectionFraction),
-                    animationSpec = androidx.compose.animation.core.tween(GlassSegmentedTokens.labelFadeMs),
+                    animationSpec = androidx.compose.animation.core.tween(if (noMotion) GlassSegmentedTokens.reduceMotionFadeMs else GlassSegmentedTokens.labelFadeMs),
                     label = "segmentLabelColor$index",
                 )
                 Box(
