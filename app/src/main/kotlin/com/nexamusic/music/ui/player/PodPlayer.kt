@@ -10,6 +10,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
@@ -311,7 +312,7 @@ private fun PodPlayerDesign(
                         drawCircle(Color.Black.copy(.28f), style = Stroke(2.dp.toPx()))
                     }
                     Text("MENU", color = PodText.copy(.8f), fontSize = 12.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.sp,
-                        modifier = Modifier.align(Alignment.TopCenter).padding(top = 24.dp))
+                        modifier = Modifier.align(Alignment.TopCenter).clip(CircleShape).clickable(onClick = onMenu).padding(horizontal = 12.dp, vertical = 8.dp).padding(top = 16.dp))
                     IconButton(onClick = onPrevious, modifier = Modifier.align(Alignment.CenterStart).padding(start = 24.dp).size(38.dp)) {
                         Icon(Icons.Default.SkipPrevious, "Previous", tint = PodMuted, modifier = Modifier.size(24.dp))
                     }
