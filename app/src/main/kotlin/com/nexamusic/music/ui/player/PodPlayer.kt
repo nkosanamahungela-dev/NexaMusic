@@ -244,7 +244,24 @@ private fun PodPlayerDesign(
                 IconButton(onClick = onMenu, modifier = Modifier.size(40.dp)) {
                     Icon(Icons.Default.ArrowBack, "Close player", tint = PodText)
                 }
-                Text("NOW PLAYING", color = PodMuted, fontSize = 12.sp, letterSpacing = 3.sp, fontWeight = FontWeight.Medium)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(7.dp),
+                ) {
+                    Text("NOW PLAYING", color = PodMuted, fontSize = 12.sp, letterSpacing = 2.5.sp, fontWeight = FontWeight.Medium)
+                    Text(
+                        "BETA",
+                        color = PodText,
+                        fontSize = 9.sp,
+                        letterSpacing = 1.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(Color.White.copy(.12f))
+                            .border(1.dp, Color.White.copy(.20f), CircleShape)
+                            .padding(horizontal = 7.dp, vertical = 4.dp),
+                    )
+                }
                 IconButton(onClick = onMenu, modifier = Modifier.size(40.dp)) {
                     Icon(Icons.Default.Menu, "Menu", tint = PodText, modifier = Modifier.size(28.dp))
                 }
