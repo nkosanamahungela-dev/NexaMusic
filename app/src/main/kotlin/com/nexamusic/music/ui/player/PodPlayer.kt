@@ -164,6 +164,20 @@ private fun PodPlayerDesign(
             Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
+            if (preview) {
+                Row(
+                    Modifier.fillMaxWidth().height(26.dp).padding(horizontal = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text("9:41", color = PodText, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("▮▮▮  Wi-Fi  74%", color = PodText, fontSize = 9.sp, fontWeight = FontWeight.SemiBold)
+                        Spacer(Modifier.width(5.dp))
+                        Box(Modifier.width(18.dp).height(9.dp).clip(RoundedCornerShape(2.dp)).border(1.dp, PodText, RoundedCornerShape(2.dp)))
+                    }
+                }
+            }
             Row(
                 Modifier.fillMaxWidth().height(48.dp).padding(horizontal = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
