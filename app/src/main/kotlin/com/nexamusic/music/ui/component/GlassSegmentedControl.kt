@@ -7,10 +7,8 @@
 package com.nexamusic.music.ui.component
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -40,6 +38,8 @@ import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalAccessibilityManager
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -56,7 +56,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.unit.sp
 import com.nexamusic.music.ui.theme.SfProFontFamily
 import kotlin.math.abs
@@ -187,13 +186,11 @@ fun GlassSegmentedControl(
                 }
             },
     ) {
-        val density = LocalDensity.current
         val inner = GlassSegmentedTokens.innerPadding
         val thumbWidth = (maxWidth - inner * 2) / titles.size
         val thumbHeight = maxHeight - inner * 2
         val maxIndex = titles.lastIndex
         val visualPosition = if (direction == LayoutDirection.Rtl) maxIndex - position.value else position.value
-        val targetLeft = inner + thumbWidth * visualPosition
         val pressScale = if (dragging) GlassSegmentedTokens.pressScale else 1f
 
         Box(
