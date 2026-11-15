@@ -326,9 +326,9 @@ fun GlassSegmentedControl(
                     animationSpec = androidx.compose.animation.core.tween(if (noMotion) GlassSegmentedTokens.reduceMotionFadeMs else 120),
                     label = "segmentPressAlpha$index",
                 )
-                val selectionFraction = if (maxIndex == 0) 1f else (1f - abs(position.value - index)).coerceIn(0f, 1f)
+                // Labels animate only when selection changes, not on every drag/animation frame.
                 val color by animateColorAsState(
-                    targetValue = androidx.compose.ui.graphics.lerp(unselectedText, selectedText, if (noMotion) if (isSelected) 1f else 0f else selectionFraction),
+                    targetValue = if (isSelected) selectedText else unselectedText,
                     animationSpec = androidx.compose.animation.core.tween(if (noMotion) GlassSegmentedTokens.reduceMotionFadeMs else GlassSegmentedTokens.labelFadeMs),
                     label = "segmentLabelColor$index",
                 )
