@@ -147,18 +147,18 @@ fun GlassSegmentedControl(
     val interactionSources = remember(titles) { List(titles.size) { MutableInteractionSource() } }
     val pressedStates = interactionSources.map { it.collectIsPressedAsState().value }
     val anyPressed = pressedStates.any { it }
-    val pressScale by animateFloatAsState(
+    val pressScaleState = animateFloatAsState(
         targetValue = if (anyPressed || dragging) GlassSegmentedTokens.pressScale else 1f,
         animationSpec = androidx.compose.animation.core.tween(120),
         label = "glassSegmentPressScale",
     )
     var stretchDirection by remember { mutableFloatStateOf(1f) }
-    val stretchX by animateFloatAsState(
+    val stretchXState = animateFloatAsState(
         targetValue = if (!noMotion && (dragging || sliding)) GlassSegmentedTokens.stretchX else 1f,
         animationSpec = spring(dampingRatio = 0.62f, stiffness = 500f),
         label = "glassSegmentStretchX",
     )
-    val stretchY by animateFloatAsState(
+    val stretchYState = animateFloatAsState(
         targetValue = if (!noMotion && (dragging || sliding)) GlassSegmentedTokens.stretchY else 1f,
         animationSpec = spring(dampingRatio = 0.72f, stiffness = 560f),
         label = "glassSegmentStretchY",
@@ -208,8 +208,6 @@ fun GlassSegmentedControl(
         val thumbWidth = (maxWidth - inner * 2) / titles.size
         val thumbHeight = maxHeight - inner * 2
         val maxIndex = titles.lastIndex
-        val visualPosition = if (direction == LayoutDirection.Rtl) maxIndex - position.value else position.value
-
         Box(
             Modifier
                 .align(Alignment.CenterStart)
@@ -217,9 +215,12 @@ fun GlassSegmentedControl(
                 .width(thumbWidth)
                 .height(thumbHeight)
                 .graphicsLayer {
+                    // Read animation state inside the layer block: transforms update without
+                    // recomposing the track, labels or segment buttons on every animation frame.
+                    val visualPosition = if (direction == LayoutDirection.Rtl) maxIndex - position.value else position.value
                     translationX = (thumbWidth * visualPosition).toPx()
-                    scaleX = stretchX * pressScale
-                    scaleY = stretchY * pressScale
+                    scaleX = stretchXState.value * pressScaleState.value
+                    scaleY = stretchYState.value * pressScaleState.value
                     transformOrigin = androidx.compose.ui.graphics.TransformOrigin(
                         pivotFractionX = if (stretchDirection > 0f) 0f else 1f,
                         pivotFractionY = 0.5f,
@@ -259,7 +260,8 @@ fun GlassSegmentedControl(
                 var acceptedDrag = false
                 detectDragGestures(
                     onDragStart = { down ->
-                        val thumbCenter = (inner + thumbWidth * visualPosition + thumbWidth / 2).toPx()
+                        val logicalPosition = if (direction == LayoutDirection.Rtl) maxIndex - position.value else position.value
+                        val thumbCenter = (inner + thumbWidth * logicalPosition + thumbWidth / 2).toPx()
                         acceptedDrag = abs(down.x - thumbCenter) <= thumbWidth.toPx() * 0.8f
                         if (acceptedDrag) {
                             dragging = true
