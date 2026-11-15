@@ -7,9 +7,11 @@
 package com.nexamusic.music.ui.component
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -20,6 +22,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
@@ -28,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -36,14 +40,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalAccessibilityManager
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
@@ -55,8 +60,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.input.pointer.util.VelocityTracker
 import com.nexamusic.music.ui.theme.SfProFontFamily
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -125,7 +129,6 @@ fun GlassSegmentedControl(
     val selectedText = if (dark) GlassSegmentedTokens.Dark.selectedLabel else GlassSegmentedTokens.Light.selectedLabel
     val unselectedText = if (dark) GlassSegmentedTokens.Dark.unselectedLabel else GlassSegmentedTokens.Light.unselectedLabel
 
-    val haptics = LocalHapticFeedback.current
     val view = LocalView.current
     val direction = LocalLayoutDirection.current
     val accessibility = LocalAccessibilityManager.current
@@ -136,14 +139,28 @@ fun GlassSegmentedControl(
     val position = remember { Animatable(safeIndex.toFloat()) }
     var dragVelocity by remember { mutableFloatStateOf(0f) }
     var dragging by remember { mutableStateOf(false) }
+    var sliding by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    val density = LocalDensity.current
+    val fontScale = density.fontScale
+    val controlHeight = GlassSegmentedTokens.trackHeight * maxOf(1f, fontScale)
+    val labelSize = if (fontScale >= 1.3f) GlassSegmentedTokens.minLabelSize else GlassSegmentedTokens.baseLabelSize
+    val interactionSources = remember(titles) { List(titles.size) { MutableInteractionSource() } }
+    val pressedStates = interactionSources.map { it.collectIsPressedAsState().value }
+    val anyPressed = pressedStates.any { it }
+    val pressScale by animateFloatAsState(
+        targetValue = if (anyPressed || dragging) GlassSegmentedTokens.pressScale else 1f,
+        animationSpec = androidx.compose.animation.core.tween(120),
+        label = "glassSegmentPressScale",
+    )
     var stretchDirection by remember { mutableFloatStateOf(1f) }
     val stretchX by animateFloatAsState(
-        targetValue = if (dragging) GlassSegmentedTokens.stretchX else 1f,
+        targetValue = if (!noMotion && (dragging || sliding)) GlassSegmentedTokens.stretchX else 1f,
         animationSpec = spring(dampingRatio = 0.62f, stiffness = 500f),
         label = "glassSegmentStretchX",
     )
     val stretchY by animateFloatAsState(
-        targetValue = if (dragging) GlassSegmentedTokens.stretchY else 1f,
+        targetValue = if (!noMotion && (dragging || sliding)) GlassSegmentedTokens.stretchY else 1f,
         animationSpec = spring(dampingRatio = 0.72f, stiffness = 560f),
         label = "glassSegmentStretchY",
     )
@@ -152,6 +169,7 @@ fun GlassSegmentedControl(
         if (noMotion) {
             position.snapTo(safeIndex.toFloat())
         } else if (!dragging) {
+            sliding = true
             position.animateTo(
                 targetValue = safeIndex.toFloat(),
                 animationSpec = spring(
@@ -161,6 +179,7 @@ fun GlassSegmentedControl(
                 initialVelocity = dragVelocity,
             )
             dragVelocity = 0f
+            sliding = false
         }
     }
 
@@ -168,7 +187,7 @@ fun GlassSegmentedControl(
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = GlassSegmentedTokens.minTouchHeight)
-            .height(GlassSegmentedTokens.trackHeight)
+            .height(controlHeight)
             .clip(CircleShape)
             .background(trackColor)
             .border(1.dp, borderColor, CircleShape)
@@ -191,7 +210,6 @@ fun GlassSegmentedControl(
         val thumbHeight = maxHeight - inner * 2
         val maxIndex = titles.lastIndex
         val visualPosition = if (direction == LayoutDirection.Rtl) maxIndex - position.value else position.value
-        val pressScale = if (dragging) GlassSegmentedTokens.pressScale else 1f
 
         Box(
             Modifier
@@ -234,22 +252,29 @@ fun GlassSegmentedControl(
                         )
                     }
                 }
-                .pointerInput(thumbWidth, maxIndex, direction, noMotion) {
+                .pointerInput(thumbWidth, maxIndex, direction, noMotion, safeIndex) {
+                    val velocityTracker = VelocityTracker()
                     detectDragGestures(
-                        onDragStart = { dragging = true },
+                        onDragStart = { dragging = true; sliding = false },
                         onDragEnd = {
                             dragging = false
                             val logical = if (direction == LayoutDirection.Rtl) maxIndex - position.value else position.value
                             val target = logical.roundToInt().coerceIn(0, maxIndex)
-                            dragVelocity = 0f
+                            dragVelocity = (velocityTracker.calculateVelocity().x / thumbWidth.toPx() * if (direction == LayoutDirection.Rtl) -1f else 1f).coerceIn(-5f, 5f)
                             if (target != safeIndex) {
                                 onSelectionChange(target)
                                 view.performHapticFeedback(android.view.HapticFeedbackConstants.CLOCK_TICK)
+                            } else {
+                                scope.launch {
+                                    position.animateTo(safeIndex.toFloat(), spring(dampingRatio = GlassSegmentedTokens.springDamping, stiffness = GlassSegmentedTokens.springStiffness), initialVelocity = dragVelocity)
+                                    dragVelocity = 0f
+                                }
                             }
                         },
-                        onDragCancel = { dragging = false },
+                        onDragCancel = { dragging = false; scope.launch { position.animateTo(safeIndex.toFloat(), spring(dampingRatio = GlassSegmentedTokens.springDamping, stiffness = GlassSegmentedTokens.springStiffness)) } },
                     ) { change, dragAmount ->
                         change.consume()
+                        velocityTracker.addPosition(change.uptimeMillis, change.position)
                         val delta = dragAmount.x / thumbWidth.toPx() * if (direction == LayoutDirection.Rtl) -1f else 1f
                         stretchDirection = if (delta >= 0f) 1f else -1f
                         val raw = position.value + delta
@@ -265,8 +290,8 @@ fun GlassSegmentedControl(
 
         Row(Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
             titles.forEachIndexed { index, title ->
-                val interactions = remember(index) { MutableInteractionSource() }
-                val pressed by interactions.collectIsPressedAsState()
+                val interactions = interactionSources[index]
+                val pressed = pressedStates[index]
                 val isSelected = index == safeIndex
                 val labelAlpha by animateFloatAsState(
                     targetValue = if (pressed) GlassSegmentedTokens.labelPressAlpha else 1f,
@@ -274,7 +299,11 @@ fun GlassSegmentedControl(
                     label = "segmentPressAlpha$index",
                 )
                 val selectionFraction = if (maxIndex == 0) 1f else (1f - abs(position.value - index)).coerceIn(0f, 1f)
-                val color = androidx.compose.ui.graphics.lerp(unselectedText, selectedText, if (noMotion) if (isSelected) 1f else 0f else selectionFraction)
+                val color by animateColorAsState(
+                    targetValue = androidx.compose.ui.graphics.lerp(unselectedText, selectedText, if (noMotion) if (isSelected) 1f else 0f else selectionFraction),
+                    animationSpec = androidx.compose.animation.core.tween(GlassSegmentedTokens.labelFadeMs),
+                    label = "segmentLabelColor$index",
+                )
                 Box(
                     modifier = Modifier
                         .weight(1f)
@@ -283,7 +312,7 @@ fun GlassSegmentedControl(
                         .semantics {
                             role = Role.Tab
                             selected = isSelected
-                            contentDescription = "$title, ${if (isSelected) "selected" else ""}, ${index + 1} of ${titles.size}"
+                            contentDescription = if (isSelected) "$title, selected, ${index + 1} of ${titles.size}" else "$title, ${index + 1} of ${titles.size}"
                         }
                         .clickable(
                             interactionSource = interactions,
@@ -302,7 +331,7 @@ fun GlassSegmentedControl(
                         color = color.copy(alpha = labelAlpha),
                         fontFamily = SfProFontFamily,
                         fontWeight = GlassSegmentedTokens.labelWeight,
-                        fontSize = GlassSegmentedTokens.baseLabelSize,
+                        fontSize = labelSize,
                         maxLines = 1,
                         softWrap = false,
                         overflow = TextOverflow.Ellipsis,
