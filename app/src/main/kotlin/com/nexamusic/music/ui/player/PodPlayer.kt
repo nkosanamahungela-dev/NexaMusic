@@ -80,15 +80,15 @@ fun PodPlayer(
 
     // Poll playback position only while audio is advancing. Avoid a permanent 5 Hz
     // recomposition loop when paused; duration is refreshed only for a new item.
-    LaunchedEffect(connection, metadata?.id, playing) {
+    LaunchedEffect(connection, metadata?.id, playing, scrubbing) {
         duration = connection.player.duration.coerceAtLeast(0L)
         if (!scrubbing) position = connection.player.currentPosition.coerceAtLeast(0L)
-        while (playing) {
+        while (playing && !scrubbing) {
             delay(500L)
-            if (!scrubbing) {
-                val current = connection.player.currentPosition.coerceAtLeast(0L)
-                if (current != position) position = current
-            }
+            val currentDuration = connection.player.duration.coerceAtLeast(0L)
+            if (currentDuration != duration) duration = currentDuration
+            val current = connection.player.currentPosition.coerceAtLeast(0L)
+            if (current != position) position = current
         }
     }
 
