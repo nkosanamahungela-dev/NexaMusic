@@ -169,8 +169,8 @@ fun PlayerPhonePreview(
             ScaledScreen(screenWidth) {
                 PlayerScreen(spec, track, positionMs, isPlaying, upNext)
             }
-            if (frame) {
-                // Camera cut-out, so the device reads as a phone at a glance.
+            if (frame && spec.design != PlayerDesign.POD) {
+                // The other previews use an iPhone-style camera cut-out. Podium's device preview does not.
                 Box(
                     Modifier
                         .align(Alignment.TopCenter)
