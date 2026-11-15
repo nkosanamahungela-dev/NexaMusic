@@ -255,7 +255,66 @@ fun GlassSegmentedControl(
                 }
         )
 
-        Row(Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            Modifier.fillMaxSize().pointerInput(thumbWidth, maxIndex, direction, noMotion, safeIndex) {
+                val velocityTracker = VelocityTracker()
+                var acceptedDrag = false
+                detectDragGestures(
+                    onDragStart = { down ->
+                        val thumbCenter = (inner + thumbWidth * visualPosition + thumbWidth / 2).toPx()
+                        acceptedDrag = abs(down.x - thumbCenter) <= thumbWidth.toPx() * 0.8f
+                        if (acceptedDrag) {
+                            dragging = true
+                            sliding = false
+                        }
+                    },
+                    onDragEnd = {
+                        if (acceptedDrag) {
+                            dragging = false
+                            val logical = if (direction == LayoutDirection.Rtl) maxIndex - position.value else position.value
+                            val target = logical.roundToInt().coerceIn(0, maxIndex)
+                            dragVelocity = (velocityTracker.calculateVelocity().x / thumbWidth.toPx() * if (direction == LayoutDirection.Rtl) -1f else 1f).coerceIn(-5f, 5f)
+                            if (target != safeIndex) {
+                                onSelectionChange(target)
+                                view.performHapticFeedback(android.view.HapticFeedbackConstants.CLOCK_TICK)
+                            } else {
+                                scope.launch {
+                                    position.animateTo(
+                                        safeIndex.toFloat(),
+                                        spring(dampingRatio = GlassSegmentedTokens.springDamping, stiffness = GlassSegmentedTokens.springStiffness),
+                                        initialVelocity = dragVelocity,
+                                    )
+                                    dragVelocity = 0f
+                                }
+                            }
+                        }
+                    },
+                    onDragCancel = {
+                        if (acceptedDrag) {
+                            dragging = false
+                            scope.launch {
+                                position.animateTo(safeIndex.toFloat(), spring(dampingRatio = GlassSegmentedTokens.springDamping, stiffness = GlassSegmentedTokens.springStiffness))
+                            }
+                        }
+                    },
+                ) { change, dragAmount ->
+                    if (acceptedDrag) {
+                        change.consume()
+                        velocityTracker.addPosition(change.uptimeMillis, change.position)
+                        val delta = dragAmount.x / thumbWidth.toPx() * if (direction == LayoutDirection.Rtl) -1f else 1f
+                        stretchDirection = if (delta >= 0f) 1f else -1f
+                        val raw = position.value + delta
+                        val resisted = when {
+                            raw < 0f -> raw * 0.22f
+                            raw > maxIndex -> maxIndex + (raw - maxIndex) * 0.22f
+                            else -> raw
+                        }
+                        position.snapTo(resisted.coerceIn(-0.16f, maxIndex + 0.16f))
+                    }
+                }
+            },
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             titles.forEachIndexed { index, title ->
                 val interactions = interactionSources[index]
                 val pressed = pressedStates[index]
@@ -309,67 +368,6 @@ fun GlassSegmentedControl(
             }
         }
 
-        // Transparent gesture layer: taps still reach the real segment buttons below it.
-        Box(
-            Modifier
-                .fillMaxSize()
-                .pointerInput(thumbWidth, maxIndex, direction, noMotion, safeIndex, visualPosition) {
-                    val velocityTracker = VelocityTracker()
-                    var acceptedDrag = false
-                    detectDragGestures(
-                        onDragStart = { down ->
-                            val thumbCenter = (inner + thumbWidth * visualPosition + thumbWidth / 2).toPx()
-                            acceptedDrag = abs(down.x - thumbCenter) <= thumbWidth.toPx() * 0.8f
-                            if (acceptedDrag) {
-                                dragging = true
-                                sliding = false
-                            }
-                        },
-                        onDragEnd = {
-                            if (acceptedDrag) {
-                                dragging = false
-                                val logical = if (direction == LayoutDirection.Rtl) maxIndex - position.value else position.value
-                                val target = logical.roundToInt().coerceIn(0, maxIndex)
-                                dragVelocity = (velocityTracker.calculateVelocity().x / thumbWidth.toPx() * if (direction == LayoutDirection.Rtl) -1f else 1f).coerceIn(-5f, 5f)
-                                if (target != safeIndex) {
-                                    onSelectionChange(target)
-                                    view.performHapticFeedback(android.view.HapticFeedbackConstants.CLOCK_TICK)
-                                } else {
-                                    scope.launch {
-                                        position.animateTo(
-                                            safeIndex.toFloat(),
-                                            spring(dampingRatio = GlassSegmentedTokens.springDamping, stiffness = GlassSegmentedTokens.springStiffness),
-                                            initialVelocity = dragVelocity,
-                                        )
-                                        dragVelocity = 0f
-                                    }
-                                }
-                            }
-                        },
-                        onDragCancel = {
-                            if (acceptedDrag) {
-                                dragging = false
-                                scope.launch {
-                                    position.animateTo(safeIndex.toFloat(), spring(dampingRatio = GlassSegmentedTokens.springDamping, stiffness = GlassSegmentedTokens.springStiffness))
-                                }
-                            }
-                        },
-                    ) { change, dragAmount ->
-                        if (acceptedDrag) {
-                            change.consume()
-                            velocityTracker.addPosition(change.uptimeMillis, change.position)
-                            val delta = dragAmount.x / thumbWidth.toPx() * if (direction == LayoutDirection.Rtl) -1f else 1f
-                            stretchDirection = if (delta >= 0f) 1f else -1f
-                            val raw = position.value + delta
-                            val resisted = when {
-                                raw < 0f -> raw * 0.22f
-                                raw > maxIndex -> maxIndex + (raw - maxIndex) * 0.22f
-                                else -> raw
-                            }
-                            position.snapTo(resisted.coerceIn(-0.16f, maxIndex + 0.16f))
-                        }
-                    }
-                },
-        )
+
     }
 }
