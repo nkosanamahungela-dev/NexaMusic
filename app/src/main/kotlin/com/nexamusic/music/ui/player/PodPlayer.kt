@@ -182,14 +182,35 @@ private fun PodPlayerDesign(
         }
     }
     val deckShape = remember { RoundedCornerShape(30.dp) }
+    // Cache decorative gradients; playback progress updates must not recreate them.
+    val pageBrush = remember {
+        Brush.verticalGradient(listOf(Color(0xFF11151B), Color(0xFF090B0F), Color(0xFF050609)))
+    }
+    val deckBrush = remember {
+        Brush.linearGradient(
+            listOf(Color(0xB52B343D), Color(0xA51B2932), Color(0xB514171D)),
+            start = Offset.Zero,
+            end = Offset(900f, 1200f),
+        )
+    }
+    val deckBorderBrush = remember {
+        Brush.verticalGradient(listOf(Color.White.copy(.28f), Color.White.copy(.04f)))
+    }
+    val trayBrush = remember {
+        Brush.verticalGradient(listOf(Color.White.copy(.12f), Color.White.copy(.035f)))
+    }
     val wheelBrush = remember {
         Brush.verticalGradient(listOf(Color(0xFF252D36), Color(0xFF080A0E)))
     }
+    val wheelCenterBrush = remember {
+        Brush.verticalGradient(listOf(Color(0xFF28313B), Color(0xFF07090D)))
+    }
+    val wheelOrbBrush = remember {
+        Brush.verticalGradient(listOf(Color(0xFF303B46), Color(0xFF090C10)))
+    }
 
     BoxWithConstraints(
-        modifier.fillMaxSize().background(
-            Brush.verticalGradient(listOf(Color(0xFF11151B), Color(0xFF090B0F), Color(0xFF050609)))
-        ),
+        modifier.fillMaxSize().background(pageBrush),
     ) {
         val compact = maxHeight < 760.dp
         Column(
@@ -231,13 +252,9 @@ private fun PodPlayerDesign(
                     .shadow(22.dp, RoundedCornerShape(30.dp))
                     .clip(RoundedCornerShape(30.dp))
                     .background(
-                        Brush.linearGradient(
-                            listOf(Color(0xB52B343D), Color(0xA51B2932), Color(0xB514171D)),
-                            start = Offset.Zero,
-                            end = Offset(900f, 1200f),
-                        )
+                        deckBrush
                     )
-                    .border(1.dp, Brush.verticalGradient(listOf(Color.White.copy(.28f), Color.White.copy(.04f))), deckShape)
+                    .border(1.dp, deckBorderBrush, deckShape)
                     .padding(14.dp),
             ) {
                 Row(
@@ -315,7 +332,7 @@ private fun PodPlayerDesign(
                 Row(
                     Modifier.fillMaxWidth().padding(top = 12.dp).height(48.dp)
                         .clip(RoundedCornerShape(18.dp))
-                        .background(Brush.verticalGradient(listOf(Color.White.copy(.12f), Color.White.copy(.035f))))
+                        .background(trayBrush)
                         .border(1.dp, Color.White.copy(.24f), RoundedCornerShape(18.dp))
                         .padding(horizontal = 10.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -367,7 +384,7 @@ private fun PodPlayerDesign(
                     }
                     Box(
                         Modifier.size(88.dp).clip(CircleShape)
-                            .background(Brush.verticalGradient(listOf(Color(0xFF28313B), Color(0xFF07090D))))
+                            .background(wheelCenterBrush)
                             .border(1.dp, Color.White.copy(.24f), CircleShape),
                         contentAlignment = Alignment.Center,
                     ) {
@@ -379,7 +396,7 @@ private fun PodPlayerDesign(
                 }
                 Box(
                     Modifier.align(Alignment.CenterEnd).padding(end = 4.dp, top = 4.dp).size(38.dp)
-                        .clip(CircleShape).background(Brush.verticalGradient(listOf(Color(0xFF303B46), Color(0xFF090C10))))
+                        .clip(CircleShape).background(wheelOrbBrush)
                         .border(1.dp, Color.White.copy(.2f), CircleShape),
                 )
             }
@@ -403,16 +420,17 @@ private fun PodGlassButton(
     description: String,
     primary: Boolean = false,
 ) {
+    val buttonBrush = remember(primary) {
+        Brush.verticalGradient(
+            if (primary) listOf(Color(0xFF25323D), Color(0xFF0B1118))
+            else listOf(Color(0xFF34414B).copy(.85f), Color(0xFF10151C).copy(.9f)),
+        )
+    }
     Box(
         Modifier.size(width = if (primary) 82.dp else 76.dp, height = 58.dp)
             .shadow(4.dp, RoundedCornerShape(30.dp))
             .clip(RoundedCornerShape(30.dp))
-            .background(
-                Brush.verticalGradient(
-                    if (primary) listOf(Color(0xFF25323D), Color(0xFF0B1118))
-                    else listOf(Color(0xFF34414B).copy(.85f), Color(0xFF10151C).copy(.9f)),
-                )
-            )
+.background(buttonBrush)
             .border(1.dp, Color.White.copy(.22f), RoundedCornerShape(30.dp)),
         contentAlignment = Alignment.Center,
     ) {
