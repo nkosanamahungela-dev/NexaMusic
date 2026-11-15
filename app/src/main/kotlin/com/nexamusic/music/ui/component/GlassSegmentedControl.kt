@@ -277,11 +277,15 @@ fun GlassSegmentedControl(
                                 view.performHapticFeedback(android.view.HapticFeedbackConstants.CLOCK_TICK)
                             } else {
                                 scope.launch {
-                                    position.animateTo(
-                                        safeIndex.toFloat(),
-                                        spring(dampingRatio = GlassSegmentedTokens.springDamping, stiffness = GlassSegmentedTokens.springStiffness),
-                                        initialVelocity = dragVelocity,
-                                    )
+                                    if (noMotion) {
+                                        position.snapTo(safeIndex.toFloat())
+                                    } else {
+                                        position.animateTo(
+                                            safeIndex.toFloat(),
+                                            spring(dampingRatio = GlassSegmentedTokens.springDamping, stiffness = GlassSegmentedTokens.springStiffness),
+                                            initialVelocity = dragVelocity,
+                                        )
+                                    }
                                     dragVelocity = 0f
                                 }
                             }
@@ -291,7 +295,7 @@ fun GlassSegmentedControl(
                         if (acceptedDrag) {
                             dragging = false
                             scope.launch {
-                                position.animateTo(safeIndex.toFloat(), spring(dampingRatio = GlassSegmentedTokens.springDamping, stiffness = GlassSegmentedTokens.springStiffness))
+                                if (noMotion) position.snapTo(safeIndex.toFloat()) else position.animateTo(safeIndex.toFloat(), spring(dampingRatio = GlassSegmentedTokens.springDamping, stiffness = GlassSegmentedTokens.springStiffness))
                             }
                         }
                     },
@@ -353,6 +357,7 @@ fun GlassSegmentedControl(
                     Text(
                         text = title,
                         color = color.copy(alpha = labelAlpha),
+                        // DM Sans is not bundled in res/font; use the app's bundled SF Pro offline font.
                         fontFamily = SfProFontFamily,
                         fontWeight = GlassSegmentedTokens.labelWeight,
                         fontSize = labelSize,
