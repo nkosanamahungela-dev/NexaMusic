@@ -213,6 +213,10 @@ private fun PlayerScreen(
     isPlaying: Boolean,
     upNext: String?,
 ) {
+    if (spec.design == PlayerDesign.POD) {
+        PodPlayerPreview(track = track, positionMs = positionMs(), isPlaying = isPlaying, modifier = Modifier.fillMaxSize())
+        return
+    }
     val v2 = spec.design == PlayerDesign.APPLE_MUSIC_V2
     val hero = spec.design == PlayerDesign.APPLE_MUSIC || (v2 && spec.look == PlayerLook.HERO)
     // The V2 player paints its own artwork-edge gradient for these two, exactly as Player.kt does.
