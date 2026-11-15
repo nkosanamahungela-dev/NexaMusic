@@ -253,7 +253,6 @@ fun GlassSegmentedControl(
                         )
                     }
                 }
-,
         )
 
         Row(Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
@@ -371,6 +370,5 @@ fun GlassSegmentedControl(
                     }
                 },
         )
-        }
     }
 }
