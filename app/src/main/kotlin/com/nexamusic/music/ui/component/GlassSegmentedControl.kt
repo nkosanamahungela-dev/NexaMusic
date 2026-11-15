@@ -307,6 +307,7 @@ fun GlassSegmentedControl(
                     )
                 }
             }
+        }
 
         // Transparent gesture layer: taps still reach the real segment buttons below it.
         Box(
