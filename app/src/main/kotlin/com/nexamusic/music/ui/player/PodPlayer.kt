@@ -6,7 +6,6 @@
  */
 package com.nexamusic.music.ui.player
 
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -42,6 +41,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -49,9 +49,12 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.size.Size as CoilSize
 import com.nexamusic.music.LocalPlayerConnection
 import com.nexamusic.music.ui.component.BottomSheetState
 import kotlinx.coroutines.delay
+import androidx.media3.common.Player
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -75,13 +78,29 @@ fun PodPlayer(
     var volume by remember { mutableFloatStateOf(connection.player.volume.coerceIn(0f, 1f)) }
     var scrubbing by remember { mutableStateOf(false) }
 
-    LaunchedEffect(connection, metadata?.id) {
-        while (true) {
-            if (!scrubbing) position = connection.player.currentPosition.coerceAtLeast(0L)
-            duration = connection.player.duration.coerceAtLeast(0L)
-            volume = connection.player.volume.coerceIn(0f, 1f)
-            delay(200L)
+    // Poll playback position only while audio is advancing. Avoid a permanent 5 Hz
+    // recomposition loop when paused; duration is refreshed only for a new item.
+    LaunchedEffect(connection, metadata?.id, playing) {
+        duration = connection.player.duration.coerceAtLeast(0L)
+        if (!scrubbing) position = connection.player.currentPosition.coerceAtLeast(0L)
+        while (playing) {
+            delay(500L)
+            if (!scrubbing) {
+                val current = connection.player.currentPosition.coerceAtLeast(0L)
+                if (current != position) position = current
+            }
         }
+    }
+
+    // Keep hardware/software volume changes in sync without polling every 200 ms.
+    DisposableEffect(connection.player) {
+        val listener = object : Player.Listener {
+            override fun onVolumeChanged(volumeValue: Float) {
+                volume = volumeValue.coerceIn(0f, 1f)
+            }
+        }
+        connection.player.addListener(listener)
+        onDispose { connection.player.removeListener(listener) }
     }
 
     PodPlayerDesign(
@@ -151,8 +170,21 @@ private fun PodPlayerDesign(
     preview: Boolean = false,
 ) {
     val progress = if (durationMs > 0L) (positionMs.toFloat() / durationMs).coerceIn(0f, 1f) else 0f
-    val animatedVolume by animateFloatAsState(volume.coerceIn(0f, 1f), spring(dampingRatio = 0.78f, stiffness = 360f), label = "podVolume")
     var wheelDrag by remember { mutableFloatStateOf(0f) }
+    val latestVolume = rememberUpdatedState(volume)
+    val context = LocalContext.current
+    val artworkRequest = remember(artwork) {
+        artwork?.let {
+            ImageRequest.Builder(context)
+                .data(it)
+                .size(CoilSize(512, 512))
+                .build()
+        }
+    }
+    val deckShape = remember { RoundedCornerShape(30.dp) }
+    val wheelBrush = remember {
+        Brush.verticalGradient(listOf(Color(0xFF252D36), Color(0xFF080A0E)))
+    }
 
     BoxWithConstraints(
         modifier.fillMaxSize().background(
@@ -205,7 +237,7 @@ private fun PodPlayerDesign(
                             end = Offset(900f, 1200f),
                         )
                     )
-                    .border(1.dp, Brush.verticalGradient(listOf(Color.White.copy(.28f), Color.White.copy(.04f))), RoundedCornerShape(30.dp))
+                    .border(1.dp, Brush.verticalGradient(listOf(Color.White.copy(.28f), Color.White.copy(.04f))), deckShape)
                     .padding(14.dp),
             ) {
                 Row(
@@ -235,7 +267,7 @@ private fun PodPlayerDesign(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     AsyncImage(
-                        model = artwork,
+                        model = artworkRequest,
                         contentDescription = "Album artwork",
                         contentScale = androidx.compose.ui.layout.ContentScale.Crop,
                         modifier = Modifier.weight(1.45f).aspectRatio(1f).clip(RoundedCornerShape(18.dp)).background(PodGlass),
@@ -304,17 +336,17 @@ private fun PodPlayerDesign(
             ) {
                 Box(
                     Modifier.size(if (compact) 206.dp else 228.dp)
-                        .shadow(18.dp, CircleShape)
+                        .shadow(8.dp, CircleShape)
                         .clip(CircleShape)
-                        .background(Brush.verticalGradient(listOf(Color(0xFF252D36), Color(0xFF080A0E))))
+                        .background(wheelBrush)
                         .border(1.dp, Color.White.copy(.22f), CircleShape)
-                        .pointerInput(volume) {
+                        .pointerInput(Unit) {
                             detectDragGestures { change, drag ->
                                 change.consume()
                                 wheelDrag += drag.x - drag.y
                                 if (abs(wheelDrag) >= 8f) {
                                     val step = wheelDrag / 8f
-                                    onVolume((volume + step * 0.006f).coerceIn(0f, 1f))
+                                    onVolume((latestVolume.value + step * 0.006f).coerceIn(0f, 1f))
                                     wheelDrag %= 8f
                                 }
                             }
@@ -373,7 +405,7 @@ private fun PodGlassButton(
 ) {
     Box(
         Modifier.size(width = if (primary) 82.dp else 76.dp, height = 58.dp)
-            .shadow(8.dp, RoundedCornerShape(30.dp))
+            .shadow(4.dp, RoundedCornerShape(30.dp))
             .clip(RoundedCornerShape(30.dp))
             .background(
                 Brush.verticalGradient(
