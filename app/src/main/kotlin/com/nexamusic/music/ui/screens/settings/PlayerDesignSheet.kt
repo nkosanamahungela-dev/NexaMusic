@@ -248,7 +248,7 @@ fun ColumnScope.PlayerDesignSheetContent(onMoreOptions: () -> Unit) {
                         }
                     }
                 }
-                val classic = shown == PlayerDesign.CARD || shown == PlayerDesign.VINYL || shown == PlayerDesign.CLOVER || shown == PlayerDesign.POD
+                val classic = shown == PlayerDesign.CARD || shown == PlayerDesign.VINYL || shown == PlayerDesign.CLOVER
                 // Classic designs and V2's square layout take a background; full bleed and Apple Music paint their own.
                 if (classic || (shown == PlayerDesign.APPLE_MUSIC_V2 && look == PlayerLook.SQUARED)) {
                     OptionSection("Background") {
@@ -291,17 +291,28 @@ fun ColumnScope.PlayerDesignSheetContent(onMoreOptions: () -> Unit) {
                         }
                     }
                 }
-                OptionSection(null) {
-                    val heroLayout = shown == PlayerDesign.APPLE_MUSIC || (shown == PlayerDesign.APPLE_MUSIC_V2 && look == PlayerLook.HERO)
-                    if (!heroLayout) {
-                        SwitchRow("Artwork shadow", shadow, setShadow)
-                        Divider()
+                if (shown == PlayerDesign.POD) {
+                    OptionSection(null) {
+                        Text(
+                            "Podium glass deck and rotary controller. The original Pod layout is kept intact.",
+                            style = IosTheme.typography.footnote,
+                            color = IosTheme.colors.secondaryLabel,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+                        )
                     }
-                    SwitchRow("Show next track", showUpNext, setShowUpNext)
-                    Divider()
-                    SwitchRow("Volume bar", !hideVolumeBar) { setHideVolumeBar(!it) }
-                    Divider()
-                    LinkRow("More player options", onMoreOptions)
+                } else {
+                    OptionSection(null) {
+                        val heroLayout = shown == PlayerDesign.APPLE_MUSIC || (shown == PlayerDesign.APPLE_MUSIC_V2 && look == PlayerLook.HERO)
+                        if (!heroLayout) {
+                            SwitchRow("Artwork shadow", shadow, setShadow)
+                            Divider()
+                        }
+                        SwitchRow("Show next track", showUpNext, setShowUpNext)
+                        Divider()
+                        SwitchRow("Volume bar", !hideVolumeBar) { setHideVolumeBar(!it) }
+                        Divider()
+                        LinkRow("More player options", onMoreOptions)
+                    }
                 }
             }
         }
