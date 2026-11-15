@@ -45,7 +45,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.platform.LocalAccessibilityManager
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.LocalDensity
@@ -132,8 +131,7 @@ fun GlassSegmentedControl(
 
     val view = LocalView.current
     val direction = LocalLayoutDirection.current
-    val accessibility = LocalAccessibilityManager.current
-    val systemReduceMotion = accessibility?.animationsEnabled == false
+    val systemReduceMotion = !android.animation.ValueAnimator.areAnimatorsEnabled()
     val noMotion = reduceMotion || systemReduceMotion
 
     val safeIndex = selectedIndex.coerceIn(0, titles.lastIndex)
