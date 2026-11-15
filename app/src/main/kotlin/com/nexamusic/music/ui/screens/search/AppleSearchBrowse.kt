@@ -43,6 +43,7 @@ import coil3.compose.AsyncImage
 import com.nexamusic.music.constants.SearchSource
 import com.nexamusic.music.ui.ios.compat.Text
 import com.nexamusic.music.ui.ios.foundation.IosTheme
+import com.nexamusic.music.ui.component.GlassSegmentedControl
 import com.nexamusic.music.utils.openSearchResults
 import com.nexamusic.music.ui.utils.youtubeBrowseRoute
 import com.music.innertube.YouTube
@@ -160,7 +161,7 @@ fun AppleSearchBrowse(
         horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item(key = "header", span = { GridItemSpan(maxLineSpan) }) {
-            Column { header(); ScopeSwitch(scope, onScopeChange, t) }
+            Column { header(); ScopeSwitch(scope, onScopeChange) }
         }
         if (recentSearches.isNotEmpty()) {
             item(key = "recent-title", span = { GridItemSpan(maxLineSpan) }) { SectionTitle("Recent searches", "Clear", t, onClearRecent) }
@@ -246,31 +247,18 @@ fun AppleSearchBrowse(
 }
 
 @Composable
-private fun ScopeSwitch(scope: SearchSource, onSelect: (SearchSource) -> Unit, t: SearchDesignTokens.Theme) {
-    Row(Modifier.fillMaxWidth().height(44.dp).clip(CircleShape).background(t.surface)
-        .border(1.dp, t.border, CircleShape).padding(3.dp), verticalAlignment = Alignment.CenterVertically) {
-        listOf(SearchSource.ONLINE to "YouTube Music", SearchSource.LOCAL to "Your Library").forEach { (value, label) ->
-            val selected = scope == value
-            val selectionColor by animateColorAsState(
-                targetValue = if (selected) t.selectedScope else Color.Transparent,
-                animationSpec = tween(180),
-                label = "searchScopeFill",
-            )
-            val labelColor by animateColorAsState(
-                targetValue = if (selected) t.selectedScopeText else t.secondary,
-                animationSpec = tween(180),
-                label = "searchScopeText",
-            )
-            val interactionSource = remember { MutableInteractionSource() }
-            Box(Modifier.weight(1f).fillMaxHeight().clip(CircleShape)
-                .background(selectionColor)
-                .clickable(interactionSource = interactionSource, indication = null) { onSelect(value) },
-                contentAlignment = Alignment.Center) {
-                Text(label, color = labelColor, fontSize = 14.sp,
-                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium, maxLines = 1)
-            }
-        }
-    }
+private fun ScopeSwitch(scope: SearchSource, onSelect: (SearchSource) -> Unit) {
+    // This is the switch shown on the main Search browse page. Keep selection ownership
+    // in NavSearchState and share the same lightweight glass control used by search results.
+    GlassSegmentedControl(
+        titles = listOf("YouTube Music", "Your Library"),
+        selectedIndex = if (scope == SearchSource.ONLINE) 0 else 1,
+        onSelectionChange = { index ->
+            onSelect(if (index == 0) SearchSource.ONLINE else SearchSource.LOCAL)
+        },
+        modifier = Modifier.fillMaxWidth(),
+        reduceMotion = !android.animation.ValueAnimator.areAnimatorsEnabled(),
+    )
 }
 
 @Composable
