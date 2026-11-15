@@ -7,7 +7,7 @@
 package com.nexamusic.music.ui.component
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.animateColorAsState
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
@@ -315,7 +315,8 @@ fun GlassSegmentedControl(
                             raw > maxIndex -> maxIndex + (raw - maxIndex) * 0.22f
                             else -> raw
                         }
-                        position.snapTo(resisted.coerceIn(-0.16f, maxIndex + 0.16f))
+                        // Animatable.snapTo is suspend; dispatch through the remembered scope.
+                        scope.launch { position.snapTo(resisted.coerceIn(-0.16f, maxIndex + 0.16f)) }
                     }
                 }
             },
