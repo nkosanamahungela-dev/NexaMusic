@@ -136,7 +136,7 @@ fun PlayerSettings(
             title = "Player style",
             current = playerStyle,
             values = PlayerStyle.entries,
-            valueText = { if (it == PlayerStyle.POD) "Pod" else "Default" }
+            valueText = { if (it == PlayerStyle.POD) "Pod (BETA)" else "Default" }
         )
     }
 
@@ -173,7 +173,7 @@ fun PlayerSettings(
                         IosSettingsItem(
                             icon = painterResource(R.drawable.graphic_eq),
                             title = { Text("Player style") },
-                            description = { Text(if (playerStyle == PlayerStyle.POD) "Pod" else "Default") },
+                            description = { Text(if (playerStyle == PlayerStyle.POD) "Pod (BETA)" else "Default") },
                             onClick = { showPlayerStyleDialog = true }
                         )
                     )
