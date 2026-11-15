@@ -30,6 +30,16 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.core.tween
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.ui.platform.LocalAccessibilityManager
+import com.nexamusic.music.ui.component.GlassSegmentedControl
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
@@ -304,28 +314,48 @@ fun SearchScreen(
                         source = navSearch.searchSource,
                         onSelect = { if (it != navSearch.searchSource) navSearch.onToggleSource() },
                         backdrop = searchBackdrop,
-                        modifier = Modifier.padding(start = sideInset + 16.dp, end = 16.dp),
+                        modifier = Modifier.padding(start = sideInset + 20.dp, end = 20.dp),
                     )
                 }
+                val searchStateHolder = rememberSaveableStateHolder()
+                val reduceMotion = LocalAccessibilityManager.current?.animationsEnabled == false
                 Box(Modifier.weight(1f).background(pageColor)
                     .layerBackdrop(searchBackdrop)) {
-                    when (navSearch.searchSource) {
-                        SearchSource.LOCAL -> LocalSearchScreen(
-                            query = navSearch.query.text,
-                            navController = navController,
-                            onDismiss = { },
-                            pureBlack = pureBlack
-                        )
-                        SearchSource.ONLINE -> OnlineSearchScreen(
-                            query = navSearch.query.text,
-                            onQueryChange = navSearch.onQueryChange,
-                            navController = navController,
-                            onSearch = { onSearchFromSuggestion(it) },
-                            onDismiss = { },
-                            pureBlack = pureBlack,
-                            contentColor = colors.label,
-                            referenceHistory = true,
-                        )
+                    AnimatedContent(
+                        targetState = navSearch.searchSource,
+                        contentKey = { it },
+                        label = "searchSourceContent",
+                        transitionSpec = {
+                            if (reduceMotion) {
+                                fadeIn(tween(100)) togetherWith fadeOut(tween(100))
+                            } else {
+                                val move = if (targetState == SearchSource.LOCAL) 1 else -1
+                                val rtlMove = if (LocalLayoutDirection.current == androidx.compose.ui.unit.LayoutDirection.Rtl) -move else move
+                                (fadeIn(tween(180)) + slideInHorizontally(tween(180)) { -rtlMove * 12.dp.roundToPx() }) togetherWith
+                                    (fadeOut(tween(120)) + slideOutHorizontally(tween(120)) { rtlMove * 12.dp.roundToPx() })
+                            }
+                        },
+                    ) { source ->
+                        searchStateHolder.SaveableStateProvider(source) {
+                            when (source) {
+                                SearchSource.LOCAL -> LocalSearchScreen(
+                                    query = navSearch.query.text,
+                                    navController = navController,
+                                    onDismiss = { },
+                                    pureBlack = pureBlack
+                                )
+                                SearchSource.ONLINE -> OnlineSearchScreen(
+                                    query = navSearch.query.text,
+                                    onQueryChange = navSearch.onQueryChange,
+                                    navController = navController,
+                                    onSearch = { onSearchFromSuggestion(it) },
+                                    onDismiss = { },
+                                    pureBlack = pureBlack,
+                                    contentColor = colors.label,
+                                    referenceHistory = true,
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -550,8 +580,7 @@ private fun AppleSearchHeader(
 }
 
 /**
- * Apple's segmented control under the field while searching: "YouTube Music" (Apple
- * Music) and "Your Library" — the catalogue, or what is on this device and saved here.
+ * Search source selector. Selection and persistence remain owned by NavSearchState.
  */
 @Composable
 private fun SourceSwitch(
@@ -560,44 +589,16 @@ private fun SourceSwitch(
     backdrop: com.nexamusic.music.ui.component.backdrop.Backdrop,
     modifier: Modifier = Modifier,
 ) {
-    val colors = com.nexamusic.music.ui.ios.foundation.IosTheme.colors
-    val tokens = if (colors.isDark) SearchDesignTokens.dark else SearchDesignTokens.light
-    val thumb = tokens.selectedScope
-    androidx.compose.foundation.layout.BoxWithConstraints(
-        modifier = modifier.fillMaxWidth().height(44.dp)
-            .clip(CircleShape).background(tokens.surface)
-            .border(1.dp, tokens.border, CircleShape),
-    ) {
-        val thumbWidth = (maxWidth - 8.dp) / 2
-        val selectionOffset = animateDpAsState(
-            if (source == SearchSource.ONLINE) 4.dp else maxWidth - thumbWidth - 4.dp,
-            animationSpec = androidx.compose.animation.core.tween(180),
-            label = "searchSourceSelection",
-        )
-        Box(Modifier.align(Alignment.CenterStart).padding(horizontal = 4.dp)
-            .width(thumbWidth).height(36.dp)
-            .graphicsLayer { translationX = selectionOffset.value.toPx() - 4.dp.toPx() }
-            .clip(CircleShape).background(thumb))
-        Row(Modifier.fillMaxSize().padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            listOf(
-                SearchSource.ONLINE to stringResource(R.string.apple_search_catalog),
-                SearchSource.LOCAL to stringResource(R.string.apple_search_library),
-            ).forEach { (value, label) ->
-                val selected = value == source
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.weight(1f).height(36.dp)
-                        .iosRowPress(onClick = { onSelect(value) })
-                        .semantics { this.selected = selected; role = androidx.compose.ui.semantics.Role.Tab },
-                ) {
-                    Text(
-                        text = label,
-                        style = com.nexamusic.music.ui.screens.library.apple.SfStyle(14.sp, 18.sp, FontWeight.SemiBold, (-0.1).sp),
-                        color = if (selected) tokens.selectedScopeText else tokens.secondary,
-                        maxLines = 1,
-                    )
-                }
-            }
-        }
-    }
+    GlassSegmentedControl(
+        titles = listOf(
+            stringResource(R.string.apple_search_catalog),
+            stringResource(R.string.apple_search_library),
+        ),
+        selectedIndex = if (source == SearchSource.ONLINE) 0 else 1,
+        onSelectionChange = { index ->
+            onSelect(if (index == 0) SearchSource.ONLINE else SearchSource.LOCAL)
+        },
+        modifier = modifier,
+        reduceMotion = LocalAccessibilityManager.current?.animationsEnabled == false,
+    )
 }
