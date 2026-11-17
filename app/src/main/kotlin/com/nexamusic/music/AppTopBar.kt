@@ -102,23 +102,17 @@ fun AppTopBar(
             Box(modifier = Modifier.fillMaxWidth()) {
                 // Explore must never sample album artwork into its title/status-bar strip.
                 // Keep the route-specific chrome on the current page colour instead.
+                // All tab routes share the same progressive page-colour fade.
+                // Never paint a fixed surface strip behind the status bar/title.
                 val artworkSafeRoute = effectiveRoute == Screens.Explore.route || effectiveRoute == Screens.Radio.route
-                if (artworkSafeRoute) {
-                    Box(
-                        Modifier
-                            .fillMaxWidth()
-                            .height(statusBarTop + 72.dp)
-                            .background(AppTheme.colorScheme.background),
-                    )
-                } else {
-                    // Keep the existing Liquid Glass / haze treatment unchanged on other routes.
-                    TopFadeBlur(
-                        hazeState = hazeState,
-                        pageColor = rememberAppBackgroundTint(AppTheme.colorScheme.background),
-                        backdrop = backdrop,
-                        startFade = if (showRail) startInset else 0.dp,
-                    )
-                }
+                TopFadeBlur(
+                    hazeState = hazeState,
+                    pageColor = AppTheme.colorScheme.background,
+                    scrimColor = AppTheme.colorScheme.background,
+                    scrimOpacity = SmoothHeaderTokens.TintPeakOpacity,
+                    backdrop = backdrop,
+                    startFade = if (showRail) startInset else 0.dp,
+                )
                 // Explore's title remains theme-neutral and cannot inherit cover-derived tint.
                 val topBarAmbient = LocalAmbientBackgroundColor.current.value
                 val topBarTitleColor = if (!artworkSafeRoute && topBarAmbient.isSpecified && !topBarAmbient.isHueless()) {
