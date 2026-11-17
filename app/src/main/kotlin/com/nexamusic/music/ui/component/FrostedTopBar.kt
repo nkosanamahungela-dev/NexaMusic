@@ -8,8 +8,6 @@ package com.nexamusic.music.ui.component
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -28,7 +26,6 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Person
-import com.nexamusic.music.ui.ios.compat.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
@@ -51,11 +48,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.nexamusic.music.constants.ReduceDynamicBlurKey
 import com.nexamusic.music.ui.ios.compat.AppTheme
 import com.nexamusic.music.ui.ios.compat.Icon
 import com.nexamusic.music.ui.ios.compat.Text
-import com.nexamusic.music.utils.rememberPreference
 
 /**
  * The bar's own height, above whatever inset it is sitting under.
@@ -120,22 +115,7 @@ fun FrostedTopBar(
     pullFraction: () -> Float = { 0f },
     actions: @Composable () -> Unit = {},
 ) {
-    val reduceDynamicBlur by rememberPreference(ReduceDynamicBlurKey, false)
-    // Boolean derived from progress: derivedStateOf only invalidates when the
-    // threshold flips, not on every scroll pixel.
-    val showDivider by remember(titleAlpha, titleAlphaProvider) {
-        derivedStateOf { (titleAlphaProvider?.invoke() ?: titleAlpha) > 0.99f }
-    }
-    // Only the solid bar wants a hairline under it. A faded one has no edge for
-    // the line to mark, and drawing it there would be inventing the very seam
-    // the fade exists to remove.
-    val dividerColor by animateColorAsState(
-        targetValue = AppTheme.colorScheme.outline.copy(
-            alpha = if (showDivider && reduceDynamicBlur) 0.6f else 0f,
-        ),
-        animationSpec = tween(220),
-        label = "topBarDivider",
-    )
+
 
     // In tab view the side bar floats over the left edge; the back button starts to its right.
     val sideInset = com.nexamusic.music.LocalPlayerAwareWindowInsets.current.asPaddingValues()
@@ -150,14 +130,7 @@ fun FrostedTopBar(
     }
     val resolvedIconColor = com.nexamusic.music.ui.theme.GlassTintTokens.glassContentColor(isDark = isDark, activeTint = activeTint, isTitle = false)
 
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .then(
-                if (reduceDynamicBlur) Modifier.background(com.nexamusic.music.ui.theme.GlassTintTokens.baseSurfaceColor(isDark))
-                else Modifier,
-            ),
-    ) {
+    Column(modifier = modifier.fillMaxWidth()) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -223,7 +196,6 @@ fun FrostedTopBar(
         // The divider and the loader line share the bar's bottom edge; the box
         // only grows to the line's height while a refresh is actually showing.
         Box(Modifier.fillMaxWidth()) {
-            HorizontalDivider(thickness = 0.5.dp, color = dividerColor)
             RefreshLine(
                 refreshing = refreshing,
                 pullFraction = pullFraction,
