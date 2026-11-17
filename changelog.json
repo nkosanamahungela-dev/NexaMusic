@@ -19,7 +19,9 @@
         "Redesigned Radio station cards so artwork stays unobstructed, station names and first tracks sit below covers, and the on-air station has a dedicated hero card.",
         "Made the red ON AIR hero appear only while a radio station is actively playing; it stays hidden when playback is paused, stopped, or playing unrelated content.",
         "Redesigned Explore featured albums, release shelves, and mood tiles with clean cover-first layouts and a stable, non-repeating flat-colour palette.",
-        "Removed artwork-derived blur and tint from the Radio and Explore top chrome so titles and status-bar areas stay readable."
+        "Removed artwork-derived blur and tint from the Radio and Explore top chrome so titles and status-bar areas stay readable.",
+        "Added shared Smooth Header geometry and motion tokens for consistent scroll-driven header work across screens.",
+        "Removed the solid theme-surface strip and persistent divider from the shared FrostedTopBar; aligned the shared top fade ramp to the 80dp content-zone target and 62% page-colour scrim peak."
       ]
     },
     {
@@ -28,7 +30,8 @@
         "Apple Music V3 lyrics are still in beta; timing and alignment can vary by track and lyrics provider.",
         "Playlist synchronization requires a signed-in YouTube Music account.",
         "Playback transitions and performance should be verified across different devices and tracks.",
-        "Dark/light appearance and device-specific scrolling performance still require physical-device verification."
+        "Dark/light appearance and device-specific scrolling performance still require physical-device verification.",
+        "The shared header migration is an initial integration pass. Per-screen adoption, exact six-layer progressive rendering, pinned Search filters, accessibility modes, API/device fallbacks, and frame-time testing remain to be completed and verified."
       ]
     }
   ]
