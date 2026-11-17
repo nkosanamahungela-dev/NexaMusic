@@ -21,7 +21,9 @@
         "Redesigned Explore featured albums, release shelves, and mood tiles with clean cover-first layouts and a stable, non-repeating flat-colour palette.",
         "Removed artwork-derived blur and tint from the Radio and Explore top chrome so titles and status-bar areas stay readable.",
         "Added shared Smooth Header geometry and motion tokens for consistent scroll-driven header work across screens.",
-        "Removed the solid theme-surface strip and persistent divider from the shared FrostedTopBar; aligned the shared top fade ramp to the 80dp content-zone target and 62% page-colour scrim peak."
+        "Removed the fixed theme-colour strip from the Radio and Explore tab-header path; both now use the shared page-colour TopFadeBlur treatment.",
+        "Reduced Search header tint from 90% to the shared 62% page-colour peak so its top chrome no longer reads as a solid band.",
+        "Centralized additional Smooth Header typography and blur-saturation tokens for the shared header contract."
       ]
     },
     {
