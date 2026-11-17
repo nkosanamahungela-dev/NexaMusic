@@ -17,7 +17,7 @@
         "Added automatic update checks, beta-release support, background APK downloads, and update notifications.",
         "Moved the Pod BETA label out of the playback screen and into the Player Style selection, where users choose Pod.",
         "Redesigned Radio station cards so artwork stays unobstructed, station names and first tracks sit below covers, and the on-air station has a dedicated hero card.",
-        "Added a playback-aware ON AIR indicator that pulses only while the selected station is playing.",
+        "Made the red ON AIR hero appear only while a radio station is actively playing; it stays hidden when playback is paused, stopped, or playing unrelated content.",
         "Redesigned Explore featured albums, release shelves, and mood tiles with clean cover-first layouts and a stable, non-repeating flat-colour palette.",
         "Removed artwork-derived blur and tint from the Radio and Explore top chrome so titles and status-bar areas stay readable."
       ]
