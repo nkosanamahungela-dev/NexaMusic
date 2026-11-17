@@ -249,18 +249,6 @@ private fun PodPlayerDesign(
                     horizontalArrangement = Arrangement.spacedBy(7.dp),
                 ) {
                     Text("NOW PLAYING", color = PodMuted, fontSize = 12.sp, letterSpacing = 2.5.sp, fontWeight = FontWeight.Medium)
-                    Text(
-                        "BETA",
-                        color = PodText,
-                        fontSize = 9.sp,
-                        letterSpacing = 1.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .background(Color.White.copy(.12f))
-                            .border(1.dp, Color.White.copy(.20f), CircleShape)
-                            .padding(horizontal = 7.dp, vertical = 4.dp),
-                    )
                 }
                 IconButton(onClick = onMenu, modifier = Modifier.size(40.dp)) {
                     Icon(Icons.Default.Menu, "Menu", tint = PodText, modifier = Modifier.size(28.dp))
@@ -428,7 +416,6 @@ private fun PodPlayerDesign(
                 Spacer(Modifier.width(18.dp))
                 PodStatusDot("Disk", active = false)
                 Spacer(Modifier.weight(1f))
-                Text("POD  •  BETA", color = PodMuted.copy(.72f), fontSize = 10.sp, letterSpacing = 2.5.sp, fontWeight = FontWeight.SemiBold)
             }
             Spacer(Modifier.height(14.dp))
         }
