@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.TextButton
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
@@ -71,6 +72,8 @@ import com.nexamusic.music.ui.ios.component.IosGlyph
 import com.nexamusic.music.ui.ios.foundation.IosTheme
 import com.nexamusic.music.ui.screens.library.apple.AppleSubpage
 import com.nexamusic.music.ui.component.shapes.ContinuousRoundedRectangle
+import com.nexamusic.music.ui.screens.discovery.DiscoveryIcons
+import com.nexamusic.music.ui.utils.combinedBounceClick
 import com.nexamusic.music.viewmodels.RadioStationViewModel
 import com.nexamusic.music.viewmodels.RadioViewModel
 import com.music.innertube.models.SongItem
@@ -92,7 +95,7 @@ private fun RadioStationCard(
     Column(
         Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .combinedBounceClick(onClick = onClick),
     ) {
         // Artwork is kept clean: station text lives below the cover, never over it.
         Box(
@@ -117,7 +120,7 @@ private fun RadioStationCard(
                     .background(Color.Black.copy(alpha = 0.5f)),
                 contentAlignment = Alignment.Center,
             ) {
-                IosGlyph(sf("SFDotRadiowavesLeftAndRight"), Color.White, 17.dp)
+                Icon(DiscoveryIcons.RadioBadge, contentDescription = null, tint = Color.White, modifier = Modifier.size(17.dp))
             }
             Box(
                 Modifier
@@ -129,7 +132,7 @@ private fun RadioStationCard(
                     .clickable(onClick = onPlay),
                 contentAlignment = Alignment.Center,
             ) {
-                IosGlyph(sf("SFPlayFill"), Color.Black, 20.dp)
+                Icon(DiscoveryIcons.Play, contentDescription = null, tint = Color.Black, modifier = Modifier.size(20.dp))
             }
         }
         Text(
@@ -229,7 +232,7 @@ private fun RadioOnAirCard(
                     .clickable(onClick = onPlay),
                 contentAlignment = Alignment.Center,
             ) {
-                IosGlyph(sf("SFPlayFill"), AppTheme.colorScheme.primary, 20.dp)
+                Icon(DiscoveryIcons.Play, contentDescription = null, tint = AppTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
             }
         }
     }
