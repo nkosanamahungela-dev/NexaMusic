@@ -73,6 +73,7 @@ import com.nexamusic.music.ui.ios.foundation.IosTheme
 import com.nexamusic.music.ui.screens.library.apple.AppleSubpage
 import com.nexamusic.music.ui.component.shapes.ContinuousRoundedRectangle
 import com.nexamusic.music.ui.screens.discovery.DiscoveryIcons
+import com.nexamusic.music.ui.screens.discovery.DiscoveryTokens
 import com.nexamusic.music.ui.utils.combinedBounceClick
 import com.nexamusic.music.viewmodels.RadioStationViewModel
 import com.nexamusic.music.viewmodels.RadioViewModel
@@ -177,9 +178,9 @@ private fun RadioOnAirCard(
     Row(
         Modifier
             .fillMaxWidth()
-            .height(178.dp)
+            .height(DiscoveryTokens.Size.HeroHeight)
             .clip(ContinuousRoundedRectangle(28.dp))
-            .background(AppTheme.colorScheme.primary)
+            .background(DiscoveryTokens.AccentRed)
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -219,7 +220,7 @@ private fun RadioOnAirCard(
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .size(124.dp)
+                    .size(DiscoveryTokens.Size.HeroCover)
                     .graphicsLayer { rotationZ = 6f }
                     .clip(ContinuousRoundedRectangle(16.dp)),
             )
@@ -232,7 +233,7 @@ private fun RadioOnAirCard(
                     .clickable(onClick = onPlay),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(DiscoveryIcons.Play, contentDescription = null, tint = AppTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                Icon(DiscoveryIcons.Play, contentDescription = null, tint = DiscoveryTokens.AccentRed, modifier = Modifier.size(20.dp))
             }
         }
     }
