@@ -102,7 +102,7 @@ fun AppTopBar(
             Box(modifier = Modifier.fillMaxWidth()) {
                 // Explore must never sample album artwork into its title/status-bar strip.
                 // Keep the route-specific chrome on the current page colour instead.
-                val artworkSafeRoute = effectiveRoute == Screens.Explore.route
+                val artworkSafeRoute = effectiveRoute == Screens.Explore.route || effectiveRoute == Screens.Radio.route
                 if (artworkSafeRoute) {
                     Box(
                         Modifier
@@ -144,9 +144,9 @@ fun AppTopBar(
                             style = AppTheme.typography.titleLarge.copy(
                                 fontFamily = SfProFontFamily,
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 34.sp,
-                                lineHeight = 41.sp,
-                                letterSpacing = (-0.6).sp,
+                                fontSize = if (effectiveRoute == Screens.Explore.route || effectiveRoute == Screens.Radio.route) 40.sp else 34.sp,
+                                lineHeight = if (effectiveRoute == Screens.Explore.route || effectiveRoute == Screens.Radio.route) 46.sp else 41.sp,
+                                letterSpacing = if (effectiveRoute == Screens.Explore.route || effectiveRoute == Screens.Radio.route) (-1.6).sp else (-0.6).sp,
                             ),
                             color = topBarTitleColor,
                             maxLines = 1,
