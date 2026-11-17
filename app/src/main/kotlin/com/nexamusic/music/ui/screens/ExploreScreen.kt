@@ -190,6 +190,7 @@ fun ExploreScreen(
     val newReleases = albums.drop(6)
     val topSongs = chartsPage?.sections?.firstOrNull { it.chartType == ChartType.TOP }?.items.orEmpty().distinctBy { it.id }
     val moods = explorePage?.moodAndGenres.orEmpty()
+    val moodSwatches = remember(moods) { DiscoveryTokens.moodSwatches(moods.map { it.title }) }
     val recommendedTitle = stringResource(R.string.recommended_for_you)
     val newTitle = stringResource(R.string.new_release_albums)
     val topTitle = stringResource(R.string.top_songs)
@@ -254,11 +255,7 @@ fun ExploreScreen(
                         ExploreMoodTile(
                             title = mood.title,
                             art = art[mood.endpoint.browseId + "|" + mood.endpoint.params],
-                            swatch = DiscoveryTokens.moodSwatch(
-                                mood.title,
-                                index,
-                                moods.getOrNull(index - 1)?.title,
-                            ),
+                            swatch = moodSwatches[index],
                             modifier = Modifier,
                         ) {
                             navController.navigate(youtubeBrowseRoute(mood.endpoint.browseId, mood.endpoint.params))
