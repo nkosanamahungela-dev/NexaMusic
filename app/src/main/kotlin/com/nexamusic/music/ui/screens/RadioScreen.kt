@@ -80,7 +80,6 @@ import com.nexamusic.music.viewmodels.RadioViewModel
 import com.music.innertube.models.SongItem
 
 /** Cards stay near this width, so a wide tab-view screen gets more columns, not bigger tiles. */
-private val RadioCardMinWidth = 168.dp
 private val RadioGutter = 16.dp
 
 @Composable
@@ -183,7 +182,7 @@ private fun RadioOnAirCard(
             .background(DiscoveryTokens.AccentRed)
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -259,7 +258,7 @@ fun RadioScreen(
             .background(IosTheme.colors.systemBackground),
     ) {
         LazyVerticalGrid(
-            columns = GridCells.Adaptive(minSize = RadioCardMinWidth),
+            columns = GridCells.Fixed(2),
             state = gridState,
             modifier = Modifier.fillMaxSize(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -307,7 +306,11 @@ fun RadioScreen(
                                 song = onAirStation,
                                 isPlaying = playbackActive && currentMetadata?.id == onAirStation.id,
                                 onPlay = {
-                                    playerConnection.playQueue(YouTubeQueue.radio(onAirStation.toMediaMetadata()))
+                                    if (playbackActive && currentMetadata?.id == onAirStation.id) {
+                                        playerConnection.player.pause()
+                                    } else {
+                                        playerConnection.playQueue(YouTubeQueue.radio(onAirStation.toMediaMetadata()))
+                                    }
                                 },
                             )
                         }
