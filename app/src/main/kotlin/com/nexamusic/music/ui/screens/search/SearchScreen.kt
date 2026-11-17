@@ -151,6 +151,7 @@ import com.nexamusic.music.ui.component.backdrop.catalog.components.LiquidBottom
 import androidx.compose.ui.text.font.FontWeight
 import com.nexamusic.music.ui.component.GlassCircleButton
 import com.nexamusic.music.ui.component.TopFadeBlur
+import com.nexamusic.music.ui.component.SmoothHeaderTokens
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
 import androidx.compose.ui.text.style.TextAlign
@@ -296,7 +297,7 @@ fun SearchScreen(
                 hazeState = browseHaze,
                 pageColor = pageColor,
                 scrimColor = pageColor,
-                scrimOpacity = 0.9f,
+                scrimOpacity = SmoothHeaderTokens.TintPeakOpacity,
                 modifier = Modifier.align(Alignment.TopCenter),
                 heightOverride = statusTop,
             )
