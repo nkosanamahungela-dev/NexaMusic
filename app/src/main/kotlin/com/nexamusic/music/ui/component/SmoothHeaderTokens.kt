@@ -12,6 +12,9 @@ import androidx.compose.ui.unit.dp
 object SmoothHeaderTokens {
     val ScrollDistance = 90.dp
     val HeaderContentHeight = 80.dp
+    val HeaderTopInsetContentHeight = HeaderContentHeight
+    val BigTitleLetterSpacingEm = -0.04f
+    val BlurLayerSaturation = 1.2f
     val BigTitleSize = 40.dp
     val SmallTitleSize = 17.dp
     val BigTitleTravel = 14.dp
