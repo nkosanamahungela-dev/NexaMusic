@@ -1,5 +1,5 @@
 {
-  "description": "NexaMusic 0.1.3 Beta — a major lyrics, interface, playback, and performance update.",
+  "description": "NexaMusic 0.1.4 Beta — Radio and Explore redesign, Pod selection polish, and discovery UI improvements.",
   "image": "",
   "changelog": [
     {
@@ -14,7 +14,12 @@
         "Improved transition timing and playback handoff behaviour.",
         "Optimized lyrics rendering, Liquid Glass effects, and tab animations to reduce unnecessary work.",
         "Added a sign-in reminder for logged-out users, with a preference to hide it.",
-        "Added automatic update checks, beta-release support, background APK downloads, and update notifications."
+        "Added automatic update checks, beta-release support, background APK downloads, and update notifications.",
+        "Moved the Pod BETA label out of the playback screen and into the Player Style selection, where users choose Pod.",
+        "Redesigned Radio station cards so artwork stays unobstructed, station names and first tracks sit below covers, and the on-air station has a dedicated hero card.",
+        "Added a playback-aware ON AIR indicator that pulses only while the selected station is playing.",
+        "Redesigned Explore featured albums, release shelves, and mood tiles with clean cover-first layouts and a stable, non-repeating flat-colour palette.",
+        "Removed artwork-derived blur and tint from the Radio and Explore top chrome so titles and status-bar areas stay readable."
       ]
     },
     {
@@ -22,7 +27,8 @@
       "items": [
         "Apple Music V3 lyrics are still in beta; timing and alignment can vary by track and lyrics provider.",
         "Playlist synchronization requires a signed-in YouTube Music account.",
-        "Playback transitions and performance should be verified across different devices and tracks."
+        "Playback transitions and performance should be verified across different devices and tracks.",
+        "Dark/light appearance and device-specific scrolling performance still require physical-device verification."
       ]
     }
   ]
