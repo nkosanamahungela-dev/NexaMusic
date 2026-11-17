@@ -46,7 +46,7 @@ import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
 
 /** Distance below the bar over which the blur fades to clear. */
-private val FADE_RUN = 64.dp
+private val FADE_RUN = SmoothHeaderTokens.HeaderContentHeight
 
 /** Start inset reserved for the floating side bar; display cutout insets are too small to count. */
 @Composable
@@ -59,7 +59,7 @@ private fun sideBarStartInset(): Dp =
 private val SIDE_FADE_RUN = 28.dp
 
 /** Peak opacity of the readability scrim at the top of the strip. */
-private const val SCRIM_PEAK = 0.42f
+private const val SCRIM_PEAK = 0.62f
 
 private const val SCRIM_STOPS = 12
 
