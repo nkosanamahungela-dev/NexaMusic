@@ -29,12 +29,15 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.TextButton
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -157,6 +160,17 @@ private fun RadioOnAirCard(
 ) {
     val artist = song.artists.joinToString { it.name }.ifBlank { song.song.title }
     val stationName = stringResource(R.string.radio_station_for, artist)
+    val dotAlpha = remember { Animatable(1f) }
+    LaunchedEffect(isPlaying) {
+        if (isPlaying) {
+            while (true) {
+                dotAlpha.animateTo(0.4f, tween(700))
+                dotAlpha.animateTo(1f, tween(700))
+            }
+        } else {
+            dotAlpha.snapTo(1f)
+        }
+    }
     Row(
         Modifier
             .fillMaxWidth()
@@ -169,7 +183,7 @@ private fun RadioOnAirCard(
     ) {
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                Box(Modifier.size(7.dp).clip(CircleShape).background(Color.White))
+                Box(Modifier.size(7.dp).alpha(dotAlpha.value).clip(CircleShape).background(Color.White))
                 Text(
                     "ON AIR",
                     color = Color.White,
@@ -282,13 +296,14 @@ fun RadioScreen(
                 }
                 else -> {
                     val recentStations = songs.orEmpty()
-                    if (recentStations.isNotEmpty()) {
+                    val onAirStation = recentStations.firstOrNull { it.id == currentMetadata?.id } ?: recentStations.firstOrNull()
+                    if (onAirStation != null) {
                         item(key = "radio_on_air", span = { GridItemSpan(maxLineSpan) }) {
                             RadioOnAirCard(
-                                song = recentStations.first(),
-                                isPlaying = playbackActive && currentMetadata?.id == recentStations.first().id,
+                                song = onAirStation,
+                                isPlaying = playbackActive && currentMetadata?.id == onAirStation.id,
                                 onPlay = {
-                                    playerConnection.playQueue(YouTubeQueue.radio(recentStations.first().toMediaMetadata()))
+                                    playerConnection.playQueue(YouTubeQueue.radio(onAirStation.toMediaMetadata()))
                                 },
                             )
                         }
