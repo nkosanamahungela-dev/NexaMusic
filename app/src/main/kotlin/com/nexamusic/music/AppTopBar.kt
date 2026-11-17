@@ -12,6 +12,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Spacer
@@ -99,19 +100,28 @@ fun AppTopBar(
             exit = fadeOut(animationSpec = tween(durationMillis = 200))
         ) {
             Box(modifier = Modifier.fillMaxWidth()) {
-                // Keep the blur fixed during scrolling; route visibility controls when it hides.
-                TopFadeBlur(
-                    hazeState = hazeState,
-                    pageColor = rememberAppBackgroundTint(
-                        AppTheme.colorScheme.background
-                    ),
-                    backdrop = backdrop,
-                    startFade = if (showRail) startInset else 0.dp,
-                )
-                // Titles/wordmark stay neutral per theme; only hero-tinted
-                // screens keep the artwork-derived accent text.
+                // Explore must never sample album artwork into its title/status-bar strip.
+                // Keep the route-specific chrome on the current page colour instead.
+                val artworkSafeRoute = effectiveRoute == Screens.Explore.route
+                if (artworkSafeRoute) {
+                    Box(
+                        Modifier
+                            .fillMaxWidth()
+                            .height(statusBarTop + 72.dp)
+                            .background(AppTheme.colorScheme.background),
+                    )
+                } else {
+                    // Keep the existing Liquid Glass / haze treatment unchanged on other routes.
+                    TopFadeBlur(
+                        hazeState = hazeState,
+                        pageColor = rememberAppBackgroundTint(AppTheme.colorScheme.background),
+                        backdrop = backdrop,
+                        startFade = if (showRail) startInset else 0.dp,
+                    )
+                }
+                // Explore's title remains theme-neutral and cannot inherit cover-derived tint.
                 val topBarAmbient = LocalAmbientBackgroundColor.current.value
-                val topBarTitleColor = if (topBarAmbient.isSpecified && !topBarAmbient.isHueless()) {
+                val topBarTitleColor = if (!artworkSafeRoute && topBarAmbient.isSpecified && !topBarAmbient.isHueless()) {
                     LocalAccentTextColor.current
                 } else {
                     AppTheme.colorScheme.onSurface
