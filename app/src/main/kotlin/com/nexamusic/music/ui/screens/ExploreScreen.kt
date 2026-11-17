@@ -9,6 +9,7 @@ import com.nexamusic.music.ui.utils.plusStart
 import com.nexamusic.music.ui.utils.bleedStart
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
