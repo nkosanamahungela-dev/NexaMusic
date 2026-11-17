@@ -350,7 +350,7 @@ private fun ExploreMoodTile(
             .height(DiscoveryTokens.Size.MoodHeight)
             .clip(RoundedCornerShape(20.dp))
             .background(swatch.fill)
-            .clickable(onClick = onClick),
+            .combinedBounceClick(onClick = onClick),
     ) {
         Text(
             "MOOD",
