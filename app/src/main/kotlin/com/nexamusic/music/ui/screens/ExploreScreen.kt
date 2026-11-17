@@ -71,8 +71,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
@@ -130,6 +132,8 @@ import com.nexamusic.music.utils.reportException
 import com.nexamusic.music.viewmodels.ChartsViewModel
 import com.nexamusic.music.viewmodels.ExploreViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil3.compose.AsyncImage
+import com.nexamusic.music.ui.screens.discovery.DiscoveryTokens
 
 /**
  * Explore, as an Apple Music category page (the "Spatial Audio" page pattern): a large
@@ -218,13 +222,13 @@ fun ExploreScreen(
                     modifier = Modifier.padding(bottom = 8.dp).bleedStart(sideInset),
                 ) {
                     items(hero, key = { "hero_" + it.id }, contentType = { "hero_card" }) { item ->
-                        Tile(item) { EditorialCard(item) }
+                        Tile(item) { ExploreFeaturedAlbumCard(item) }
                     }
                 }
             }
         }
         exploreShelf("recommended", recommendedTitle, recommended.orEmpty().distinctBy { it.id }, sideInset) { item ->
-            Tile(item) { ShelfCard(item) }
+            Tile(item) { ExploreShelfCard(item) }
         }
         exploreShelf("new", newTitle, newReleases, sideInset) { item ->
             Tile(item) { ShelfCard(item) }
@@ -240,17 +244,21 @@ fun ExploreScreen(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     modifier = Modifier.padding(bottom = 12.dp).bleedStart(sideInset),
                 ) {
-                    items(
+                    itemsIndexed(
                         items = moods,
-                        key = { "mood_${it.endpoint.browseId}_${it.endpoint.params}" },
-                        contentType = { "mood_tile" },
-                    ) { mood ->
+                        key = { _, mood -> "mood_${mood.endpoint.browseId}_${mood.endpoint.params}" },
+                        contentType = { _, _ -> "mood_tile" },
+                    ) { index, mood ->
                         LaunchedEffect(mood) { tilesViewModel.loadArt(mood) }
-                        com.nexamusic.music.ui.screens.search.CategoryTile(
+                        ExploreMoodTile(
                             title = mood.title,
-                            color = Color(mood.stripeColor),
                             art = art[mood.endpoint.browseId + "|" + mood.endpoint.params],
-                            modifier = Modifier.width(180.dp),
+                            swatch = DiscoveryTokens.moodSwatch(
+                                mood.title,
+                                index,
+                                moods.getOrNull(index - 1)?.title,
+                            ),
+                            modifier = Modifier,
                         ) {
                             navController.navigate(youtubeBrowseRoute(mood.endpoint.browseId, mood.endpoint.params))
                         }
@@ -259,6 +267,119 @@ fun ExploreScreen(
             }
         }
     }
+    }
+}
+
+
+/** Editorial album card: metadata is outside the artwork, which remains untouched. */
+@Composable
+private fun ExploreFeaturedAlbumCard(item: YTItem) {
+    Column(Modifier.width(DiscoveryTokens.Size.FeaturedCover)) {
+        Text(
+            "ALBUM",
+            style = SfStyle(11.sp, 14.sp, FontWeight.Bold, 0.8.sp),
+            color = com.nexamusic.music.ui.ios.foundation.IosTheme.colors.secondaryLabel,
+        )
+        Text(
+            item.title,
+            style = SfStyle(25.sp, 30.sp, FontWeight.ExtraBold, (-1).sp),
+            color = com.nexamusic.music.ui.ios.foundation.IosTheme.colors.label,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(top = 3.dp),
+        )
+        Text(
+            item.browseSubtitle(),
+            style = SfStyle(17.sp, 21.sp, FontWeight.Normal, 0.sp),
+            color = com.nexamusic.music.ui.ios.foundation.IosTheme.colors.secondaryLabel,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(top = 2.dp, bottom = 10.dp),
+        )
+        AsyncImage(
+            model = item.thumbnail,
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .size(DiscoveryTokens.Size.FeaturedCover)
+                .clip(RoundedCornerShape(14.dp)),
+        )
+    }
+}
+
+/** Reusable cover-first shelf card for album, playlist and chart rows. */
+@Composable
+private fun ExploreShelfCard(item: YTItem) {
+    Column(Modifier.width(DiscoveryTokens.Size.AlbumCover)) {
+        AsyncImage(
+            model = item.thumbnail,
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .size(DiscoveryTokens.Size.AlbumCover)
+                .clip(RoundedCornerShape(12.dp)),
+        )
+        Text(
+            item.title,
+            style = SfStyle(15.sp, 19.sp, FontWeight.SemiBold, 0.sp),
+            color = com.nexamusic.music.ui.ios.foundation.IosTheme.colors.label,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(top = 7.dp),
+        )
+        Text(
+            item.browseSubtitle(),
+            style = SfStyle(13.sp, 17.sp, FontWeight.Normal, 0.sp),
+            color = com.nexamusic.music.ui.ios.foundation.IosTheme.colors.secondaryLabel,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+
+/** Flat-colour mood tile; official cover is a small, cropped accent in the corner. */
+@Composable
+private fun ExploreMoodTile(
+    title: String,
+    art: String?,
+    swatch: DiscoveryTokens.MoodSwatch,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    Box(
+        modifier
+            .width(DiscoveryTokens.Size.MoodWidth)
+            .height(DiscoveryTokens.Size.MoodHeight)
+            .clip(RoundedCornerShape(20.dp))
+            .background(swatch.fill)
+            .clickable(onClick = onClick),
+    ) {
+        Text(
+            "MOOD",
+            color = swatch.foreground,
+            style = SfStyle(11.sp, 14.sp, FontWeight.Bold, 0.8.sp),
+            modifier = Modifier.align(Alignment.TopStart).padding(14.dp),
+        )
+        Text(
+            title,
+            color = swatch.foreground,
+            style = SfStyle(23.sp, 27.sp, FontWeight.ExtraBold, (-0.7).sp),
+            maxLines = 3,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.align(Alignment.BottomStart).padding(start = 14.dp, end = 84.dp, bottom = 12.dp),
+        )
+        if (!art.isNullOrBlank()) {
+            AsyncImage(
+                model = art,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .size(96.dp)
+                    .graphicsLayer { rotationZ = 12f }
+                    .clip(RoundedCornerShape(10.dp)),
+            )
+        }
     }
 }
 
@@ -287,7 +408,7 @@ private fun androidx.compose.foundation.lazy.LazyListScope.exploreShelf(
 private fun ShelfTitle(title: String) {
     Text(
         text = title,
-        style = SfStyle(22.sp, 28.sp, FontWeight.Bold, (-0.26).sp),
+        style = SfStyle(25.sp, 30.sp, FontWeight.Bold, (-0.6).sp),
         color = com.nexamusic.music.ui.ios.foundation.IosTheme.colors.label,
         maxLines = 1,
         modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 18.dp, bottom = 10.dp),
