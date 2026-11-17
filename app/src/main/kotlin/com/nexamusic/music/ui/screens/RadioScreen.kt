@@ -299,7 +299,13 @@ fun RadioScreen(
                 }
                 else -> {
                     val recentStations = songs.orEmpty()
-                    val onAirStation = recentStations.firstOrNull { it.id == currentMetadata?.id } ?: recentStations.firstOrNull()
+                    // ON AIR is shown only for a station that is the current, actively playing item.
+                    // Never fall back to a recently played station when playback is idle or unrelated.
+                    val onAirStation = if (playbackActive) {
+                        currentMetadata?.id?.let { activeId -> recentStations.firstOrNull { it.id == activeId } }
+                    } else {
+                        null
+                    }
                     if (onAirStation != null) {
                         item(key = "radio_on_air", span = { GridItemSpan(maxLineSpan) }) {
                             RadioOnAirCard(
