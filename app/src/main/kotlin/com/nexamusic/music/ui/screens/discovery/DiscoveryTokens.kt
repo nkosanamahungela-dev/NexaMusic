@@ -49,17 +49,15 @@ internal object DiscoveryTokens {
         MoodSwatch(Color(0xFF636366), Color.White),
     )
 
-    // Stable by mood title; adjacent tiles are forced onto a different palette entry.
-    fun moodSwatch(name: String, index: Int, previousName: String?): MoodSwatch {
-        val size = MoodPalette.size
-        var slot = (name.hashCode().toUInt().toLong() % size).toInt()
-        if (previousName != null) {
-            val previous = (previousName.hashCode().toUInt().toLong() % size).toInt()
-            if (slot == previous) slot = (slot + 1) % size
+    // Stable hash-based palette assignment with a neighbour collision check.
+    fun moodSwatches(names: List<String>): List<MoodSwatch> {
+        var previousSlot = -1
+        return names.map { name ->
+            var slot = (name.hashCode().toUInt().toLong() % MoodPalette.size).toInt()
+            if (slot == previousSlot) slot = (slot + 1) % MoodPalette.size
+            previousSlot = slot
+            MoodPalette[slot]
         }
-        // Keep the first index deterministic if a feed repeats identical names.
-        if (index > 0 && previousName == name) slot = (slot + 1) % size
-        return MoodPalette[slot]
     }
 
     object Size {
