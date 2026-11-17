@@ -38,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -81,73 +82,141 @@ private fun RadioStationCard(
     onClick: () -> Unit,
     onPlay: () -> Unit,
 ) {
-    val shape = ContinuousRoundedRectangle(16.dp)
+    val shape = ContinuousRoundedRectangle(14.dp)
     val artist = song.artists.joinToString { it.name }.ifBlank { song.song.title }
+    val stationName = stringResource(R.string.radio_station_for, artist)
 
-    Box(
+    Column(
         Modifier
             .fillMaxWidth()
-            .aspectRatio(1f)
-            .clip(shape)
-            .background(IosTheme.colors.secondarySystemBackground)
             .clickable(onClick = onClick),
     ) {
-        AsyncImage(
-            model = song.song.thumbnailUrl,
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize(),
-        )
+        // Artwork is kept clean: station text lives below the cover, never over it.
         Box(
             Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        0f to Color.Black.copy(alpha = 0.08f),
-                        0.45f to Color.Black.copy(alpha = 0.28f),
-                        1f to Color.Black.copy(alpha = 0.82f),
-                    ),
-                ),
+                .fillMaxWidth()
+                .aspectRatio(1f)
+                .clip(shape)
+                .background(IosTheme.colors.secondarySystemBackground),
+        ) {
+            AsyncImage(
+                model = song.song.thumbnailUrl,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize(),
+            )
+            Box(
+                Modifier
+                    .align(Alignment.TopStart)
+                    .padding(9.dp)
+                    .size(30.dp)
+                    .clip(CircleShape)
+                    .background(Color.Black.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                IosGlyph(sf("SFDotRadiowavesLeftAndRight"), Color.White, 17.dp)
+            }
+            Box(
+                Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(8.dp)
+                    .size(38.dp)
+                    .clip(CircleShape)
+                    .background(Color.White)
+                    .clickable(onClick = onPlay),
+                contentAlignment = Alignment.Center,
+            ) {
+                IosGlyph(sf("SFPlayFill"), Color.Black, 20.dp)
+            }
+        }
+        Text(
+            text = stationName,
+            style = AppTheme.typography.titleSmall,
+            color = IosTheme.colors.label,
+            fontWeight = FontWeight.Bold,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(top = 9.dp),
         )
-        Box(
-            Modifier
-                .align(Alignment.TopStart)
-                .padding(10.dp)
-                .size(30.dp)
-                .clip(CircleShape)
-                .background(Color.White.copy(alpha = 0.18f)),
-            contentAlignment = Alignment.Center,
-        ) {
-            IosGlyph(sf("SFDotRadiowavesLeftAndRight"), Color.White, 17.dp)
-        }
-        GlassCircleButton(
-            onClick = onPlay,
-            modifier = Modifier.align(Alignment.TopEnd).padding(8.dp),
-            size = 38.dp,
-            forceFlat = true,
-        ) {
-            IosGlyph(sf("SFPlayFill"), Color.White, 16.dp)
-        }
-        Column(
-            Modifier
-                .align(Alignment.BottomStart)
-                .padding(12.dp),
-        ) {
+        Text(
+            text = song.song.title,
+            style = AppTheme.typography.bodySmall,
+            color = IosTheme.colors.secondaryLabel,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(top = 2.dp),
+        )
+    }
+}
+
+@Composable
+private fun RadioOnAirCard(
+    song: Song,
+    isPlaying: Boolean,
+    onPlay: () -> Unit,
+) {
+    val artist = song.artists.joinToString { it.name }.ifBlank { song.song.title }
+    val stationName = stringResource(R.string.radio_station_for, artist)
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .height(178.dp)
+            .clip(ContinuousRoundedRectangle(28.dp))
+            .background(AppTheme.colorScheme.primary)
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Box(Modifier.size(7.dp).clip(CircleShape).background(Color.White))
+                Text(
+                    "ON AIR",
+                    color = Color.White,
+                    style = AppTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.1.sp,
+                )
+            }
+            Spacer(Modifier.height(8.dp))
             Text(
-                text = stringResource(R.string.radio_station_for, artist),
-                style = AppTheme.typography.titleSmall,
+                stationName,
                 color = Color.White,
-                fontWeight = FontWeight.SemiBold,
+                style = AppTheme.typography.headlineSmall,
+                fontWeight = FontWeight.ExtraBold,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                "Starts with ${song.song.title}",
+                color = Color.White.copy(alpha = 0.88f),
+                style = AppTheme.typography.bodySmall,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(top = 4.dp),
             )
-            Text(
-                text = song.song.title,
-                style = AppTheme.typography.bodySmall,
-                color = Color.White.copy(alpha = 0.75f),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+        }
+        Box(Modifier.size(134.dp), contentAlignment = Alignment.Center) {
+            AsyncImage(
+                model = song.song.thumbnailUrl,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(124.dp)
+                    .graphicsLayer { rotationZ = 6f }
+                    .clip(ContinuousRoundedRectangle(16.dp)),
             )
+            Box(
+                Modifier
+                    .align(Alignment.BottomEnd)
+                    .size(46.dp)
+                    .clip(CircleShape)
+                    .background(Color.White)
+                    .clickable(onClick = onPlay),
+                contentAlignment = Alignment.Center,
+            ) {
+                IosGlyph(sf("SFPlayFill"), AppTheme.colorScheme.primary, 20.dp)
+            }
         }
     }
 }
@@ -159,6 +228,8 @@ fun RadioScreen(
 ) {
     val playerConnection = LocalPlayerConnection.current ?: return
     val songs by viewModel.recentStations.collectAsStateWithLifecycle()
+    val currentMetadata by playerConnection.mediaMetadata.collectAsStateWithLifecycle()
+    val playbackActive by playerConnection.isEffectivelyPlaying.collectAsStateWithLifecycle()
     val insets = LocalPlayerAwareWindowInsets.current.asPaddingValues()
     val sideInset = insets.calculateStartPadding(androidx.compose.ui.platform.LocalLayoutDirection.current)
     val recentTitle = stringResource(R.string.radio_recent_tracks)
@@ -210,10 +281,22 @@ fun RadioScreen(
                     }
                 }
                 else -> {
+                    val recentStations = songs.orEmpty()
+                    if (recentStations.isNotEmpty()) {
+                        item(key = "radio_on_air", span = { GridItemSpan(maxLineSpan) }) {
+                            RadioOnAirCard(
+                                song = recentStations.first(),
+                                isPlaying = playbackActive && currentMetadata?.id == recentStations.first().id,
+                                onPlay = {
+                                    playerConnection.playQueue(YouTubeQueue.radio(recentStations.first().toMediaMetadata()))
+                                },
+                            )
+                        }
+                    }
                     item(key = "radio_recent_title", span = { GridItemSpan(maxLineSpan) }) {
                         NavigationTitle(title = recentTitle)
                     }
-                    gridItems(songs.orEmpty(), key = { "radio_seed_${it.id}" }) { song ->
+                    gridItems(recentStations, key = { "radio_seed_${it.id}" }) { song ->
                         RadioStationCard(
                             song = song,
                             onClick = { navController.navigate(song.radioStationRoute()) },
