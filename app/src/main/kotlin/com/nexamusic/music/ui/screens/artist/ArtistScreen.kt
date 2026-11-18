@@ -281,20 +281,8 @@ fun ArtistScreen(
         -(systemBarsTopPadding + AppBarHeight).roundToPx()
     }
 
-    // Drives the back/share scrim as the hero scrolls away.
-    val chromeScrimThresholdPx = with(density) { 220.dp.toPx() }
     // Pause motion video when the hero scrolls offscreen.
     val heroVisible by remember { derivedStateOf { lazyListState.firstVisibleItemIndex == 0 } }
-    val chromeScrimAlpha by remember {
-        derivedStateOf {
-            val scrolledPx = if (lazyListState.firstVisibleItemIndex == 0) {
-                lazyListState.firstVisibleItemScrollOffset.toFloat()
-            } else {
-                chromeScrimThresholdPx
-            }
-            (scrolledPx / chromeScrimThresholdPx).coerceIn(0f, 1f)
-        }
-    }
 
     LaunchedEffect(libraryArtist) {
         showLocal = libraryArtist?.artist?.isLocal == true
