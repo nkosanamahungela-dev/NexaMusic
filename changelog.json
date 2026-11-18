@@ -32,7 +32,10 @@
         "Added a shared scroll-progress signal so the persistent top blur follows the active destination rather than remaining visible at rest.",
         "Connected Home, Radio, Explore, and Library vertical scrolling to the shared Smooth Blur Header progress signal.",
         "Kept Home's existing feed-scroll tracker and attached the shared header observer without adding per-item collectors.",
-        "Connected local-only Home scrolling to the same shared header progress signal."
+        "Connected local-only Home scrolling to the same shared header progress signal.",
+        "Connected the Settings hub, reusable Settings pages, and custom Settings scaffolds to shared header scroll progress.",
+        "Connected Changelog, Party, and Update vertical scrolling to the shared header progress signal.",
+        "Connected Album, Artist, and local/online/automatic/cache/top Playlist artwork-detail scrolling to their progressive top blur."
       ]
     },
     {
