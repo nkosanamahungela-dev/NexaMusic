@@ -368,7 +368,6 @@ fun UpdateScreen(navController: NavHostController) {
             progressProvider = { SmoothHeaderProgress.progress },
         )
         FrostedTopBar(
-            onBack = { navController.navigateUp() },
             title = stringResource(R.string.settings_check_updates_title),
             titleAlphaProvider = { SmoothHeaderTokens.smallTitleOpacity(SmoothHeaderProgress.progress) },
             modifier = Modifier.align(Alignment.TopCenter),
