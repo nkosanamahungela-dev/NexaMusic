@@ -937,7 +937,6 @@ fun LocalPlaylistScreen(
         } else {
             Modifier.background(AppTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f), chromeShape)
         }
-        val chromeScrimProgress = rememberChromeScrimProgress(lazyListState)
         // Draw the blur before the chrome row so it stays behind the buttons and scrim.
         com.nexamusic.music.ui.component.TopFadeBlur(
             hazeState = hazeState,
@@ -950,7 +949,6 @@ fun LocalPlaylistScreen(
                 .fillMaxWidth()
                 .align(Alignment.TopCenter)
         ) {
-        ChromeScrim(progress = chromeScrimProgress)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
