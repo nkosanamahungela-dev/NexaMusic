@@ -8,6 +8,7 @@
 package com.nexamusic.music.ui.component
 
 import android.app.Activity
+import android.app.ActivityManager
 import android.content.Context
 import android.content.ContextWrapper
 import android.graphics.Color as AndroidColor
@@ -57,8 +58,12 @@ private object HeaderRenderPolicy {
     fun mode(context: Context): HeaderRenderMode = cachedMode ?: synchronized(this) {
         cachedMode ?: run {
             val power = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
+            val activity = context.getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager
+            val performanceClass = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) Build.VERSION.MEDIA_PERFORMANCE_CLASS else 0
             val capable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
-                power?.isPowerSaveMode != true
+                power?.isPowerSaveMode != true &&
+                activity?.isLowRamDevice != true &&
+                (performanceClass == 0 || performanceClass >= 31)
             (if (capable) HeaderRenderMode.BLUR else HeaderRenderMode.SCRIM)
                 .also { cachedMode = it }
         }
