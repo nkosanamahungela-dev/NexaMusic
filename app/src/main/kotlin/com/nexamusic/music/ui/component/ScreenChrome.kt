@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.only
@@ -234,19 +235,17 @@ fun ScreenPage(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val chrome = rememberGlassScreenChrome(background = pageColor)
-    // Measured, not guessed: the title block's height is the exact distance the
-    // page has to travel before the compact title should be fully in.
-    var titleBlockHeight by remember { mutableIntStateOf(1) }
+    val density = LocalDensity.current
+    val progressProvider = remember(scrollState, density) {
+        { SmoothHeaderTokens.progress(scrollState.value / density.density) }
+    }
 
     CompositionLocalProvider(LocalAppBackdrop provides chrome.backdrop) {
         ScreenChromeBox(
             title = title,
             titleAlpha = 0f,
-            titleAlphaProvider = {
-                // Scroll progress is read by FrostedTopBar's graphics layer, not composition.
-                val progress = (scrollState.value / titleBlockHeight.toFloat()).coerceIn(0f, 1f)
-                SmoothHeaderTokens.smallTitleOpacity(progress)
-            },
+            titleAlphaProvider = { SmoothHeaderTokens.smallTitleOpacity(progressProvider()) },
+            progressProvider = progressProvider,
             pageColor = pageColor,
             chrome = chrome,
             onBack = onBack,
@@ -319,13 +318,20 @@ fun ScreenLazyPage(
     content: LazyListScope.() -> Unit,
 ) {
     val chrome = rememberGlassScreenChrome(background = pageColor)
-    val lazyTitleProgress = rememberTitleCollapseProgressState(listState, titleItemKey = "title")
+    val density = LocalDensity.current
+    val progressProvider = remember(listState, density) {
+        {
+            if (listState.firstVisibleItemIndex > 0) 1f
+            else SmoothHeaderTokens.progress(listState.firstVisibleItemScrollOffset / density.density)
+        }
+    }
 
     CompositionLocalProvider(LocalAppBackdrop provides chrome.backdrop) {
         ScreenChromeBox(
             title = title,
             titleAlpha = 0f,
-            titleAlphaProvider = { SmoothHeaderTokens.smallTitleOpacity(lazyTitleProgress.value) },
+            titleAlphaProvider = { SmoothHeaderTokens.smallTitleOpacity(progressProvider()) },
+            progressProvider = progressProvider,
             pageColor = pageColor,
             chrome = chrome,
             onBack = onBack,
@@ -345,7 +351,7 @@ fun ScreenLazyPage(
                 item(key = "title") {
                     Column(
                         Modifier.graphicsLayer {
-                            val progress = lazyTitleProgress.value.coerceIn(0f, 1f)
+                            val progress = progressProvider()
                             alpha = SmoothHeaderTokens.bigTitleOpacity(progress)
                             translationY = -SmoothHeaderTokens.BigTitleTravel.toPx() * progress
                             val scale = SmoothHeaderTokens.bigTitleScale(progress)
