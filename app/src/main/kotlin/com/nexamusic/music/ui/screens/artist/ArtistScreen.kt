@@ -591,7 +591,7 @@ fun ArtistScreen(
                         Box(modifier = Modifier.fillMaxWidth().height(fullBleedHeroHeight)) {
                             com.nexamusic.music.ui.component.ArtistWideHero(
                                 artworkUrl = appleArtist?.hero?.sized(1600) ?: thumbnail ?: instantArtistThumb,
-                                pageColor = tint,
+                                pageColor = AppTheme.colorScheme.background,
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(fullBleedHeroHeight + topCover)
