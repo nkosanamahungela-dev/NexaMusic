@@ -105,7 +105,7 @@ fun AppTopBar(
 ) {
         val currentEntry by navController.currentBackStackEntryAsState()
         val screenKey = currentEntry?.id ?: effectiveRoute ?: "app"
-        val headerProgressProvider = remember(screenKey) { { headerProgressProvider()For(screenKey) } }
+        val headerProgressProvider = remember(screenKey) { { SmoothHeaderProgress.progressFor(screenKey) } }
         val titleMotion = rememberSmoothHeaderTitleMotion(headerProgressProvider)
         AnimatedVisibility(
             visible = visible,

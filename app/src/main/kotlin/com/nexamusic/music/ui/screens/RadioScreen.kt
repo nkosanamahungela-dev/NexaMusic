@@ -255,7 +255,7 @@ fun RadioScreen(
     val recentTitle = stringResource(R.string.radio_recent_tracks)
     val gridState = rememberLazyGridState()
     val radioHeaderProgress = rememberSmoothHeaderProgress(gridState)
-    SmoothHeaderProgressSync(radioHeaderProgress, navController.currentBackStackEntry?.id ?: "radio")
+    SmoothHeaderProgressSync(radioHeaderProgress)
 
     Box(
         Modifier

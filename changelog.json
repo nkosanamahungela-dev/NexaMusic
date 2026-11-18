@@ -28,7 +28,8 @@
         "Removed fixed colour strips behind headers on supported screens for a cleaner, theme-matched appearance.",
         "Improved header motion and appearance support with lighter visual effects for battery-saving, reduced-transparency and reduced-motion settings.",
         "Matched the status and navigation bar appearance to the app's active light or dark theme.",
-        "Separated tab-header scroll progress by navigation entry and reads restored Home, Radio, Explore and Library positions directly, preventing one tab's collapse state from leaking into another."
+        "Separated tab-header scroll progress by navigation entry and reads restored Home, Radio, Explore and Library positions directly, preventing one tab's collapse state from leaking into another.",
+        "Fixed a tab-header progress handoff so each restored destination starts from its own saved scroll position."
       ]
     },
     {

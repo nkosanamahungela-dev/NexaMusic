@@ -25,6 +25,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.runtime.snapshotFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -114,7 +115,7 @@ fun SmoothHeaderProgressSync(
         else SmoothHeaderProgress.setForScreen(screenKey, value)
     }
     LaunchedEffect(progressProvider, screenKey) {
-        kotlinx.coroutines.flow.snapshotFlow { progressProvider().coerceIn(0f, 1f) }
+        snapshotFlow { progressProvider().coerceIn(0f, 1f) }
             .distinctUntilChanged()
             .collect { value ->
                 val quantized = SmoothHeaderTokens.quantizeProgress(value)
