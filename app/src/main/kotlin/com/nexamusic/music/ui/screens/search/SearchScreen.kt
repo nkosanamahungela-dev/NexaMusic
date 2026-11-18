@@ -330,7 +330,13 @@ fun SearchScreen(
                     color = colors.label,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.graphicsLayer { alpha = searchTitleMotion.compactAlpha() }.clearAndSetSemantics { },
+                    modifier = Modifier.graphicsLayer {
+                        val p = headerProgressProvider()
+                        alpha = searchTitleMotion.compactAlpha()
+                        translationY = if (searchTitleMotion.transformsEnabled) {
+                            (1f - p) * SmoothHeaderTokens.SmallTitleTravel.toPx()
+                        } else 0f
+                    }.clearAndSetSemantics { },
                 )
             }
             if (scopePinned) {
