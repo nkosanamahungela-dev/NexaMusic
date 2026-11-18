@@ -148,6 +148,7 @@ import com.nexamusic.music.ui.component.SideBarAccountRow
 import com.nexamusic.music.ui.component.AppTabViewTopPill
 import com.nexamusic.music.ui.component.NavMorph
 import com.nexamusic.music.ui.component.ScrollHeaderScaffold
+import com.nexamusic.music.ui.component.smoothHeaderScrollProgress
 import com.nexamusic.music.ui.component.SideBarCollapsedWidth
 import com.nexamusic.music.ui.component.SideBarContentInset
 import com.nexamusic.music.ui.component.SideBarMargin
@@ -953,6 +954,18 @@ internal fun AppRootContent(
                                     .nestedScroll(backdropFreezeConnection)
                                     .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
                                     .nestedScroll(floatingNavBarScrollConnection)
+                                    // Tabs and History publish their actual lazy-state offset.
+                                    // All other destinations use this entry-local nested-scroll
+                                    // bridge so Settings pages and detail screens stay independent.
+                                    .then(
+                                        if (currentRoute in setOf("home", "radio", "explore", "library", "search", "history")) {
+                                            Modifier
+                                        } else {
+                                            Modifier.smoothHeaderScrollProgress(
+                                                navBackStackEntry?.id ?: currentRoute ?: "destination",
+                                            )
+                                        },
+                                    )
                             ) {
                                 // One destination-scoped scaffold owns the navigation content.
                                 // Its progress provider is keyed to the active back-stack entry;

@@ -106,7 +106,7 @@ fun FrostedTopBar(
     // graphicsLayer/derivedStateOf so scroll deltas never recompose callers.
     // Prefer this over [titleAlpha] for any scroll-driven title.
     titleAlphaProvider: (() -> Float)? = null,
-    progressProvider: () -> Float = { SmoothHeaderProgress.progress },
+    progressProvider: (() -> Float)? = null,
     // Lets an artwork-tinted screen (History, Stats) keep its whole chrome in
     // that tint instead of snapping to the flat theme color the bar defaults
     // to everywhere else.
@@ -127,6 +127,8 @@ fun FrostedTopBar(
     val sideInset = com.nexamusic.music.LocalPlayerAwareWindowInsets.current.asPaddingValues()
         .calculateStartPadding(androidx.compose.ui.platform.LocalLayoutDirection.current)
     val ambientColor = com.nexamusic.music.LocalAmbientBackgroundColor.current.value
+    val resolvedProgressProvider = progressProvider ?: LocalScrollHeaderProgressProvider.current
+
     val isDark = AppTheme.colorScheme.surface.luminance() <= 0.5f
     val activeTint = if (titleColor.isSpecified) titleColor else ambientColor
     val resolvedTitleColor = if (titleColor.isSpecified) {
@@ -162,7 +164,7 @@ fun FrostedTopBar(
                     .padding(top = 4.dp)
                     .fillMaxWidth()
                     .graphicsLayer {
-                        val p = progressProvider().coerceIn(0f, 1f)
+                        val p = resolvedProgressProvider().coerceIn(0f, 1f)
                         alpha = titleAlphaProvider?.invoke() ?: titleAlpha
                         translationY = if (ValueAnimator.areAnimatorsEnabled()) {
                             (1f - p) * SmoothHeaderTokens.SmallTitleTravel.toPx()
