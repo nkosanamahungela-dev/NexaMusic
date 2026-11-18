@@ -950,7 +950,7 @@ fun LocalPlaylistScreen(
         com.nexamusic.music.ui.component.SmoothHeaderCompactTitle(
             title = playlist?.playlist?.name.orEmpty(),
             progressProvider = detailHeaderProgress,
-            color = chromeContentColor,
+            color = AppTheme.colorScheme.onSurface,
             modifier = Modifier.align(Alignment.TopCenter)
                 .windowInsetsPadding(WindowInsets.statusBars),
         )
@@ -975,7 +975,7 @@ fun LocalPlaylistScreen(
                 Text(
                     text = pluralStringResource(R.plurals.n_selected, selection.size, selection.size),
                     style = AppTheme.typography.titleMedium,
-                    color = chromeContentColor,
+                    color = AppTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.weight(1f)
                 )
@@ -1036,7 +1036,7 @@ fun LocalPlaylistScreen(
                     Text(
                         text = playlist?.playlist?.name.orEmpty(),
                         style = AppTheme.typography.titleMedium,
-                        color = chromeContentColor,
+                        color = AppTheme.colorScheme.onSurface,
                         textAlign = TextAlign.Center,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
