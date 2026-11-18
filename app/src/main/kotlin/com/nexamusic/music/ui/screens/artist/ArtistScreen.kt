@@ -1212,7 +1212,7 @@ fun ArtistScreen(
         com.nexamusic.music.ui.component.SmoothHeaderCompactTitle(
             title = artistPage?.artist?.title ?: libraryArtist?.artist?.name.orEmpty(),
             progressProvider = detailHeaderProgress,
-            color = textTiers[0],
+            color = AppTheme.colorScheme.onSurface,
             modifier = Modifier.align(Alignment.TopCenter)
                 .windowInsetsPadding(WindowInsets.statusBars),
         )
