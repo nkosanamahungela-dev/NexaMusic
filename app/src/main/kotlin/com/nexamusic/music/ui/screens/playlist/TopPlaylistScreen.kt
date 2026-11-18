@@ -66,6 +66,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.nexamusic.music.ui.component.smoothHeaderScrollProgress
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -332,7 +333,7 @@ fun TopPlaylistScreen(
             LazyColumn(
                 state = state,
                 overscrollEffect = heroZoom.listOverscroll(),
-                modifier = Modifier.heroPullZoom(heroZoom),
+                modifier = Modifier.smoothHeaderScrollProgress().heroPullZoom(heroZoom),
                 contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
             ) {
                 if (currentSongs != null) {
@@ -489,7 +490,7 @@ fun TopPlaylistScreen(
             // RenderNode cycle) rather than the ambient unattached heroBackdrop,
             // whose drawBackdrop early-returns and left this chrome flat.
             CompositionLocalProvider(LocalAppBackdrop provides listBackdrop) {
-            com.nexamusic.music.ui.component.TopFadeBlur(hazeState, tint, Modifier.align(Alignment.TopCenter))
+            com.nexamusic.music.ui.component.TopFadeBlur(hazeState, tint, Modifier.align(Alignment.TopCenter), progressProvider = { com.nexamusic.music.ui.component.SmoothHeaderProgress.progress })
             // Build the modifier inside this provider so it captures the attached list backdrop.
             val chromeBackgroundModifier = if (useGlass) {
                 Modifier.chromeShadow(chromeShape).liquidGlass(config = glassConfig, shape = chromeShape)
