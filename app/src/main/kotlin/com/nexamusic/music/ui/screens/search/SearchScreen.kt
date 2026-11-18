@@ -155,6 +155,7 @@ import androidx.compose.ui.text.font.FontWeight
 import com.nexamusic.music.ui.component.GlassCircleButton
 import com.nexamusic.music.ui.component.TopFadeBlur
 import com.nexamusic.music.ui.component.SmoothHeaderTokens
+import com.nexamusic.music.ui.component.SmoothHeaderProgressSync
 import com.nexamusic.music.ui.component.rememberSmoothHeaderTitleMotion
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
@@ -289,6 +290,10 @@ fun SearchScreen(
                 }
                 SmoothHeaderTokens.progress(scrollDp)
             }
+            // Publish this browse grid's own offset to the active navigation entry.
+            // The app-level header reads this same key; no other tab can overwrite it.
+            val searchScreenKey = navController.currentBackStackEntry?.id ?: "search"
+            SmoothHeaderProgressSync(headerProgressProvider, searchScreenKey)
             val searchTitleMotion = rememberSmoothHeaderTitleMotion(headerProgressProvider)
             Box(Modifier.fillMaxSize().hazeSource(browseHaze)) {
                 AppleSearchBrowse(
