@@ -7,6 +7,21 @@ package com.nexamusic.music.ui.component
 import android.animation.ValueAnimator
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.nexamusic.music.ui.ios.compat.AppTheme
+import com.nexamusic.music.ui.ios.compat.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -46,6 +61,42 @@ fun rememberSmoothHeaderTitleMotion(
                 else SmoothHeaderTokens.smallTitleOpacity(progressProvider())
             },
             transformsEnabled = !reduceMotion,
+        )
+    }
+}
+
+
+/** Compact title shared by artwork-detail headers. */
+@Composable
+fun SmoothHeaderCompactTitle(
+    title: String,
+    progressProvider: () -> Float,
+    modifier: Modifier = Modifier,
+    color: Color = AppTheme.colorScheme.onSurface,
+) {
+    val motion = rememberSmoothHeaderTitleMotion(progressProvider)
+    Box(
+        modifier = modifier.fillMaxWidth().height(52.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = title,
+            style = AppTheme.typography.titleMedium.copy(fontSize = 17.sp),
+            color = color,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier
+                .padding(horizontal = 88.dp)
+                .graphicsLayer {
+                    val p = progressProvider().coerceIn(0f, 1f)
+                    alpha = motion.compactAlpha()
+                    translationY = if (motion.transformsEnabled) {
+                        (1f - p) * SmoothHeaderTokens.SmallTitleTravel.toPx()
+                    } else 0f
+                }
+                .clearAndSetSemantics { },
         )
     }
 }
