@@ -36,7 +36,7 @@ typealias ScrollHeaderPinnedRowContent = @Composable () -> Unit
 
 val LocalScrollHeaderProgressProvider = compositionLocalOf<() -> Float> { { 0f } }
 private val LocalScrollHeaderPinnedRowRegistrar =
-    compositionLocalOf<(String, ScrollHeaderPinnedRowContent?) -> Unit>({ _, _ -> })
+    compositionLocalOf<(String, ScrollHeaderPinnedRowContent?) -> Unit> { { _, _ -> } }
 
 /** Registers a destination-owned row beneath the compact title. */
 @Composable
