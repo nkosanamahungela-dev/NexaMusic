@@ -22,13 +22,14 @@ import com.nexamusic.music.ui.screens.library.apple.ApplePlaylistsPage
 import com.nexamusic.music.ui.screens.library.apple.AppleSongsPage
 import com.nexamusic.music.ui.screens.library.apple.AppleLocalSongsPage
 import com.nexamusic.music.utils.rememberEnumPreference
+import com.nexamusic.music.ui.component.smoothHeaderScrollProgress
 
 @Composable
 fun LibraryScreen(navController: NavController) {
     var filterType by rememberEnumPreference(ChipSortTypeKey, LibraryFilter.LIBRARY)
 
     val back = { filterType = LibraryFilter.LIBRARY }
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize().smoothHeaderScrollProgress()) {
         // Apple Music's Library and its lists: new screens on the plain system background.
         when (filterType) {
             LibraryFilter.LIBRARY -> AppleLibraryScreen(
