@@ -5,6 +5,7 @@
 
 package com.nexamusic.music.ui.screens.library
 
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -23,17 +24,23 @@ import com.nexamusic.music.ui.screens.library.apple.AppleSongsPage
 import com.nexamusic.music.ui.screens.library.apple.AppleLocalSongsPage
 import com.nexamusic.music.utils.rememberEnumPreference
 import com.nexamusic.music.ui.component.smoothHeaderScrollProgress
+import com.nexamusic.music.ui.component.rememberSmoothHeaderProgress
+import com.nexamusic.music.ui.component.SmoothHeaderProgressSync
 
 @Composable
 fun LibraryScreen(navController: NavController) {
     var filterType by rememberEnumPreference(ChipSortTypeKey, LibraryFilter.LIBRARY)
 
     val back = { filterType = LibraryFilter.LIBRARY }
+    val libraryListState = rememberLazyListState()
+    val libraryHeaderProgress = rememberSmoothHeaderProgress(libraryListState)
+    if (filterType == LibraryFilter.LIBRARY) SmoothHeaderProgressSync(libraryHeaderProgress)
     Box(modifier = Modifier.fillMaxSize().smoothHeaderScrollProgress()) {
         // Apple Music's Library and its lists: new screens on the plain system background.
         when (filterType) {
             LibraryFilter.LIBRARY -> AppleLibraryScreen(
                 navController = navController,
+                listState = libraryListState,
                 onOpen = { destination ->
                     when (destination) {
                         AppleLibraryDestination.Playlists -> filterType = LibraryFilter.PLAYLISTS
