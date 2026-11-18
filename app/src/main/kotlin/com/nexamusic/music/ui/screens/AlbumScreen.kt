@@ -718,20 +718,6 @@ fun AlbumScreen(
                 .fillMaxWidth()
                 .align(Alignment.TopCenter)
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(AppBarHeight * 2.5f)
-                    .background(
-                        Brush.verticalGradient(
-                            0f to Color.Black.copy(alpha = 0.55f * chromeScrimAlpha),
-                            0.35f to Color.Black.copy(alpha = 0.4f * chromeScrimAlpha),
-                            0.7f to Color.Black.copy(alpha = 0.12f * chromeScrimAlpha),
-                            1f to Color.Transparent,
-                        )
-                    )
-            )
-
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
