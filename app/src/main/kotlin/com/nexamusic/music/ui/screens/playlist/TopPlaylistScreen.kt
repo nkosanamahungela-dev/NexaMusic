@@ -485,7 +485,6 @@ fun TopPlaylistScreen(
                 sectionIndexMap = null,
             )
 
-            val chromeScrimProgress = rememberChromeScrimProgress(state)
             // Sample the list's own attached capture (a sibling, so no
             // RenderNode cycle) rather than the ambient unattached heroBackdrop,
             // whose drawBackdrop early-returns and left this chrome flat.
@@ -502,7 +501,6 @@ fun TopPlaylistScreen(
                     .fillMaxWidth()
                     .align(Alignment.TopCenter)
             ) {
-            ChromeScrim(progress = chromeScrimProgress)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
