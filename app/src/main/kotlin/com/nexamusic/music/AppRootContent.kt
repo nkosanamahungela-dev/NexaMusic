@@ -147,6 +147,7 @@ import com.nexamusic.music.ui.component.SheetPresentationState
 import com.nexamusic.music.ui.component.SideBarAccountRow
 import com.nexamusic.music.ui.component.AppTabViewTopPill
 import com.nexamusic.music.ui.component.NavMorph
+import com.nexamusic.music.ui.component.ScrollHeaderScaffold
 import com.nexamusic.music.ui.component.SideBarCollapsedWidth
 import com.nexamusic.music.ui.component.SideBarContentInset
 import com.nexamusic.music.ui.component.SideBarMargin
@@ -953,16 +954,24 @@ internal fun AppRootContent(
                                     .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
                                     .nestedScroll(floatingNavBarScrollConnection)
                             ) {
-                                AppNavHost(
-                                navController = navController,
-                                startDestination = initialMainTabRoute,
-                                scrollBehavior = topAppBarScrollBehavior,
-                                activity = activity,
-                                snackbarHostState = snackbarHostState,
-                                accountImageUrl = accountImageUrl,
-                                accountName = sidebarAccountName,
-                                onAccountClick = onAccountClick,
-                                )
+                                // One destination-scoped scaffold owns the navigation content.
+                                // Its progress provider is keyed to the active back-stack entry;
+                                // each screen publishes its own restored scroll position.
+                                ScrollHeaderScaffold(
+                                    screenKey = navBackStackEntry?.id ?: currentRoute ?: "app",
+                                    modifier = Modifier.fillMaxSize(),
+                                ) {
+                                    AppNavHost(
+                                        navController = navController,
+                                        startDestination = initialMainTabRoute,
+                                        scrollBehavior = topAppBarScrollBehavior,
+                                        activity = activity,
+                                        snackbarHostState = snackbarHostState,
+                                        accountImageUrl = accountImageUrl,
+                                        accountName = sidebarAccountName,
+                                        onAccountClick = onAccountClick,
+                                    )
+                                }
                             }
                         }
 
