@@ -8,6 +8,7 @@ package com.nexamusic.music
 import com.nexamusic.music.ui.component.sf
 import com.nexamusic.music.ui.component.SmoothHeaderTokens
 import com.nexamusic.music.ui.component.SmoothHeaderProgress
+import com.nexamusic.music.ui.component.rememberSmoothHeaderTitleMotion
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -101,6 +102,7 @@ fun AppTopBar(
     onAccountClick: () -> Unit,
     chromeVisible: Boolean = visible,
 ) {
+        val titleMotion = rememberSmoothHeaderTitleMotion { SmoothHeaderProgress.progress }
         LaunchedEffect(effectiveRoute) { SmoothHeaderProgress.progress = 0f }
         AnimatedVisibility(
             visible = visible,
@@ -131,7 +133,7 @@ fun AppTopBar(
                 }
                 if (chromeVisible) FrostedTopBar(
                     title = titleRes?.let { stringResource(it) } ?: "",
-                    titleAlphaProvider = { SmoothHeaderTokens.smallTitleOpacity(SmoothHeaderProgress.progress) },
+                    titleAlphaProvider = titleMotion.compactAlpha,
                     // The blur above spans the full width; only the content clears the side bar and cutouts.
                     modifier = Modifier
                         .windowInsetsPadding(cutoutInsets.only(WindowInsetsSides.Start + WindowInsetsSides.End))
@@ -158,9 +160,9 @@ fun AppTopBar(
                             modifier = (if (showRail) Modifier else Modifier.height(46.dp)).semantics { heading() }.graphicsLayer {
                                 if (!showRail) {
                                     val p = SmoothHeaderProgress.progress
-                                    alpha = SmoothHeaderTokens.bigTitleOpacity(p)
-                                    translationY = -SmoothHeaderTokens.BigTitleTravel.toPx() * p
-                                    val scale = SmoothHeaderTokens.bigTitleScale(p)
+                                    alpha = titleMotion.largeAlpha()
+                                    translationY = if (titleMotion.transformsEnabled) -SmoothHeaderTokens.BigTitleTravel.toPx() * p else 0f
+                                    val scale = if (titleMotion.transformsEnabled) SmoothHeaderTokens.bigTitleScale(p) else 1f
                                     scaleX = scale
                                     scaleY = scale
                                     transformOrigin = TransformOrigin(0f, 0.5f)
@@ -176,7 +178,7 @@ fun AppTopBar(
                                 Modifier.graphicsLayer {
                                     val p = SmoothHeaderProgress.progress
                                     alpha = SmoothHeaderTokens.profileOpacity(p)
-                                    val scale = SmoothHeaderTokens.profileScale(p)
+                                    val scale = if (titleMotion.transformsEnabled) SmoothHeaderTokens.profileScale(p) else 1f
                                     scaleX = scale
                                     scaleY = scale
                                 },
