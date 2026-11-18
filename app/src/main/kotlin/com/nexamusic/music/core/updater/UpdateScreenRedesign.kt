@@ -377,6 +377,7 @@ fun UpdateScreen(navController: NavHostController) {
         FrostedTopBar(
             title = stringResource(R.string.settings_check_updates_title),
             titleAlphaProvider = updateTitleMotion.compactAlpha,
+            progressProvider = updateHeaderProgress,
             modifier = Modifier.align(Alignment.TopCenter),
         )
 
