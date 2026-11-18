@@ -155,7 +155,6 @@ fun ProgressiveBlurLayer(
 
     Box(
         modifier = modifier
-            .fillMaxSize()
             .then(horizontalFade)
             .graphicsLayer { alpha = if (useScrim) 1f else stackOpacity },
     ) {
