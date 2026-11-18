@@ -392,7 +392,7 @@ fun OnlinePlaylistScreen(
                             heroBackdrop = heroBackdrop,
                             heroScale = heroZoom.scale,
                             hazeState = hazeState,
-                            pageColor = tint,
+                            pageColor = AppTheme.colorScheme.background,
                             scrollBlurProgress = rememberHeroTopBlur(lazyListState),
                             onStartSearch = { isSearching = true },
                             searchValue = query.takeIf { isSearching },
