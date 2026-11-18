@@ -221,7 +221,7 @@ fun ProgressiveBlurLayer(
                             layer.fadeEndFraction to Color.Transparent,
                         )
                     }
-                    val style = HazeStyle(tint = null, blurRadius = layer.radius.dp, noiseFactor = 0f)
+                    val style = HazeStyle(backgroundColor = pageColor, tint = null, blurRadius = layer.radius.dp, noiseFactor = 0f)
                     Box(
                         Modifier
                             .fillMaxSize()
