@@ -47,7 +47,7 @@ fun Modifier.smoothHeaderScrollProgress(): Modifier = composed {
             ): Offset {
                 scrollPx.floatValue = (scrollPx.floatValue - consumed.y).coerceAtLeast(0f)
                 val raw = SmoothHeaderTokens.progress(scrollPx.floatValue / density.density)
-                SmoothHeaderProgress.progress = (raw * 1000f).toInt() / 1000f
+                SmoothHeaderProgress.progress = (raw / SmoothHeaderTokens.ProgressQuantum).toInt() * SmoothHeaderTokens.ProgressQuantum
                 return Offset.Zero
             }
         }
