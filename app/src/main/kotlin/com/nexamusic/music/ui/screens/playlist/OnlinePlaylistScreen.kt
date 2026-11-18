@@ -640,6 +640,13 @@ fun OnlinePlaylistScreen(
             modifier = Modifier.align(Alignment.TopCenter),
             progressProvider = { com.nexamusic.music.ui.component.SmoothHeaderProgress.progress },
         )
+        com.nexamusic.music.ui.component.SmoothHeaderCompactTitle(
+            title = playlist?.title.orEmpty(),
+            progressProvider = { com.nexamusic.music.ui.component.SmoothHeaderProgress.progress },
+            color = chromeContentColor,
+            modifier = Modifier.align(Alignment.TopCenter)
+                .windowInsetsPadding(WindowInsets.statusBars),
+        )
         Box(
             modifier = Modifier
                 .fillMaxWidth()
