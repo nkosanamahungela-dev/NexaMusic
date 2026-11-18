@@ -645,7 +645,7 @@ fun OnlinePlaylistScreen(
         )
         com.nexamusic.music.ui.component.SmoothHeaderCompactTitle(
             title = playlist?.title.orEmpty(),
-            progressProvider = { com.nexamusic.music.ui.component.SmoothHeaderProgress.progress },
+            progressProvider = detailHeaderProgress,
             color = chromeContentColor,
             modifier = Modifier.align(Alignment.TopCenter)
                 .windowInsetsPadding(WindowInsets.statusBars),
