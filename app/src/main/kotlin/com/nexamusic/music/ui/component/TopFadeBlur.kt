@@ -80,6 +80,8 @@ fun TopFadeBlur(
     backdrop: Backdrop? = null,
     /** Width of the side bar docked at the start edge; the strip fades out before it instead of ending abruptly. */
     startFade: Dp = sideBarStartInset(),
+    /** Scroll-driven opacity; zero keeps the header completely clear at rest. */
+    progressProvider: () -> Float = { 1f },
 ) {
     val reduceDynamicBlur by rememberPreference(ReduceDynamicBlurKey, false)
     // The caller uses a solid bar when dynamic blur is disabled.
@@ -133,7 +135,11 @@ fun TopFadeBlur(
     } else {
         Modifier
     }
-    Box(modifier.fillMaxWidth().height(height).then(sideFade)) {
+    Box(
+        modifier.fillMaxWidth().height(height).then(sideFade).graphicsLayer {
+            alpha = progressProvider().coerceIn(0f, 1f)
+        },
+    ) {
         if (blurStyle == TopBarBlurStyle.SINGLE_PASS && backdrop != null &&
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
         ) {
