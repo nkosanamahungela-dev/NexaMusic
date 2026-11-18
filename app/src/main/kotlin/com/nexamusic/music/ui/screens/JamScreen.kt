@@ -28,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.nexamusic.music.ui.component.smoothHeaderScrollProgress
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -77,6 +78,7 @@ fun JamScreen(navController: NavController, asTab: Boolean = false) {
     }
 
     ScreenPage(
+        modifier = Modifier.smoothHeaderScrollProgress(),
         title = stringResource(R.string.jam_title),
         onBack = if (asTab) null else ({ navController.navigateUp(); Unit }),
         onBackLongClick = if (asTab) null else navController::backToMain,
