@@ -62,6 +62,7 @@ import com.nexamusic.music.ui.component.TopFadeBlur
 import com.nexamusic.music.ui.component.FrostedTopBar
 import com.nexamusic.music.ui.component.SmoothHeaderProgress
 import com.nexamusic.music.ui.component.SmoothHeaderTokens
+import com.nexamusic.music.ui.component.rememberSmoothHeaderTitleMotion
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
 import androidx.compose.ui.draw.clip
@@ -125,6 +126,7 @@ fun UpdateScreen(navController: NavHostController) {
     val scope = rememberCoroutineScope()
     val pageColor = AppTheme.colorScheme.background
     val updateHaze = remember { HazeState() }
+    val updateTitleMotion = rememberSmoothHeaderTitleMotion { SmoothHeaderProgress.progress }
     val darkTheme = pageColor.luminance() < 0.5f
     val palette = if (darkTheme) UpdateScreenTokens.Dark else UpdateScreenTokens.Light
 
@@ -369,7 +371,7 @@ fun UpdateScreen(navController: NavHostController) {
         )
         FrostedTopBar(
             title = stringResource(R.string.settings_check_updates_title),
-            titleAlphaProvider = { SmoothHeaderTokens.smallTitleOpacity(SmoothHeaderProgress.progress) },
+            titleAlphaProvider = updateTitleMotion.compactAlpha,
             modifier = Modifier.align(Alignment.TopCenter),
         )
 
