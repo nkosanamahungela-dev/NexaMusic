@@ -563,7 +563,7 @@ fun HomeScreen(
 
                 LazyColumn(
                     state = lazylistState,
-                    modifier = Modifier.nestedScroll(feedScrollTracker).smoothHeaderScrollProgress(),
+                    modifier = Modifier.nestedScroll(feedScrollTracker),
                     // Sections had nothing but NavigationTitle's own 12dp padding
                     // between them — ran into each other, felt cramped.
                     verticalArrangement = Arrangement.spacedBy(AppPage.ItemSpacing),
