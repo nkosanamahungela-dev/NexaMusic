@@ -251,12 +251,13 @@ fun ScreenPage(
     val progressProvider = remember(scrollState, density) {
         { SmoothHeaderTokens.progress(scrollState.value / density.density) }
     }
+    val titleMotion = rememberSmoothHeaderTitleMotion(progressProvider)
 
     CompositionLocalProvider(LocalAppBackdrop provides chrome.backdrop) {
         ScreenChromeBox(
             title = title,
             titleAlpha = 0f,
-            titleAlphaProvider = { SmoothHeaderTokens.smallTitleOpacity(progressProvider()) },
+            titleAlphaProvider = titleMotion.compactAlpha,
             progressProvider = progressProvider,
             pageColor = pageColor,
             chrome = chrome,
@@ -277,9 +278,9 @@ fun ScreenPage(
                 Column(
                     Modifier.graphicsLayer {
                             val progress = progressProvider()
-                            alpha = SmoothHeaderTokens.bigTitleOpacity(progress)
-                            translationY = -SmoothHeaderTokens.BigTitleTravel.toPx() * progress
-                            val scale = SmoothHeaderTokens.bigTitleScale(progress)
+                            alpha = titleMotion.largeAlpha()
+                            translationY = if (titleMotion.transformsEnabled) -SmoothHeaderTokens.BigTitleTravel.toPx() * progress else 0f
+                            val scale = if (titleMotion.transformsEnabled) SmoothHeaderTokens.bigTitleScale(progress) else 1f
                             scaleX = scale
                             scaleY = scale
                             transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0f, 0.5f)
@@ -338,12 +339,13 @@ fun ScreenLazyPage(
             else SmoothHeaderTokens.progress(listState.firstVisibleItemScrollOffset / density.density)
         }
     }
+    val titleMotion = rememberSmoothHeaderTitleMotion(progressProvider)
 
     CompositionLocalProvider(LocalAppBackdrop provides chrome.backdrop) {
         ScreenChromeBox(
             title = title,
             titleAlpha = 0f,
-            titleAlphaProvider = { SmoothHeaderTokens.smallTitleOpacity(progressProvider()) },
+            titleAlphaProvider = titleMotion.compactAlpha,
             progressProvider = progressProvider,
             pinnedRow = pinnedRow,
             pinnedRowHeight = pinnedRowHeight,
@@ -368,9 +370,9 @@ fun ScreenLazyPage(
                     Column(
                         Modifier.graphicsLayer {
                             val progress = progressProvider()
-                            alpha = SmoothHeaderTokens.bigTitleOpacity(progress)
-                            translationY = -SmoothHeaderTokens.BigTitleTravel.toPx() * progress
-                            val scale = SmoothHeaderTokens.bigTitleScale(progress)
+                            alpha = titleMotion.largeAlpha()
+                            translationY = if (titleMotion.transformsEnabled) -SmoothHeaderTokens.BigTitleTravel.toPx() * progress else 0f
+                            val scale = if (titleMotion.transformsEnabled) SmoothHeaderTokens.bigTitleScale(progress) else 1f
                             scaleX = scale
                             scaleY = scale
                             transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0f, 0.5f)
