@@ -2,44 +2,50 @@
  * NexaMusic Project (C) 2026
  * Licensed under GPL-3.0 | See git history for contributors
  *
- * Shared geometry and motion contract for the Smooth Blur Header.
- * Values are Compose dp equivalents of the design's point values.
+ * Single source of truth for every Smooth Blur Header dimension, threshold,
+ * opacity curve, blur radius, fallback and motion duration.
  */
 package com.nexamusic.music.ui.component
 
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 object SmoothHeaderTokens {
-    val ScrollDistance = HeaderScrollDistance
-    // All design dimensions are Compose dp equivalents of the supplied point values.
-    val HeaderContentHeight = 80.dp
+    // Geometry
     val HeaderScrollDistance = 90.dp
+    val ScrollDistance = HeaderScrollDistance
+    val HeaderContentHeight = 80.dp
+    val TopBarContentHeight = 52.dp
+    val PinnedRowHeight = 48.dp
+    val RailFadeWidth = 28.dp
+
+    // Scroll progress and compositing
     const val ProgressQuantum = 0.001f
     const val HeaderTintPeak = 0.62f
     const val HeaderBlurOpacityMultiplier = 1.3f
     const val ScrimFallbackPeak = 0.85f
     const val ReducedTransparencyPeak = 0.92f
+    const val BlurLayerSaturation = 1.2f
     const val LowResolutionBlurScale = 0.5f
     const val StandardBlurScale = 1f
+
+    // Title and profile motion
+    val BigTitleSize = 40.sp
+    val SmallTitleSize = 17.sp
+    val BigTitleLetterSpacing = (-1.6).sp
+    val BigTitleTravel = 14.dp
+    const val BigTitleScale = 0.20f
     const val LargeTitleOpacitySlope = 1.7f
     const val SmallTitleStartProgress = 0.45f
     const val SmallTitleOpacitySlope = 2f
-    const val ProfileOpacitySlope = 1.6f
-    val HeaderTopInsetContentHeight = HeaderContentHeight
-    val BigTitleLetterSpacingEm = -0.04f
-    val BlurLayerSaturation = 1.2f
-    val BigTitleSize = 40.dp
-    val SmallTitleSize = 17.dp
-    val BigTitleTravel = 14.dp
-    val BigTitleScale = 0.20f
     val SmallTitleTravel = 8.dp
-    val ProfileScale = 0.25f
-    val BlurStackOpacityMultiplier = HeaderBlurOpacityMultiplier
-    val TintPeakOpacity = HeaderTintPeak
-    val ScrimFallbackOpacity = ScrimFallbackPeak
-    val ReducedTransparencyOpacity = ReducedTransparencyPeak
-    val ReduceMotionCrossfadeMillis = 150
-    val Saturation = 1.2f
+    const val ProfileOpacitySlope = 1.6f
+    const val ProfileScale = 0.25f
+    const val ReduceMotionCrossfadeMillis = 150
+
+    // Frame-time fallback: repeated frames slower than 1.8 refresh intervals.
+    const val SlowFrameIntervalMultiplier = 1.8f
+    const val ConsecutiveSlowFramesBeforeFallback = 3
 
     data class BlurLayer(val radius: Float, val fadeEndFraction: Float)
 
@@ -53,10 +59,10 @@ object SmoothHeaderTokens {
     )
 
     fun progress(scrollOffsetDp: Float): Float =
-        (scrollOffsetDp / ScrollDistance.value).coerceIn(0f, 1f)
+        (scrollOffsetDp / HeaderScrollDistance.value).coerceIn(0f, 1f)
 
     fun blurOpacity(progress: Float): Float =
-        (progress * BlurStackOpacityMultiplier).coerceIn(0f, 1f)
+        (progress * HeaderBlurOpacityMultiplier).coerceIn(0f, 1f)
 
     fun bigTitleOpacity(progress: Float): Float =
         (1f - LargeTitleOpacitySlope * progress).coerceIn(0f, 1f)
