@@ -324,19 +324,6 @@ fun AlbumScreen(
         }
     }
 
-    // How far scrolled past the hero art, 0..1 — same progressive dark scrim
-    // treatment as the Artist screen's floating chrome.
-    val chromeScrimAlpha by remember {
-        derivedStateOf {
-            val scrolledPx = if (lazyListState.firstVisibleItemIndex == 0) {
-                lazyListState.firstVisibleItemScrollOffset.toFloat()
-            } else {
-                300f
-            }
-            (scrolledPx / 300f).coerceIn(0f, 1f)
-        }
-    }
-
     // Scroll progress driving the heroart progressive blur + the top blur strip:
     // hoisted so the header artwork and the floating chrome share one value.
     val heroTopBlurProgress = rememberHeroTopBlur(lazyListState)
