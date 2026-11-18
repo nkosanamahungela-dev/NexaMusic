@@ -532,7 +532,7 @@ fun AutoPlaylistScreen(
             com.nexamusic.music.ui.component.SmoothHeaderCompactTitle(
                 title = playlistName,
                 progressProvider = detailHeaderProgress,
-                color = onTint,
+                color = AppTheme.colorScheme.onSurface,
                 modifier = Modifier.align(Alignment.TopCenter)
                     .windowInsetsPadding(WindowInsets.statusBars),
             )
@@ -567,7 +567,7 @@ fun AutoPlaylistScreen(
                         Text(
                             text = pluralStringResource(R.plurals.n_selected, selection.size, selection.size),
                             style = AppTheme.typography.titleMedium,
-                            color = onTint,
+                            color = AppTheme.colorScheme.onSurface,
                             textAlign = TextAlign.Center,
                             modifier = Modifier.weight(1f),
                         )
@@ -621,7 +621,7 @@ fun AutoPlaylistScreen(
 
                         Text(
                             playlistName,
-                            color = onTint,
+                            color = AppTheme.colorScheme.onSurface,
                             style = AppTheme.typography.titleMedium,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
@@ -636,7 +636,7 @@ fun AutoPlaylistScreen(
                                     CircularProgressIndicator(
                                         modifier = Modifier.size(20.dp),
                                         strokeWidth = 2.dp,
-                                        color = onTint,
+                                        color = AppTheme.colorScheme.onSurface,
                                     )
                                 } else {
 SymbolIcon(symbol = sf("SFArrowClockwise"), contentDescription = null)
