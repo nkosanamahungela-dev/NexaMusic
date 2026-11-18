@@ -49,6 +49,7 @@ import com.nexamusic.music.ui.ios.compat.Text
 import com.nexamusic.music.ui.ios.compat.ToggleButton
 import com.nexamusic.music.ui.ios.compat.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -64,6 +65,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.nexamusic.music.ui.component.smoothHeaderScrollProgress
+import com.nexamusic.music.ui.component.TopFadeBlur
+import com.nexamusic.music.ui.component.SmoothHeaderProgress
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.hazeSource
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
@@ -105,6 +110,7 @@ fun ChangelogScreen(
     versionTag: String = "v${BuildConfig.VERSION_NAME}"
 ) {
     val context = LocalContext.current
+    val changelogHaze = remember { HazeState() }
     var changelogSections by remember { mutableStateOf<List<ChangelogSection>>(emptyList()) }
     var updateImage by remember { mutableStateOf<String?>(null) }
     var updateDescription by remember { mutableStateOf<String?>(null) }
@@ -284,15 +290,27 @@ fun ChangelogScreen(
             onRefresh = { fetchChangelog(currentVersionTag) }
         ),
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.changelog_title)) },
-                navigationIcon = {
-                    IconButton(onClick = navController::navigateUp) {
-                        SymbolIcon(symbol = sf("SFChevronLeft"), contentDescription = null)
-                    }
-                },
-                scrollBehavior = scrollBehavior
-            )
+            Box(Modifier.fillMaxWidth()) {
+                TopFadeBlur(
+                    hazeState = changelogHaze,
+                    pageColor = AppTheme.colorScheme.background,
+                    modifier = Modifier.align(Alignment.TopCenter),
+                    progressProvider = { SmoothHeaderProgress.progress },
+                )
+                TopAppBar(
+                    title = { Text(stringResource(R.string.changelog_title)) },
+                    navigationIcon = {
+                        IconButton(onClick = navController::navigateUp) {
+                            SymbolIcon(symbol = sf("SFChevronLeft"), contentDescription = null)
+                        }
+                    },
+                    scrollBehavior = scrollBehavior,
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = androidx.compose.ui.graphics.Color.Transparent,
+                        scrolledContainerColor = androidx.compose.ui.graphics.Color.Transparent,
+                    ),
+                )
+            }
         }
     ) { paddingValues ->
         Box(
@@ -302,7 +320,7 @@ fun ChangelogScreen(
                 .background(AppTheme.colorScheme.background)
                 .windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Bottom))
         ) {
-            Column(modifier = Modifier.fillMaxSize()) {
+            Column(modifier = Modifier.fillMaxSize().hazeSource(changelogHaze)) {
                 if (availableReleases.isNotEmpty()) {
                     Row(
                         modifier = Modifier
