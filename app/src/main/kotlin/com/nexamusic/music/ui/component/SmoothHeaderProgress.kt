@@ -8,6 +8,7 @@
 package com.nexamusic.music.ui.component
 
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
@@ -46,4 +47,17 @@ fun Modifier.smoothHeaderScrollProgress(): Modifier = composed {
         }
     }
     nestedScroll(connection)
+}
+
+
+/** Restorable list-state progress for screens whose top chrome is not app-global. */
+@androidx.compose.runtime.Composable
+fun rememberSmoothHeaderProgress(state: LazyListState): () -> Float {
+    val density = LocalDensity.current
+    return remember(state, density) {
+        {
+            if (state.firstVisibleItemIndex > 0) 1f
+            else SmoothHeaderTokens.progress(state.firstVisibleItemScrollOffset / density.density)
+        }
+    }
 }
