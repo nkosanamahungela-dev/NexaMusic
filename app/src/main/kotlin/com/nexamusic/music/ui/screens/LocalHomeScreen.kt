@@ -49,6 +49,8 @@ import com.nexamusic.music.ui.component.HomeImageBackground
 import com.nexamusic.music.ui.component.LocalMenuState
 import com.nexamusic.music.ui.component.rememberAppBackgroundColor
 import com.nexamusic.music.ui.component.smoothHeaderScrollProgress
+import com.nexamusic.music.ui.component.rememberSmoothHeaderProgress
+import com.nexamusic.music.ui.component.SmoothHeaderProgressSync
 import com.nexamusic.music.ui.ios.compat.AppTheme
 import com.nexamusic.music.ui.theme.AppPage
 import com.nexamusic.music.ui.theme.LocalMetadataColor
@@ -87,6 +89,8 @@ fun LocalHomeScreen(
     }
 
     val lazyListState = rememberLazyListState()
+    val localHomeHeaderProgress = rememberSmoothHeaderProgress(lazyListState)
+    SmoothHeaderProgressSync(localHomeHeaderProgress)
     val backStackEntry by navController.currentBackStackEntryAsState()
     val scrollToTop =
         backStackEntry?.savedStateHandle?.getStateFlow("scrollToTop", false)?.collectAsStateWithLifecycle()
