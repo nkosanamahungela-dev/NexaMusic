@@ -151,9 +151,9 @@ fun AppTopBar(
                             style = AppTheme.typography.titleLarge.copy(
                                 fontFamily = SfProFontFamily,
                                 fontWeight = FontWeight.ExtraBold,
-                                fontSize = 40.sp,
-                                lineHeight = 46.sp,
-                                letterSpacing = (-1.6).sp,
+                                fontSize = SmoothHeaderTokens.BigTitleSize,
+                                lineHeight = SmoothHeaderTokens.BigTitleLineHeight,
+                                letterSpacing = SmoothHeaderTokens.BigTitleLetterSpacing,
                             ),
                             color = topBarTitleColor,
                             maxLines = 1,
