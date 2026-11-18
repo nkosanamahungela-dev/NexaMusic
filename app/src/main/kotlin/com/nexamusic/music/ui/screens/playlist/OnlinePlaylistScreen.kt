@@ -646,7 +646,7 @@ fun OnlinePlaylistScreen(
         com.nexamusic.music.ui.component.SmoothHeaderCompactTitle(
             title = playlist?.title.orEmpty(),
             progressProvider = detailHeaderProgress,
-            color = chromeContentColor,
+            color = AppTheme.colorScheme.onSurface,
             modifier = Modifier.align(Alignment.TopCenter)
                 .windowInsetsPadding(WindowInsets.statusBars),
         )
@@ -671,7 +671,7 @@ fun OnlinePlaylistScreen(
                 Text(
                     text = pluralStringResource(R.plurals.n_song, selection.size, selection.size),
                     style = AppTheme.typography.titleMedium,
-                    color = chromeContentColor,
+                    color = AppTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.weight(1f)
                 )
@@ -734,7 +734,7 @@ fun OnlinePlaylistScreen(
                         Text(
                             text = playlist?.title ?: "",
                             style = AppTheme.typography.titleMedium,
-                            color = chromeContentColor,
+                            color = AppTheme.colorScheme.onSurface,
                             textAlign = TextAlign.Center,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
