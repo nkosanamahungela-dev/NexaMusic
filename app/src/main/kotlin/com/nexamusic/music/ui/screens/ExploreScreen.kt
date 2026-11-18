@@ -216,8 +216,7 @@ fun ExploreScreen(
     androidx.compose.foundation.lazy.LazyColumn(
         state = exploreListState,
         modifier = Modifier
-            .fillMaxSize()
-            .smoothHeaderScrollProgress(),
+            .fillMaxSize(),
         contentPadding = PaddingValues(
             start = sideInset,
             top = maxOf(pageInsets.calculateTopPadding(), if (sideInset > 0.dp) 96.dp else 116.dp),
