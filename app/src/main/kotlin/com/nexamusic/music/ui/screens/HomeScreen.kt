@@ -359,8 +359,10 @@ fun HomeScreen(
     val pinnedFilterScrollState = rememberScrollState()
     val homeFiltersPinned by remember(lazylistState) {
         derivedStateOf {
-            lazylistState.firstVisibleItemIndex > 0 &&
-                lazylistState.layoutInfo.visibleItemsInfo.none { it.key == "home_feed_filters" }
+            val layoutInfo = lazylistState.layoutInfo
+            layoutInfo.visibleItemsInfo.isNotEmpty() &&
+                layoutInfo.visibleItemsInfo.none { it.key == "home_feed_filters" } &&
+                (lazylistState.firstVisibleItemIndex > 0 || lazylistState.firstVisibleItemScrollOffset > 0)
         }
     }
     val feedScroll = remember { mutableFloatStateOf(0f) }
@@ -557,7 +559,7 @@ fun HomeScreen(
 
                 com.nexamusic.music.ui.component.PinnedScrollHeaderRow(
                     screenKey = navController.currentBackStackEntry?.id ?: "home",
-                    visible = homeFiltersPinned,
+                    visible = homeFiltersPinned && homeHeaderProgress() >= 0.85f,
                 ) {
                     HomeFeedFilterRow(
                         moodChips = if (showMoodFilters) homePage?.chips.orEmpty().filter { it.endpoint?.browseId?.isNotBlank() == true } else emptyList(),

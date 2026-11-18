@@ -14,7 +14,6 @@ import android.content.ContextWrapper
 import android.graphics.Color as AndroidColor
 import android.os.Build
 import android.os.PowerManager
-import android.view.Choreographer
 import android.view.WindowManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
