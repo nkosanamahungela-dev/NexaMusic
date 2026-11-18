@@ -164,7 +164,9 @@ fun FrostedTopBar(
                     .graphicsLayer {
                         val p = progressProvider().coerceIn(0f, 1f)
                         alpha = titleAlphaProvider?.invoke() ?: titleAlpha
-                        translationY = (1f - p) * SmoothHeaderTokens.SmallTitleTravel.toPx()
+                        translationY = if (ValueAnimator.areAnimatorsEnabled()) {
+                            (1f - p) * SmoothHeaderTokens.SmallTitleTravel.toPx()
+                        } else 0f
                     }
                     .clearAndSetSemantics { },
             )
