@@ -64,6 +64,7 @@ import com.nexamusic.music.models.MediaMetadata
 import com.nexamusic.music.models.toMediaMetadata
 import com.nexamusic.music.playback.queues.YouTubeQueue
 import com.nexamusic.music.ui.component.GlassCircleButton
+import com.nexamusic.music.ui.component.smoothHeaderScrollProgress
 import com.nexamusic.music.ui.component.NavigationTitle
 import com.nexamusic.music.ui.component.YouTubeListItem
 import com.nexamusic.music.ui.ios.compat.AppTheme
@@ -260,7 +261,7 @@ fun RadioScreen(
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
             state = gridState,
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().smoothHeaderScrollProgress(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
             contentPadding = PaddingValues(
