@@ -35,7 +35,15 @@
         "Connected local-only Home scrolling to the same shared header progress signal.",
         "Connected the Settings hub, reusable Settings pages, and custom Settings scaffolds to shared header scroll progress.",
         "Connected Changelog, Party, and Update vertical scrolling to the shared header progress signal.",
-        "Connected Album, Artist, and local/online/automatic/cache/top Playlist artwork-detail scrolling to their progressive top blur."
+        "Connected Album, Artist, and local/online/automatic/cache/top Playlist artwork-detail scrolling to their progressive top blur.",
+        "Added the shared ScrollHeaderScaffold and six-pass ProgressiveBlurLayer with the exact 0.5–24dp blur radii, progressive masks, 1.2 saturation, 62% theme tint, and 90dp scroll handoff.",
+        "Connected restored scroll offsets to the shared progress signal across Home, Radio, Library, Explore, Search, History, Settings, Changelog, Update, Album, Artist, Playlist, and Now Playing.",
+        "Separated Search's YouTube Music / Your Library switch into a pinnable row that locks beneath the compact title after it scrolls out of the grid.",
+        "Removed fixed header scrims and bands from Album, Artist, all Playlist detail variants, Update, and the Now Playing status-bar strip; retained artwork and existing controls.",
+        "Added API/device capability fallback, battery-saver and low-RAM scrims, reduced-transparency styling, reduced-motion crossfades, and a repeated slow-frame session fallback.",
+        "Made status and navigation bars transparent with icon contrast selected from the app's active Appearance theme.",
+        "Recorded the existing Haze 1.3.1 Apache-2.0 attribution in NOTICE; no additional blur library or dependency was introduced.",
+        "Expanded Smooth Header unit tests for all six blur radii, mask endpoints, fallback opacity, header geometry, and reduced-motion duration."
       ]
     },
     {
@@ -45,12 +53,11 @@
         "Playlist synchronization requires a signed-in YouTube Music account.",
         "Playback transitions and performance should be verified across different devices and tracks.",
         "Dark/light appearance and device-specific scrolling performance still require physical-device verification.",
-        "The shared header migration is an initial integration pass. Per-screen adoption, exact six-layer progressive rendering, pinned Search filters, accessibility modes, API/device fallbacks, and frame-time testing remain to be completed and verified.",
-        "The latest header build is being rechecked after fixing the two Kotlin import errors reported by CI.",
-        "Shared title motion and scroll-progress providers are now connected across Home, Radio, Library, Explore, Search, History, Settings, Changelog, Party, Update, Album, Artist, and Playlist routes; physical-device verification remains.",
         "Automated token tests cover the shared motion math; full UI, accessibility, fallback, refresh-rate, and physical-device tests are not yet verified.",
-        "The persistent app header now consumes the active route's shared scroll signal; restored-scroll initialization and per-route visual verification remain to be checked.",
-        "History and Search now have scroll-driven blur; Home, Radio, Library, Explore, Settings, Changelog, Party, Update, and individual artwork detail screens remain on their existing per-screen integrations until their own scroll states are wired."
+        "Smooth Blur Header code now uses one shared scroll-progress contract, a six-layer masked Haze stack, theme-derived tint, and a pinnable Search source row.",
+        "Fallback policy: API below 31, battery saver, low-RAM or low-performance devices use the 85% theme scrim; Reduce transparency uses 92%; Reduce motion crossfades titles over 150ms; repeated slow frames switch to scrim for the rest of the session.",
+        "Haze 1.3.1 is already present in the project and is Apache-2.0 licensed; its attribution is recorded in NOTICE.",
+        "Automated token tests cover the design constants. CI and physical-device verification are tracked separately; no 60/120fps or low-end-device measurement is claimed until run."
       ]
     }
   ]
