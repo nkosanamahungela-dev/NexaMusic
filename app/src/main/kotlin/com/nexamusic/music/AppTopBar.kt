@@ -134,6 +134,7 @@ fun AppTopBar(
                 if (chromeVisible) FrostedTopBar(
                     title = titleRes?.let { stringResource(it) } ?: "",
                     titleAlphaProvider = titleMotion.compactAlpha,
+                    progressProvider = { SmoothHeaderProgress.progress },
                     // The blur above spans the full width; only the content clears the side bar and cutouts.
                     modifier = Modifier
                         .windowInsetsPadding(cutoutInsets.only(WindowInsetsSides.Start + WindowInsetsSides.End))
