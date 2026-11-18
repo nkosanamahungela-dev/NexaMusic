@@ -47,9 +47,9 @@
         "Dark/light appearance and device-specific scrolling performance still require physical-device verification.",
         "The shared header migration is an initial integration pass. Per-screen adoption, exact six-layer progressive rendering, pinned Search filters, accessibility modes, API/device fallbacks, and frame-time testing remain to be completed and verified.",
         "The latest header build is being rechecked after fixing the two Kotlin import errors reported by CI.",
-        "Shared title motion is wired into ScreenPage and ScreenLazyPage; bespoke Search, History, Settings, and artwork-detail headers still need individual integration and device verification.",
+        "Shared title motion and scroll-progress providers are now connected across Home, Radio, Library, Explore, Search, History, Settings, Changelog, Party, Update, Album, Artist, and Playlist routes; physical-device verification remains.",
         "Automated token tests cover the shared motion math; full UI, accessibility, fallback, refresh-rate, and physical-device tests are not yet verified.",
-        "Search now drives header blur from its LazyVerticalGrid scroll state; other tab and bespoke detail headers still need their own scroll-progress providers before the full all-screen specification is complete.",
+        "The persistent app header now consumes the active route's shared scroll signal; restored-scroll initialization and per-route visual verification remain to be checked.",
         "History and Search now have scroll-driven blur; Home, Radio, Library, Explore, Settings, Changelog, Party, Update, and individual artwork detail screens remain on their existing per-screen integrations until their own scroll states are wired."
       ]
     }
