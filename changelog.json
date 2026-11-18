@@ -23,7 +23,8 @@
         "Added shared Smooth Header geometry and motion tokens for consistent scroll-driven header work across screens.",
         "Removed the fixed theme-colour strip from the Radio and Explore tab-header path; both now use the shared page-colour TopFadeBlur treatment.",
         "Reduced Search header tint from 90% to the shared 62% page-colour peak so its top chrome no longer reads as a solid band.",
-        "Centralized additional Smooth Header typography and blur-saturation tokens for the shared header contract."
+        "Centralized additional Smooth Header typography and blur-saturation tokens for the shared header contract.",
+        "Fixed Smooth Blur Header integration imports and kept the shared tab header on the progressive page-colour fade."
       ]
     },
     {
@@ -33,7 +34,8 @@
         "Playlist synchronization requires a signed-in YouTube Music account.",
         "Playback transitions and performance should be verified across different devices and tracks.",
         "Dark/light appearance and device-specific scrolling performance still require physical-device verification.",
-        "The shared header migration is an initial integration pass. Per-screen adoption, exact six-layer progressive rendering, pinned Search filters, accessibility modes, API/device fallbacks, and frame-time testing remain to be completed and verified."
+        "The shared header migration is an initial integration pass. Per-screen adoption, exact six-layer progressive rendering, pinned Search filters, accessibility modes, API/device fallbacks, and frame-time testing remain to be completed and verified.",
+        "The latest header build is being rechecked after fixing the two Kotlin import errors reported by CI."
       ]
     }
   ]
