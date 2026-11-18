@@ -310,6 +310,7 @@ fun ChangelogScreen(
                     onBack = { navController.navigateUp() },
                     title = stringResource(R.string.changelog_title),
                     titleAlphaProvider = changelogTitleMotion.compactAlpha,
+                    progressProvider = changelogHeaderProgress,
                     modifier = Modifier.align(Alignment.TopCenter),
                 )
             }
