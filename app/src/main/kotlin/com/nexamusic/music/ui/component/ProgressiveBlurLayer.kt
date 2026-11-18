@@ -111,14 +111,16 @@ fun ProgressiveBlurLayer(
 
     val density = LocalDensity.current
     val mode = remember(context) { HeaderRenderPolicy.mode(context) }
-    val progressState = remember(progressProvider) {
-        derivedStateOf {
-            val raw = progressProvider().coerceIn(0f, 1f)
-            (raw / SmoothHeaderTokens.ProgressQuantum).toInt() * SmoothHeaderTokens.ProgressQuantum
-        }
+    // Recompose only when entering/leaving the active state. Scroll ticks are
+    // read by graphicsLayer blocks, so lists and blur nodes are not rebuilt.
+    val isVisible by remember(progressProvider) {
+        derivedStateOf { progressProvider().coerceIn(0f, 1f) > 0f }
     }
-    val progress by progressState
-    if (progress <= 0f) return
+    if (!isVisible) return
+    val readProgress = {
+        val raw = progressProvider().coerceIn(0f, 1f)
+        (raw / SmoothHeaderTokens.ProgressQuantum).toInt() * SmoothHeaderTokens.ProgressQuantum
+    }
 
     val useScrim = reduceTransparency || mode == HeaderRenderMode.SCRIM || HeaderRenderPolicy.forceScrim.value
     val scrimPeak = if (reduceTransparency) {
@@ -187,7 +189,7 @@ fun ProgressiveBlurLayer(
             Box(
                 Modifier
                     .fillMaxSize()
-                    .graphicsLayer { alpha = progress }
+                    .graphicsLayer { alpha = readProgress() }
                     .background(
                         Brush.verticalGradient(
                             0f to pageColor.copy(alpha = scrimPeak),
@@ -200,7 +202,7 @@ fun ProgressiveBlurLayer(
             Box(
                 Modifier
                     .fillMaxSize()
-                    .graphicsLayer { alpha = SmoothHeaderTokens.blurOpacity(progress) },
+                    .graphicsLayer { alpha = SmoothHeaderTokens.blurOpacity(readProgress()) },
             ) {
                 SmoothHeaderTokens.BlurLayers.forEach { layer ->
                     val mask = remember(layer.fadeEndFraction) {
