@@ -39,7 +39,8 @@
         "Added destination-owned pinned filter rows to Home, Library and Explore, aligned with each screen's own scroll state.",
         "Improved the blur watchdog so missed frames are evaluated only while the header is transitioning, avoiding fallback during stationary blur.",
         "Mirrored the floating-rail fade for right-to-left layouts and scaled the shared title zone for larger system font settings.",
-        "Added a shared destination-scoped pinned-row registrar so Home, Library and Explore controls render above page content without sharing state across back-stack entries."
+        "Added a shared destination-scoped pinned-row registrar so Home, Library and Explore controls render above page content without sharing state across back-stack entries.",
+        "Fixed the Explore pinned-row action import so its section shortcuts dispatch through the screen coroutine scope."
       ]
     },
     {
