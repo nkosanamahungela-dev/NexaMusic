@@ -69,6 +69,8 @@ import androidx.compose.runtime.remember
 import dev.chrisbanes.haze.hazeSource
 import com.nexamusic.music.ui.component.TopFadeBlur
 import com.nexamusic.music.ui.component.smoothHeaderScrollProgress
+import com.nexamusic.music.ui.component.rememberSmoothHeaderProgress
+import com.nexamusic.music.ui.component.SmoothHeaderProgressSync
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -157,6 +159,9 @@ fun ExploreScreen(
     val recommended by exploreViewModel.recommendedForYou.collectAsStateWithLifecycle()
     val chartsPage by chartsViewModel.chartsPage.collectAsStateWithLifecycle()
     val art by tilesViewModel.art.collectAsStateWithLifecycle()
+    val exploreListState = rememberLazyListState()
+    val exploreHeaderProgress = rememberSmoothHeaderProgress(exploreListState)
+    SmoothHeaderProgressSync(exploreHeaderProgress)
     LaunchedEffect(Unit) { if (chartsPage == null) chartsViewModel.loadCharts() }
 
     val colors = com.nexamusic.music.ui.ios.foundation.IosTheme.colors
@@ -209,6 +214,7 @@ fun ExploreScreen(
     // The activity owns the shared title and frosted top bar.
     Box(Modifier.fillMaxSize().background(colors.systemBackground)) {
     androidx.compose.foundation.lazy.LazyColumn(
+        state = exploreListState,
         modifier = Modifier
             .fillMaxSize()
             .smoothHeaderScrollProgress(),
