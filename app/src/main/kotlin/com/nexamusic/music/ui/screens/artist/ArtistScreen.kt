@@ -1211,7 +1211,7 @@ fun ArtistScreen(
             )
         com.nexamusic.music.ui.component.SmoothHeaderCompactTitle(
             title = artistPage?.artist?.title ?: libraryArtist?.artist?.name.orEmpty(),
-            progressProvider = { com.nexamusic.music.ui.component.SmoothHeaderProgress.progress },
+            progressProvider = detailHeaderProgress,
             color = textTiers[0],
             modifier = Modifier.align(Alignment.TopCenter)
                 .windowInsetsPadding(WindowInsets.statusBars),
