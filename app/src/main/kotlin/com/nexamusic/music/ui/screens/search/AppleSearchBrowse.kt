@@ -165,7 +165,10 @@ fun AppleSearchBrowse(
         horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item(key = "header", span = { GridItemSpan(maxLineSpan) }) {
-            Column { header(); ScopeSwitch(scope, onScopeChange) }
+            header()
+        }
+        item(key = "scope-switch", span = { GridItemSpan(maxLineSpan) }) {
+            SearchScopeSwitch(scope, onScopeChange)
         }
         if (recentSearches.isNotEmpty()) {
             item(key = "recent-title", span = { GridItemSpan(maxLineSpan) }) { SectionTitle("Recent searches", "Clear", t, onClearRecent) }
@@ -251,7 +254,7 @@ fun AppleSearchBrowse(
 }
 
 @Composable
-private fun ScopeSwitch(scope: SearchSource, onSelect: (SearchSource) -> Unit) {
+fun SearchScopeSwitch(scope: SearchSource, onSelect: (SearchSource) -> Unit) {
     // This is the switch shown on the main Search browse page. Keep selection ownership
     // in NavSearchState and share the same lightweight glass control used by search results.
     GlassSegmentedControl(
