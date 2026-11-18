@@ -252,8 +252,12 @@ fun ScreenPage(
 ) {
     val chrome = rememberGlassScreenChrome(background = pageColor)
     val density = LocalDensity.current
-    val progressProvider = remember(scrollState, density) {
-        { SmoothHeaderTokens.progress(scrollState.value / density.density) }
+    val collapseDistancePx = with(density) { SmoothHeaderTokens.HeaderScrollDistance.roundToPx() }
+    val progressProvider = remember(scrollState, density, collapseDistancePx) {
+        {
+            if (scrollState.maxValue < collapseDistancePx) 0f
+            else SmoothHeaderTokens.progress(scrollState.value / density.density)
+        }
     }
     val titleMotion = rememberSmoothHeaderTitleMotion(progressProvider)
 
