@@ -7,10 +7,8 @@ package com.nexamusic.music.ui.component
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.calculateTopPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.matchParentSize
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -50,7 +48,7 @@ fun TopFadeBlur(
             hazeState = hazeState,
             pageColor = pageColor,
             progressProvider = progressProvider,
-            modifier = Modifier.matchParentSize(),
+            modifier = Modifier.fillMaxSize(),
             reduceTransparency = reduceDynamicBlur,
             startFade = startFade,
         )
