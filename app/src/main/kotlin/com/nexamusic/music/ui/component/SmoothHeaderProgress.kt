@@ -60,9 +60,18 @@ fun Modifier.smoothHeaderScrollProgress(): Modifier = composed {
 @androidx.compose.runtime.Composable
 fun rememberSmoothHeaderProgress(state: LazyListState): () -> Float {
     val density = LocalDensity.current
-    return remember(state, density) {
+    val collapseDistancePx = with(density) { SmoothHeaderTokens.HeaderScrollDistance.roundToPx() }
+    return remember(state, density, collapseDistancePx) {
         {
-            if (state.firstVisibleItemIndex > 0) 1f
+            val layout = state.layoutInfo
+            val visible = layout.visibleItemsInfo
+            val contentFitsInViewport = layout.totalItemsCount > 0 &&
+                visible.size >= layout.totalItemsCount &&
+                ((visible.maxOfOrNull { it.offset + it.size } ?: 0) -
+                    (visible.minOfOrNull { it.offset } ?: 0) -
+                    layout.viewportSize.height).coerceAtMost(collapseDistancePx) < collapseDistancePx
+            if (contentFitsInViewport) 0f
+            else if (state.firstVisibleItemIndex > 0) 1f
             else SmoothHeaderTokens.progress(state.firstVisibleItemScrollOffset / density.density)
         }
     }
@@ -92,9 +101,18 @@ fun SmoothHeaderProgressSync(progressProvider: () -> Float) {
 @androidx.compose.runtime.Composable
 fun rememberSmoothHeaderProgress(state: LazyGridState): () -> Float {
     val density = LocalDensity.current
-    return remember(state, density) {
+    val collapseDistancePx = with(density) { SmoothHeaderTokens.HeaderScrollDistance.roundToPx() }
+    return remember(state, density, collapseDistancePx) {
         {
-            if (state.firstVisibleItemIndex > 0) 1f
+            val layout = state.layoutInfo
+            val visible = layout.visibleItemsInfo
+            val contentFitsInViewport = layout.totalItemsCount > 0 &&
+                visible.size >= layout.totalItemsCount &&
+                ((visible.maxOfOrNull { it.offset.y + it.size.height } ?: 0) -
+                    (visible.minOfOrNull { it.offset.y } ?: 0) -
+                    layout.viewportSize.height).coerceAtMost(collapseDistancePx) < collapseDistancePx
+            if (contentFitsInViewport) 0f
+            else if (state.firstVisibleItemIndex > 0) 1f
             else SmoothHeaderTokens.progress(state.firstVisibleItemScrollOffset / density.density)
         }
     }
