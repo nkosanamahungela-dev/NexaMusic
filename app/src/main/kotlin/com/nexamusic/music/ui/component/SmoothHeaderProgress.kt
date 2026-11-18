@@ -7,7 +7,7 @@
  */
 package com.nexamusic.music.ui.component
 
-import androidx.compose.foundation.gestures.nestedScroll
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
