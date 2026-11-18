@@ -39,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -186,9 +187,9 @@ fun ScreenPage(
             title = title,
             titleAlpha = 0f,
             titleAlphaProvider = {
-                // Read ScrollState in draw phase via provider chain:
-                // FrostedTopBar invokes this only inside graphicsLayer/derivedStateOf.
-                (scrollState.value / titleBlockHeight.toFloat()).coerceIn(0f, 1f)
+                // Scroll progress is read by FrostedTopBar's graphics layer, not composition.
+                val progress = (scrollState.value / titleBlockHeight.toFloat()).coerceIn(0f, 1f)
+                SmoothHeaderTokens.smallTitleOpacity(progress)
             },
             pageColor = pageColor,
             chrome = chrome,
@@ -206,7 +207,19 @@ fun ScreenPage(
                     .padding(horizontal = horizontalPadding),
                 verticalArrangement = verticalArrangement,
             ) {
-                Column(Modifier.onSizeChanged { titleBlockHeight = it.height.coerceAtLeast(1) }) {
+                Column(
+                    Modifier
+                        .onSizeChanged { titleBlockHeight = it.height.coerceAtLeast(1) }
+                        .graphicsLayer {
+                            val progress = (scrollState.value / titleBlockHeight.toFloat()).coerceIn(0f, 1f)
+                            alpha = SmoothHeaderTokens.bigTitleOpacity(progress)
+                            translationY = -SmoothHeaderTokens.BigTitleTravel.toPx() * progress
+                            val scale = SmoothHeaderTokens.bigTitleScale(progress)
+                            scaleX = scale
+                            scaleY = scale
+                            transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0f, 0.5f)
+                        },
+                ) {
                     Spacer(
                         Modifier.windowInsetsPadding(
                             LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top),
@@ -256,7 +269,7 @@ fun ScreenLazyPage(
         ScreenChromeBox(
             title = title,
             titleAlpha = 0f,
-            titleAlphaProvider = { lazyTitleProgress.value },
+            titleAlphaProvider = { SmoothHeaderTokens.smallTitleOpacity(lazyTitleProgress.value) },
             pageColor = pageColor,
             chrome = chrome,
             onBack = onBack,
@@ -274,7 +287,17 @@ fun ScreenLazyPage(
                 ),
             ) {
                 item(key = "title") {
-                    Column {
+                    Column(
+                        Modifier.graphicsLayer {
+                            val progress = lazyTitleProgress.value.coerceIn(0f, 1f)
+                            alpha = SmoothHeaderTokens.bigTitleOpacity(progress)
+                            translationY = -SmoothHeaderTokens.BigTitleTravel.toPx() * progress
+                            val scale = SmoothHeaderTokens.bigTitleScale(progress)
+                            scaleX = scale
+                            scaleY = scale
+                            transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0f, 0.5f)
+                        },
+                    ) {
                         Spacer(
                             Modifier.windowInsetsPadding(
                                 LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top),
