@@ -7,6 +7,8 @@ package com.nexamusic.music
 
 import com.nexamusic.music.ui.component.sf
 import com.nexamusic.music.ui.component.SmoothHeaderTokens
+import com.nexamusic.music.ui.component.SmoothHeaderProgress
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.core.tween
@@ -95,6 +97,7 @@ fun AppTopBar(
     onAccountClick: () -> Unit,
     chromeVisible: Boolean = visible,
 ) {
+        LaunchedEffect(effectiveRoute) { SmoothHeaderProgress.progress = 0f }
         AnimatedVisibility(
             visible = visible,
             enter = fadeIn(animationSpec = tween(durationMillis = 300)),
@@ -112,6 +115,7 @@ fun AppTopBar(
                     scrimColor = AppTheme.colorScheme.background,
                     scrimOpacity = SmoothHeaderTokens.TintPeakOpacity,
                     backdrop = backdrop,
+                    progressProvider = { SmoothHeaderProgress.progress },
                     startFade = if (showRail) startInset else 0.dp,
                 )
                 // Explore's title remains theme-neutral and cannot inherit cover-derived tint.
