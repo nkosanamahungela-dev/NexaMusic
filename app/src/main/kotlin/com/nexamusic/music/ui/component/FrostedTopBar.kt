@@ -65,7 +65,7 @@ import com.nexamusic.music.ui.ios.compat.Text
  * ramp, fixed headers that sit directly beneath it — measures from here rather
  * than from a copy of the number.
  */
-val TopBarContentHeight = 52.dp
+val TopBarContentHeight = SmoothHeaderTokens.TopBarContentHeight
 
 /**
  * The breathing room between the bar's bottom edge and the first thing under
