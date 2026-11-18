@@ -490,6 +490,13 @@ fun TopPlaylistScreen(
             // whose drawBackdrop early-returns and left this chrome flat.
             CompositionLocalProvider(LocalAppBackdrop provides listBackdrop) {
             com.nexamusic.music.ui.component.TopFadeBlur(hazeState, tint, Modifier.align(Alignment.TopCenter), progressProvider = { com.nexamusic.music.ui.component.SmoothHeaderProgress.progress })
+            com.nexamusic.music.ui.component.SmoothHeaderCompactTitle(
+                title = name,
+                progressProvider = { com.nexamusic.music.ui.component.SmoothHeaderProgress.progress },
+                color = onTint,
+                modifier = Modifier.align(Alignment.TopCenter)
+                    .windowInsetsPadding(WindowInsets.statusBars),
+            )
             // Build the modifier inside this provider so it captures the attached list backdrop.
             val chromeBackgroundModifier = if (useGlass) {
                 Modifier.chromeShadow(chromeShape).liquidGlass(config = glassConfig, shape = chromeShape)
