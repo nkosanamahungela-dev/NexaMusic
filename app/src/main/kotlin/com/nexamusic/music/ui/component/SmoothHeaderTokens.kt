@@ -28,6 +28,14 @@ object SmoothHeaderTokens {
     const val BlurLayerSaturation = 1.2f
     const val LowResolutionBlurScale = 0.5f
     const val StandardBlurScale = 1f
+    // Stable aliases retained for existing call sites during the migration.
+    val HeaderTopInsetContentHeight = HeaderContentHeight
+    val BlurStackOpacityMultiplier = HeaderBlurOpacityMultiplier
+    val TintPeakOpacity = HeaderTintPeak
+    val ScrimFallbackOpacity = ScrimFallbackPeak
+    val ReducedTransparencyOpacity = ReducedTransparencyPeak
+    const val BigTitleLetterSpacingEm = -0.04f
+    const val Saturation = BlurLayerSaturation
 
     // Title and profile motion
     val BigTitleSize = 40.sp
