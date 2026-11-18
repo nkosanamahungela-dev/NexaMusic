@@ -11,6 +11,8 @@ import android.app.ActivityManager
 import android.content.Context
 import android.os.Build
 import android.os.PowerManager
+import android.view.Choreographer
+import android.view.WindowManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,6 +20,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -38,6 +42,7 @@ private enum class HeaderRenderMode { BLUR, SCRIM }
 /** Resolve device capability once per process; accessibility overrides remain live. */
 private object HeaderRenderPolicy {
     @Volatile private var cachedMode: HeaderRenderMode? = null
+    val forceScrim = mutableStateOf(false)
 
     fun mode(context: Context): HeaderRenderMode = cachedMode ?: synchronized(this) {
         cachedMode ?: run {
@@ -53,6 +58,7 @@ private object HeaderRenderPolicy {
 
     fun forceScrimForSession() {
         cachedMode = HeaderRenderMode.SCRIM
+        forceScrim.value = true
     }
 }
 
@@ -80,13 +86,44 @@ fun ProgressiveBlurLayer(
 
     if (progress <= 0f) return
 
-    val useScrim = reduceTransparency || mode == HeaderRenderMode.SCRIM
+    val useScrim = reduceTransparency || mode == HeaderRenderMode.SCRIM || HeaderRenderPolicy.forceScrim.value
     val scrimPeak = if (reduceTransparency) {
         SmoothHeaderTokens.ReducedTransparencyOpacity
     } else {
         SmoothHeaderTokens.ScrimFallbackOpacity
     }
     val stackOpacity = SmoothHeaderTokens.blurOpacity(progress)
+    DisposableEffect(useScrim, progress > 0f) {
+        if (useScrim || progress <= 0f) {
+            onDispose { }
+        } else {
+            val manager = context.getSystemService(Context.WINDOW_SERVICE) as? WindowManager
+            @Suppress("DEPRECATION")
+            val refreshRate = manager?.defaultDisplay?.refreshRate?.takeIf { it > 0f } ?: 60f
+            val slowFrameNanos = (1_000_000_000f / refreshRate * 1.8f).toLong()
+            val choreographer = Choreographer.getInstance()
+            var lastFrame = 0L
+            var consecutiveSlowFrames = 0
+            val callback = object : Choreographer.FrameCallback {
+                override fun doFrame(frameTimeNanos: Long) {
+                    if (lastFrame != 0L && frameTimeNanos - lastFrame > slowFrameNanos) {
+                        consecutiveSlowFrames += 1
+                    } else {
+                        consecutiveSlowFrames = 0
+                    }
+                    lastFrame = frameTimeNanos
+                    if (consecutiveSlowFrames >= 3) {
+                        forceSmoothHeaderScrimForSession()
+                    } else {
+                        choreographer.postFrameCallback(this)
+                    }
+                }
+            }
+            choreographer.postFrameCallback(callback)
+            onDispose { choreographer.removeFrameCallback(callback) }
+        }
+    }
+
     val saturation = remember {
         ColorMatrix().apply { setToSaturation(SmoothHeaderTokens.BlurLayerSaturation) }
     }
