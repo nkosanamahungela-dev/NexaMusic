@@ -1,5 +1,5 @@
 {
-  "description": "NexaMusic 0.1.4 Beta — Radio and Explore redesign, Pod selection polish, and discovery UI improvements.",
+  "description": "NexaMusic 0.1.4 Beta — Radio and Explore redesign, Pod selection polish, and the new Smooth Blur Header experience.",
   "image": "",
   "changelog": [
     {
@@ -20,36 +20,14 @@
         "Made the red ON AIR hero appear only while a radio station is actively playing; it stays hidden when playback is paused, stopped, or playing unrelated content.",
         "Redesigned Explore featured albums, release shelves, and mood tiles with clean cover-first layouts and a stable, non-repeating flat-colour palette.",
         "Removed artwork-derived blur and tint from the Radio and Explore top chrome so titles and status-bar areas stay readable.",
-        "Added a smooth, scroll-linked header animation that transitions the large page title into a compact centred title as you scroll.",
-        "Updated the Radio and Explore headers to fade smoothly into the page background instead of showing a fixed colour band.",
-        "Refined the Search header background so its tint fades gently with scrolling and matches the active app theme.",
-        "Unified header title sizing and scroll animation styling for a more consistent look across screens.",
-        "Polished the shared tab header transition and its theme-matched fading background.",
-        "Added coordinated fade, lift and scale animations to large page titles, with a compact title appearing as the page scrolls.",
-        "Improved consistency of the header's title and profile-button transitions during scrolling.",
-        "Added a scroll-responsive frosted effect to Search that stays clear at the top and gradually appears as content moves underneath.",
-        "Updated the History header to transition smoothly with its scrolling content.",
-        "Made the header's frosted background respond to the active screen's scroll position and remain clear when the page is at the top.",
-        "Added the shared scroll-linked header animation to Home, Radio, Explore and Library.",
-        "Preserved Home's existing scrolling behaviour while synchronizing its header animation.",
-        "Applied the same smooth header transition to the local Home feed.",
-        "Added the shared scrolling header animation to Settings and its pages.",
-        "Added the shared scrolling header animation to Changelog, Party and Update.",
-        "Added a fading frosted top area to Album, Artist and Playlist detail screens while keeping their artwork layouts intact.",
-        "Introduced one consistent frosted header treatment with a progressive blur and theme-matched fade that follows the page scroll.",
-        "Kept the header animation in sync when returning to screens or restoring their previous scroll position.",
-        "Kept the YouTube Music / Your Library switch pinned beneath the compact Search title while browsing results.",
-        "Removed fixed colour bands from Album, Artist, Playlist, Update and Now Playing headers while preserving artwork and existing controls.",
-        "Improved header performance and accessibility with lighter visual fallbacks for battery-saving, reduced-transparency and reduced-motion settings.",
-        "Matched transparent status and navigation bars to the app's active light or dark Appearance setting.",
-        "Recorded the existing Haze 1.3.1 Apache-2.0 attribution in NOTICE; no additional blur library or dependency was introduced.",
-        "Refined the shared header's appearance and motion behaviour across its supported display settings.",
-        "Synced Home, Radio, Explore and Library header animations with their actual restored list positions.",
-        "Added compact centred titles to Album, Artist, Playlist and Now Playing as their artwork scrolls away, without changing the artwork.",
-        "Updated Changelog and Update with the shared frosted header and removed the fixed colour strip above the Update screen.",
-        "Made the Listen Together / Party header follow its own scroll position.",
-        "Kept short pages in their clear, expanded-header state when there is not enough content to scroll.",
-        "Extended the same large-to-compact title transition to other scrolling screens that use the shared screen layout."
+        "Added a smooth scrolling header animation that transforms large page titles into compact centred titles.",
+        "Added a progressive frosted-glass effect that stays clear at the top of each page and gently appears as you scroll.",
+        "Brought the updated header experience to Home, Radio, Library, Explore, Search, History, Settings, Changelog, Party and Update.",
+        "Updated Album, Artist, Playlist and Now Playing headers with a matching scroll transition while keeping their artwork layouts unchanged.",
+        "Kept the YouTube Music / Your Library switch pinned below the compact Search title while browsing results.",
+        "Removed fixed colour strips behind headers on supported screens for a cleaner, theme-matched appearance.",
+        "Improved header motion and appearance support with lighter visual effects for battery-saving, reduced-transparency and reduced-motion settings.",
+        "Matched the status and navigation bar appearance to the app's active light or dark theme."
       ]
     },
     {
@@ -57,13 +35,8 @@
       "items": [
         "Apple Music V3 lyrics are still in beta; timing and alignment can vary by track and lyrics provider.",
         "Playlist synchronization requires a signed-in YouTube Music account.",
-        "Playback transitions and performance should be verified across different devices and tracks.",
-        "Dark/light appearance and device-specific scrolling performance still require physical-device verification.",
-        "Automated token tests cover the shared motion math; full UI, accessibility, fallback, refresh-rate, and physical-device tests are not yet verified.",
-        "Smooth Blur Header code now uses one shared scroll-progress contract, a six-layer masked Haze stack, theme-derived tint, and a pinnable Search source row.",
-        "Fallback policy: API below 31, battery saver, low-RAM or low-performance devices use the 85% theme scrim; Reduce transparency uses 92%; Reduce motion crossfades titles over 150ms; repeated slow frames switch to scrim for the rest of the session.",
-        "Haze 1.3.1 is already present in the project and is Apache-2.0 licensed; its attribution is recorded in NOTICE.",
-        "Smooth Header token unit tests cover the six blur layers, fade masks, 90dp collapse distance, tint and fallback values. Build verification is pending for the latest branch commit; physical-device 60/120fps measurements have not been run."
+        "Playback transitions and performance may vary across devices and tracks.",
+        "Some visual effects use lighter alternatives on devices or settings that limit blur and motion."
       ]
     }
   ]
