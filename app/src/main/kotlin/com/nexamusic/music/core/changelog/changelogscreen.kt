@@ -67,6 +67,7 @@ import com.nexamusic.music.ui.component.smoothHeaderScrollProgress
 import com.nexamusic.music.ui.component.TopFadeBlur
 import com.nexamusic.music.ui.component.FrostedTopBar
 import com.nexamusic.music.ui.component.SmoothHeaderTokens
+import com.nexamusic.music.ui.component.rememberSmoothHeaderTitleMotion
 import com.nexamusic.music.ui.component.SmoothHeaderProgress
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
@@ -112,6 +113,7 @@ fun ChangelogScreen(
 ) {
     val context = LocalContext.current
     val changelogHaze = remember { HazeState() }
+    val changelogTitleMotion = rememberSmoothHeaderTitleMotion { SmoothHeaderProgress.progress }
     var changelogSections by remember { mutableStateOf<List<ChangelogSection>>(emptyList()) }
     var updateImage by remember { mutableStateOf<String?>(null) }
     var updateDescription by remember { mutableStateOf<String?>(null) }
@@ -301,7 +303,7 @@ fun ChangelogScreen(
                 FrostedTopBar(
                     onBack = { navController.navigateUp() },
                     title = stringResource(R.string.changelog_title),
-                    titleAlphaProvider = { SmoothHeaderTokens.smallTitleOpacity(SmoothHeaderProgress.progress) },
+                    titleAlphaProvider = changelogTitleMotion.compactAlpha,
                     modifier = Modifier.align(Alignment.TopCenter),
                 )
             }
