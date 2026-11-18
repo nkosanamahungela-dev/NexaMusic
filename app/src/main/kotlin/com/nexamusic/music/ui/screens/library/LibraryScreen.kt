@@ -30,6 +30,7 @@ import com.nexamusic.music.utils.rememberEnumPreference
 import com.nexamusic.music.ui.component.smoothHeaderScrollProgress
 import com.nexamusic.music.ui.component.rememberSmoothHeaderProgress
 import com.nexamusic.music.ui.component.SmoothHeaderProgressSync
+import com.nexamusic.music.ui.component.SmoothHeaderProgress
 import com.nexamusic.music.ui.component.ChipsRow
 import com.nexamusic.music.ui.component.PinnedScrollHeaderRow
 import com.nexamusic.music.R
@@ -48,13 +49,15 @@ fun LibraryScreen(navController: NavController) {
     val libraryPinnedScrollState = rememberScrollState()
     val librarySideInset = LocalPlayerAwareWindowInsets.current.asPaddingValues()
         .calculateStartPadding(LocalLayoutDirection.current)
+    val pinnedProgress = SmoothHeaderProgress.progressFor(headerScreenKey)
     Box(modifier = Modifier.fillMaxSize().then(if (filterType == LibraryFilter.LIBRARY) Modifier else Modifier.smoothHeaderScrollProgress(headerScreenKey))) {
         PinnedScrollHeaderRow(
             screenKey = headerScreenKey,
-            visible = filterType == LibraryFilter.LIBRARY && libraryHeaderProgress() >= 0.85f,
+            visible = pinnedProgress >= 0.85f,
         ) {
             ChipsRow(
                 chips = listOf(
+                    LibraryFilter.LIBRARY to stringResource(R.string.filter_library),
                     LibraryFilter.PLAYLISTS to stringResource(R.string.filter_playlists),
                     LibraryFilter.ARTISTS to stringResource(R.string.filter_artists),
                     LibraryFilter.ALBUMS to stringResource(R.string.filter_albums),

@@ -557,10 +557,10 @@ fun HomeScreen(
 
                 com.nexamusic.music.ui.component.PinnedScrollHeaderRow(
                     screenKey = navController.currentBackStackEntry?.id ?: "home",
-                    visible = homeFiltersPinned && showMoodFilters,
+                    visible = homeFiltersPinned,
                 ) {
                     HomeFeedFilterRow(
-                        moodChips = homePage?.chips.orEmpty().filter { it.endpoint?.browseId?.isNotBlank() == true },
+                        moodChips = if (showMoodFilters) homePage?.chips.orEmpty().filter { it.endpoint?.browseId?.isNotBlank() == true } else emptyList(),
                         selectedChip = shownChip,
                         onSelected = viewModel::toggleChip,
                         scrollState = pinnedFilterScrollState,
