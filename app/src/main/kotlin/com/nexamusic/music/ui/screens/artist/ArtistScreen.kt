@@ -1210,27 +1210,6 @@ fun ArtistScreen(
                 .fillMaxWidth()
                 .align(Alignment.TopCenter)
         ) {
-            // The nav fade follows the app theme, not the (always dark)
-            // artwork tint: a light fade behind the chrome in light mode.
-            val navScrimBase =
-                if (AppTheme.colorScheme.surface.luminance() <= 0.5f) Color.Black
-                else Color.White
-            val navScrim = remember(navScrimBase) {
-                Brush.verticalGradient(
-                    0f to navScrimBase.copy(alpha = 0.55f),
-                    0.35f to navScrimBase.copy(alpha = 0.4f),
-                    0.7f to navScrimBase.copy(alpha = 0.12f),
-                    1f to Color.Transparent,
-                )
-            }
-            // Alpha read in the draw phase: scrolling redraws this strip, never recomposes.
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(AppBarHeight * 2.5f)
-                    .drawBehind { drawRect(navScrim, alpha = chromeScrimAlpha) }
-            )
-
             // Draw the sampled haze above the navigation scrim so it remains
             // visible over the hero photo as well as the scrolled list.
             TopFadeBlur(
