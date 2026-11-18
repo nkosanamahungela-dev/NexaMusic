@@ -46,7 +46,10 @@
         "Expanded Smooth Header unit tests for all six blur radii, mask endpoints, fallback opacity, header geometry, and reduced-motion duration.",
         "Connected the tab header to the real restored list offsets on Home, Local Home, Radio, Explore, and Library without duplicate nested-scroll observers.",
         "Added centred 17sp compact titles with the 8dp handoff and reduced-motion crossfade to artwork details and Now Playing while leaving the artwork intact.",
-        "Replaced the Changelog and Update header surfaces with transparent shared blur layers; removed the Update status-bar colour band."
+        "Replaced the Changelog and Update header surfaces with transparent shared blur layers; removed the Update status-bar colour band.",
+        "Connected Listen Together/Party to its own restored list scroll so its header no longer inherits another screen's progress.",
+        "Kept short pages that cannot scroll the full 90dp collapse distance in the clear, uncollapsed header state.",
+        "Applied the shared compact-title handoff to the reusable ScreenScaffold used by custom scrolling screens."
       ]
     },
     {
