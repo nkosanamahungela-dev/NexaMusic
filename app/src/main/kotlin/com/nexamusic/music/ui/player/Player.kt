@@ -162,6 +162,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.hazeSource
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.net.toUri
@@ -236,6 +238,8 @@ import com.nexamusic.music.ui.component.DjReadout
 import com.nexamusic.music.ui.component.BlurredBackdropImage
 import com.nexamusic.music.ui.component.BottomSheet
 import com.nexamusic.music.ui.component.BottomSheetState
+import com.nexamusic.music.ui.component.ProgressiveBlurLayer
+import com.nexamusic.music.ui.component.SmoothHeaderTokens
 import com.nexamusic.music.ui.component.LocalBottomSheetPageState
 import com.nexamusic.music.ui.component.LocalMenuState
 import com.nexamusic.music.ui.component.Lyrics
@@ -859,6 +863,7 @@ fun BottomSheetPlayer(
 
     // Capture this player's background so foreground glass buttons do not sample the screen behind it.
     val playerBackdrop = rememberLayerBackdrop()
+    val playerHeaderHaze = remember { HazeState() }
     // Menus opened from the expanded player sample this layer, not the whole app.
     val backdropHolder = LocalPlayerBackdropHolder.current
     androidx.compose.runtime.SideEffect { backdropHolder?.backdrop = playerBackdrop }
@@ -949,6 +954,7 @@ fun BottomSheetPlayer(
             )
             val glassActive = !v2HeroBackground && playerBackground == PlayerBackgroundStyle.GLASS && isGlassAllowed()
             
+            Box(Modifier.fillMaxSize()) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -956,6 +962,7 @@ fun BottomSheetPlayer(
                     .graphicsLayer()
                     .layerBackdrop(playerBackdrop, frozen = state.backdropFrozen)
                     .graphicsLayer()
+                    .hazeSource(playerHeaderHaze)
                     .then(
                         if (glassActive) {
                             // GLASS samples the root backdrop with a stronger blur than the pills.
@@ -1524,24 +1531,6 @@ fun BottomSheetPlayer(
                     }
                 }
 
-                // Status-bar scrim: black tint ramping from 0 at its own bottom edge
-                // up to fully dark at the top, so the status bar icons stay legible
-                // over bright artwork — same treatment as the app's own top bar.
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .align(Alignment.TopCenter)
-                        .windowInsetsTopHeight(WindowInsets.statusBars)
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(
-                                    Color.Black.copy(alpha = 0.45f),
-                                    Color.Transparent,
-                                ),
-                            )
-                        )
-                )
-
                 // Keep stickers above the artwork and video, but below player controls.
                 // Use shared root coordinates so both player layouts place them consistently.
                 // Hide them during inline lyrics to keep them from covering the text.
@@ -1557,6 +1546,19 @@ fun BottomSheetPlayer(
                         zFilter = { it < 0 },
                     )
                 }
+            }
+            ProgressiveBlurLayer(
+                hazeState = playerHeaderHaze,
+                pageColor = AppTheme.colorScheme.background,
+                progressProvider = { state.progress.coerceIn(0f, 1f) },
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .fillMaxWidth()
+                    .height(
+                        WindowInsets.statusBars.asPaddingValues().calculateTopPadding() +
+                            SmoothHeaderTokens.HeaderContentHeight,
+                    ),
+            )
             }
         },
         onDismiss = {
