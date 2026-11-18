@@ -469,8 +469,8 @@ fun CachePlaylistScreen(
             CompositionLocalProvider(LocalAppBackdrop provides listBackdrop) {
             com.nexamusic.music.ui.component.TopFadeBlur(hazeState, tint, Modifier.align(Alignment.TopCenter), progressProvider = detailHeaderProgress)
             com.nexamusic.music.ui.component.SmoothHeaderCompactTitle(
-                title = title,
-                progressProvider = { com.nexamusic.music.ui.component.SmoothHeaderProgress.progress },
+                title = stringResource(R.string.cached_playlist),
+                progressProvider = detailHeaderProgress,
                 color = onTint,
                 modifier = Modifier.align(Alignment.TopCenter)
                     .windowInsetsPadding(WindowInsets.statusBars),
