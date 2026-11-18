@@ -57,6 +57,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.nexamusic.music.ui.component.smoothHeaderScrollProgress
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.TransformOrigin
@@ -261,6 +262,7 @@ fun UpdateScreen(navController: NavHostController) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .smoothHeaderScrollProgress()
                 .verticalScroll(rememberScrollState())
                 .padding(
                     start = UpdateScreenTokens.SideMargin,
