@@ -78,6 +78,8 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.role
@@ -326,7 +328,7 @@ fun SearchScreen(
                     color = colors.label,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.graphicsLayer { alpha = SmoothHeaderTokens.smallTitleOpacity(headerProgressProvider()) },
+                    modifier = Modifier.graphicsLayer { alpha = SmoothHeaderTokens.smallTitleOpacity(headerProgressProvider()) }.clearAndSetSemantics { },
                 )
             }
             if (scopePinned) {
@@ -606,7 +608,7 @@ private fun AppleSearchHeader(
             style = com.nexamusic.music.ui.screens.library.apple.SfStyle(40.sp, 46.sp, FontWeight.ExtraBold, (-1.6).sp),
             color = com.nexamusic.music.ui.ios.foundation.IosTheme.colors.label,
             maxLines = 1,
-            modifier = Modifier.weight(1f).height(46.dp).graphicsLayer {
+            modifier = Modifier.weight(1f).height(46.dp).semantics { heading() }.graphicsLayer {
                 val p = progressProvider()
                 alpha = SmoothHeaderTokens.bigTitleOpacity(p)
                 translationY = -SmoothHeaderTokens.BigTitleTravel.toPx() * p
