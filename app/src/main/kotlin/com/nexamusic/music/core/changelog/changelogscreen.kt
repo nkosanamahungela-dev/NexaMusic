@@ -56,6 +56,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -113,7 +114,12 @@ fun ChangelogScreen(
 ) {
     val context = LocalContext.current
     val changelogHaze = remember { HazeState() }
-    val changelogTitleMotion = rememberSmoothHeaderTitleMotion { SmoothHeaderProgress.progress }
+    val changelogScrollState = rememberScrollState()
+    val headerDensity = LocalDensity.current
+    val changelogHeaderProgress = remember(changelogScrollState, headerDensity) {
+        { com.nexamusic.music.ui.component.SmoothHeaderTokens.progress(changelogScrollState.value / headerDensity.density) }
+    }
+    val changelogTitleMotion = rememberSmoothHeaderTitleMotion(changelogHeaderProgress)
     var changelogSections by remember { mutableStateOf<List<ChangelogSection>>(emptyList()) }
     var updateImage by remember { mutableStateOf<String?>(null) }
     var updateDescription by remember { mutableStateOf<String?>(null) }
@@ -298,7 +304,7 @@ fun ChangelogScreen(
                     hazeState = changelogHaze,
                     pageColor = AppTheme.colorScheme.background,
                     modifier = Modifier.align(Alignment.TopCenter),
-                    progressProvider = { SmoothHeaderProgress.progress },
+                    progressProvider = changelogHeaderProgress,
                 )
                 FrostedTopBar(
                     onBack = { navController.navigateUp() },
@@ -379,7 +385,7 @@ fun ChangelogScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .smoothHeaderScrollProgress()
-                            .verticalScroll(rememberScrollState())
+                            .verticalScroll(changelogScrollState)
                     ) {
                         if (!isLoading || availableReleases.isNotEmpty()) {
                             Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
