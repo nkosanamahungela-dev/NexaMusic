@@ -115,7 +115,7 @@ fun ProgressiveBlurLayer(
     }
     val density = LocalDensity.current
     val mode = remember(context) { HeaderRenderPolicy.mode(context) }
-    val progress by remember { derivedStateOf { progressProvider().coerceIn(0f, 1f) } }
+    val progress by remember(progressProvider) { derivedStateOf { progressProvider().coerceIn(0f, 1f) } }
 
     if (progress <= 0f) return
 
