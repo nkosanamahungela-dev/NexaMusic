@@ -121,6 +121,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import com.nexamusic.music.ui.ios.compat.CircularWavyProgressIndicator
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.layout.PaddingValues
 
@@ -260,6 +261,8 @@ fun SearchScreen(
     }
     // Respect the real status-bar/cutout inset on every device, with 8dp breathing room.
     val titleTop = statusTop + 8.dp
+    val browseGridState = rememberLazyGridState()
+    val headerDensity = LocalDensity.current
     val bottomPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues().calculateBottomPadding()
     val sideInset = LocalPlayerAwareWindowInsets.current
         .asPaddingValues()
@@ -278,6 +281,7 @@ fun SearchScreen(
                 AppleSearchBrowse(
                     navController = navController,
                     contentPadding = PaddingValues(start = sideInset, top = titleTop, bottom = bottomPadding + 16.dp),
+                    gridState = browseGridState,
                     header = { AppleSearchHeader(accountImageUrl, accountName, onAccountClick,
                         horizontalInset = 0.dp, bottomInset = 2.dp) },
                     recentSearches = recentSearches.map { it.query }.distinct().take(12),
@@ -299,7 +303,14 @@ fun SearchScreen(
                 scrimColor = pageColor,
                 scrimOpacity = SmoothHeaderTokens.TintPeakOpacity,
                 modifier = Modifier.align(Alignment.TopCenter),
-                heightOverride = statusTop,
+                progressProvider = {
+                    val scrollDp = if (browseGridState.firstVisibleItemIndex > 0) {
+                        SmoothHeaderTokens.ScrollDistance.value
+                    } else {
+                        with(headerDensity) { browseGridState.firstVisibleItemScrollOffset.toDp().value }
+                    }
+                    SmoothHeaderTokens.blurOpacity(SmoothHeaderTokens.progress(scrollDp))
+                },
             )
         } else {
             val searchBackdrop = com.nexamusic.music.ui.component.backdrop.backdrops.rememberLayerBackdrop(
