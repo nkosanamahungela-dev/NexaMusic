@@ -512,7 +512,7 @@ fun HistoryScreen(
                     title = stringResource(R.string.history),
                     titleAlpha = 0f,
                     titleAlphaProvider = historyTitleMotion.compactAlpha,
-                    progressProvider = { historyTitleProgress.value },
+                    progressProvider = historyHeaderProgress,
                     titleColor = onTint,
                     modifier = Modifier.align(Alignment.TopCenter),
                 )
