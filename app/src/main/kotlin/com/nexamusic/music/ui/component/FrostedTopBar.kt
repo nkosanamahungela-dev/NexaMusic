@@ -106,6 +106,7 @@ fun FrostedTopBar(
     // graphicsLayer/derivedStateOf so scroll deltas never recompose callers.
     // Prefer this over [titleAlpha] for any scroll-driven title.
     titleAlphaProvider: (() -> Float)? = null,
+    progressProvider: () -> Float = { SmoothHeaderProgress.progress },
     // Lets an artwork-tinted screen (History, Stats) keep its whole chrome in
     // that tint instead of snapping to the flat theme color the bar defaults
     // to everywhere else.
@@ -145,7 +146,7 @@ fun FrostedTopBar(
             Text(
                 text = title,
                 style = AppTheme.typography.titleMedium.copy(fontSize = SmoothHeaderTokens.SmallTitleSize),
-                fontWeight = FontWeight.SemiBold,
+                fontWeight = FontWeight.Bold,
                 color = resolvedTitleColor,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -163,9 +164,7 @@ fun FrostedTopBar(
                     .graphicsLayer {
                         val p = progressProvider().coerceIn(0f, 1f)
                         alpha = titleAlphaProvider?.invoke() ?: titleAlpha
-                        translationY = if (ValueAnimator.areAnimatorsEnabled()) {
-                            (1f - p) * SmoothHeaderTokens.SmallTitleTravel.toPx()
-                        } else 0f
+                        translationY = (1f - p) * SmoothHeaderTokens.SmallTitleTravel.toPx()
                     }
                     .clearAndSetSemantics { },
             )
