@@ -317,16 +317,16 @@ fun SearchScreen(
                 scrimOpacity = SmoothHeaderTokens.TintPeakOpacity,
                 modifier = Modifier.align(Alignment.TopCenter),
                 heightOverride = statusTop + SmoothHeaderTokens.HeaderContentHeight +
-                    if (scopePinned) 48.dp else 0.dp,
+                    if (scopePinned) SmoothHeaderTokens.PinnedRowHeight else 0.dp,
                 progressProvider = headerProgressProvider,
             )
             Box(
-                Modifier.align(Alignment.TopCenter).fillMaxWidth().padding(top = statusTop).height(52.dp),
+                Modifier.align(Alignment.TopCenter).fillMaxWidth().padding(top = statusTop).height(SmoothHeaderTokens.TopBarContentHeight),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
                     text = stringResource(R.string.search),
-                    style = AppTheme.typography.titleMedium.copy(fontSize = 17.sp),
+                    style = AppTheme.typography.titleMedium.copy(fontSize = SmoothHeaderTokens.SmallTitleSize),
                     color = colors.label,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
@@ -335,7 +335,7 @@ fun SearchScreen(
             }
             if (scopePinned) {
                 Box(
-                    Modifier.align(Alignment.TopCenter).fillMaxWidth().padding(top = statusTop + 52.dp).height(48.dp),
+                    Modifier.align(Alignment.TopCenter).fillMaxWidth().padding(top = statusTop + SmoothHeaderTokens.TopBarContentHeight).height(SmoothHeaderTokens.PinnedRowHeight),
                     contentAlignment = Alignment.Center,
                 ) {
                     SearchScopeSwitch(
