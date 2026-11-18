@@ -526,6 +526,13 @@ fun AutoPlaylistScreen(
                 // chrome flat with no real blur behind it.
                 CompositionLocalProvider(LocalAppBackdrop provides listBackdrop) {
             com.nexamusic.music.ui.component.TopFadeBlur(hazeState, tint, Modifier.align(Alignment.TopCenter), progressProvider = { com.nexamusic.music.ui.component.SmoothHeaderProgress.progress })
+            com.nexamusic.music.ui.component.SmoothHeaderCompactTitle(
+                title = playlistName,
+                progressProvider = { com.nexamusic.music.ui.component.SmoothHeaderProgress.progress },
+                color = onTint,
+                modifier = Modifier.align(Alignment.TopCenter)
+                    .windowInsetsPadding(WindowInsets.statusBars),
+            )
                 // Built inside the provider so liquidGlass captures listBackdrop
                 // at composition time, not the ambient unattached backdrop.
                 // Keep top-bar glass fixed; the global preference controls the nav bar and mini player.
