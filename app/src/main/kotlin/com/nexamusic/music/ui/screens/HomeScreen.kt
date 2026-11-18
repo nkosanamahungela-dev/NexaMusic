@@ -217,6 +217,8 @@ import com.nexamusic.music.viewmodels.NewReleaseViewModel
 import com.nexamusic.music.ui.component.rememberAppBackgroundColor
 import com.nexamusic.music.ui.component.rememberTitleCollapseProgress
 import com.nexamusic.music.ui.component.smoothHeaderScrollProgress
+import com.nexamusic.music.ui.component.rememberSmoothHeaderProgress
+import com.nexamusic.music.ui.component.SmoothHeaderProgressSync
 import com.nexamusic.music.ui.component.shimmer.GridItemPlaceHolder
 import com.nexamusic.music.ui.component.shimmer.ShimmerHost
 import com.nexamusic.music.ui.component.shimmer.TextPlaceholder
@@ -350,6 +352,8 @@ fun HomeScreen(
     val randomizeJob = remember { mutableStateOf<Job?>(null) }
 
     val lazylistState = rememberLazyListState()
+    val homeHeaderProgress = rememberSmoothHeaderProgress(lazylistState)
+    SmoothHeaderProgressSync(homeHeaderProgress)
     val filterScrollState = rememberScrollState()
     val feedScroll = remember { mutableFloatStateOf(0f) }
     val feedScrollTracker = remember {
