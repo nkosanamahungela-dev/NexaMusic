@@ -10,8 +10,21 @@ package com.nexamusic.music.ui.component
 import androidx.compose.ui.unit.dp
 
 object SmoothHeaderTokens {
-    val ScrollDistance = 90.dp
+    val ScrollDistance = HeaderScrollDistance
+    // All design dimensions are Compose dp equivalents of the supplied point values.
     val HeaderContentHeight = 80.dp
+    val HeaderScrollDistance = 90.dp
+    const val ProgressQuantum = 0.001f
+    const val HeaderTintPeak = 0.62f
+    const val HeaderBlurOpacityMultiplier = 1.3f
+    const val ScrimFallbackPeak = 0.85f
+    const val ReducedTransparencyPeak = 0.92f
+    const val LowResolutionBlurScale = 0.5f
+    const val StandardBlurScale = 1f
+    const val LargeTitleOpacitySlope = 1.7f
+    const val SmallTitleStartProgress = 0.45f
+    const val SmallTitleOpacitySlope = 2f
+    const val ProfileOpacitySlope = 1.6f
     val HeaderTopInsetContentHeight = HeaderContentHeight
     val BigTitleLetterSpacingEm = -0.04f
     val BlurLayerSaturation = 1.2f
@@ -21,10 +34,10 @@ object SmoothHeaderTokens {
     val BigTitleScale = 0.20f
     val SmallTitleTravel = 8.dp
     val ProfileScale = 0.25f
-    val BlurStackOpacityMultiplier = 1.3f
-    val TintPeakOpacity = 0.62f
-    val ScrimFallbackOpacity = 0.85f
-    val ReducedTransparencyOpacity = 0.92f
+    val BlurStackOpacityMultiplier = HeaderBlurOpacityMultiplier
+    val TintPeakOpacity = HeaderTintPeak
+    val ScrimFallbackOpacity = ScrimFallbackPeak
+    val ReducedTransparencyOpacity = ReducedTransparencyPeak
     val ReduceMotionCrossfadeMillis = 150
     val Saturation = 1.2f
 
@@ -46,16 +59,16 @@ object SmoothHeaderTokens {
         (progress * BlurStackOpacityMultiplier).coerceIn(0f, 1f)
 
     fun bigTitleOpacity(progress: Float): Float =
-        (1f - 1.7f * progress).coerceIn(0f, 1f)
+        (1f - LargeTitleOpacitySlope * progress).coerceIn(0f, 1f)
 
     fun bigTitleScale(progress: Float): Float =
         1f - BigTitleScale * progress.coerceIn(0f, 1f)
 
     fun smallTitleOpacity(progress: Float): Float =
-        ((progress - 0.45f) * 2f).coerceIn(0f, 1f)
+        ((progress - SmallTitleStartProgress) * SmallTitleOpacitySlope).coerceIn(0f, 1f)
 
     fun profileOpacity(progress: Float): Float =
-        (1f - 1.6f * progress).coerceIn(0f, 1f)
+        (1f - ProfileOpacitySlope * progress).coerceIn(0f, 1f)
 
     fun profileScale(progress: Float): Float =
         1f - ProfileScale * progress.coerceIn(0f, 1f)
