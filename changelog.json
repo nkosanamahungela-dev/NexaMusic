@@ -44,7 +44,8 @@
         "Limited the dropped-frame monitor to actual scroll-progress changes so stationary blur does not keep a frame callback running.",
         "Corrected the shared header progress CompositionLocal default factory so the debug build compiles.",
         "Kept Home's pinned All filter available when mood filters are disabled and made Library's pinned category row persist across its category pages.",
-        "Corrected the pinned-row registrar's CompositionLocal default factory to keep the scaffold type-safe."
+        "Corrected the pinned-row registrar's CompositionLocal default factory to keep the scaffold type-safe.",
+        "Added the explicit Flow collector import used by the scroll-only frame watchdog."
       ]
     },
     {
