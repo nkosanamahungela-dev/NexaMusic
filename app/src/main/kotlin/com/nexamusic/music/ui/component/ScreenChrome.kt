@@ -143,6 +143,7 @@ fun ScrollHeaderScaffold(
             title = title,
             titleAlpha = titleAlpha,
             titleAlphaProvider = titleAlphaProvider,
+            progressProvider = progressProvider,
             actions = actions,
             modifier = Modifier.align(Alignment.TopCenter),
         )
