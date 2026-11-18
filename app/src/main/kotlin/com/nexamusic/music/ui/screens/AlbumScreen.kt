@@ -699,7 +699,7 @@ fun AlbumScreen(
         // Draw the blur before the chrome row so it stays behind the buttons.
         com.nexamusic.music.ui.component.TopFadeBlur(
             hazeState = hazeState,
-            pageColor = tint,
+            pageColor = AppTheme.colorScheme.background,
             modifier = Modifier.align(Alignment.TopCenter),
             progressProvider = detailHeaderProgress,
         )
