@@ -9,7 +9,6 @@ package com.nexamusic.music.ui.component
 
 import android.app.Activity
 import android.app.ActivityManager
-import android.app.ActivityManager
 import android.content.Context
 import android.content.ContextWrapper
 import android.graphics.Color as AndroidColor
