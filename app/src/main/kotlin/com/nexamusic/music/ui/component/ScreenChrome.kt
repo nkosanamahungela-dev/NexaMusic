@@ -263,10 +263,8 @@ fun ScreenPage(
                 verticalArrangement = verticalArrangement,
             ) {
                 Column(
-                    Modifier
-                        .onSizeChanged { titleBlockHeight = it.height.coerceAtLeast(1) }
-                        .graphicsLayer {
-                            val progress = (scrollState.value / titleBlockHeight.toFloat()).coerceIn(0f, 1f)
+                    Modifier.graphicsLayer {
+                            val progress = progressProvider()
                             alpha = SmoothHeaderTokens.bigTitleOpacity(progress)
                             translationY = -SmoothHeaderTokens.BigTitleTravel.toPx() * progress
                             val scale = SmoothHeaderTokens.bigTitleScale(progress)
