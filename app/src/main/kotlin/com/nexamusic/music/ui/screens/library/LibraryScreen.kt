@@ -35,7 +35,7 @@ fun LibraryScreen(navController: NavController) {
     val libraryListState = rememberLazyListState()
     val libraryHeaderProgress = rememberSmoothHeaderProgress(libraryListState)
     if (filterType == LibraryFilter.LIBRARY) SmoothHeaderProgressSync(libraryHeaderProgress)
-    Box(modifier = Modifier.fillMaxSize().smoothHeaderScrollProgress()) {
+    Box(modifier = Modifier.fillMaxSize().then(if (filterType == LibraryFilter.LIBRARY) Modifier else Modifier.smoothHeaderScrollProgress())) {
         // Apple Music's Library and its lists: new screens on the plain system background.
         when (filterType) {
             LibraryFilter.LIBRARY -> AppleLibraryScreen(
