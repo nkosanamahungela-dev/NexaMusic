@@ -35,7 +35,10 @@
         "Added a shared destination scaffold so scroll-driven headers use the active screen's own navigation state.",
         "Connected the Search browse header to its own restored grid position, keeping its compact title in sync with the active Search destination.",
         "Synced the History header with its own restored list position so it no longer depends on another screen's scroll state.",
-        "Connected Settings, detail pages and other pushed screens to their own navigation-entry scroll progress without sharing collapse state."
+        "Connected Settings, detail pages and other pushed screens to their own navigation-entry scroll progress without sharing collapse state.",
+        "Added destination-owned pinned filter rows to Home, Library and Explore, aligned with each screen's own scroll state.",
+        "Improved the blur watchdog so missed frames are evaluated only while the header is transitioning, avoiding fallback during stationary blur.",
+        "Mirrored the floating-rail fade for right-to-left layouts and scaled the shared title zone for larger system font settings."
       ]
     },
     {
@@ -44,7 +47,9 @@
         "Apple Music V3 lyrics are still in beta; timing and alignment can vary by track and lyrics provider.",
         "Playlist synchronization requires a signed-in YouTube Music account.",
         "Playback transitions and performance may vary across devices and tracks.",
-        "Some visual effects use lighter alternatives on devices or settings that limit blur and motion."
+        "Some visual effects use lighter alternatives on devices or settings that limit blur and motion.",
+        "Reduced Dynamic Blur uses the high-opacity theme scrim; reduced-motion title handoff remains a 150ms cross-fade without translation or scaling.",
+        "60/120Hz frame pacing, thermal behaviour, and final contrast checks still require physical-device validation."
       ]
     }
   ]

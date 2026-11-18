@@ -49,6 +49,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import com.nexamusic.music.ui.ios.compat.Icon
@@ -68,6 +69,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import dev.chrisbanes.haze.hazeSource
 import com.nexamusic.music.ui.component.TopFadeBlur
+import com.nexamusic.music.ui.component.ChipsRow
+import com.nexamusic.music.ui.component.PinnedScrollHeaderRow
 import com.nexamusic.music.ui.component.smoothHeaderScrollProgress
 import com.nexamusic.music.ui.component.rememberSmoothHeaderProgress
 import com.nexamusic.music.ui.component.SmoothHeaderProgressSync
@@ -194,8 +197,32 @@ fun ExploreScreen(
     val albums = explorePage?.newReleaseAlbums.orEmpty().distinctBy { it.id }
     val hero = albums.take(6)
     val newReleases = albums.drop(6)
+    val recommendedItems = recommended.orEmpty().distinctBy { it.id }
     val topSongs = chartsPage?.sections?.firstOrNull { it.chartType == ChartType.TOP }?.items.orEmpty().distinctBy { it.id }
     val moods = explorePage?.moodAndGenres.orEmpty()
+    var nextExploreIndex = if (hero.isNotEmpty()) 1 else 0
+    val recommendedIndex = if (recommendedItems.isNotEmpty()) nextExploreIndex.also { nextExploreIndex += 2 } else -1
+    val newReleasesIndex = if (newReleases.isNotEmpty()) nextExploreIndex.also { nextExploreIndex += 2 } else -1
+    val topSongsIndex = if (topSongs.isNotEmpty()) nextExploreIndex.also { nextExploreIndex += 2 } else -1
+    val moodsIndex = if (moods.isNotEmpty()) nextExploreIndex else -1
+    val pinnedExploreScrollState = rememberScrollState()
+    val activeExploreSection by remember(
+        exploreListState, recommendedIndex, newReleasesIndex, topSongsIndex, moodsIndex,
+    ) {
+        derivedStateOf {
+            val first = exploreListState.firstVisibleItemIndex
+            when {
+                moodsIndex >= 0 && first >= moodsIndex -> "moods"
+                topSongsIndex >= 0 && first >= topSongsIndex -> "top"
+                newReleasesIndex >= 0 && first >= newReleasesIndex -> "new"
+                recommendedIndex >= 0 && first >= recommendedIndex -> "recommended"
+                recommendedIndex >= 0 -> "recommended"
+                newReleasesIndex >= 0 -> "new"
+                topSongsIndex >= 0 -> "top"
+                else -> "moods"
+            }
+        }
+    }
     val moodSwatches = remember(moods) { DiscoveryTokens.moodSwatches(moods.map { it.title }) }
     val recommendedTitle = stringResource(R.string.recommended_for_you)
     val newTitle = stringResource(R.string.new_release_albums)
@@ -213,6 +240,32 @@ fun ExploreScreen(
 
     // The activity owns the shared title and frosted top bar.
     Box(Modifier.fillMaxSize().background(colors.systemBackground)) {
+    PinnedScrollHeaderRow(
+        screenKey = navController.currentBackStackEntry?.id ?: "explore",
+        visible = exploreHeaderProgress() >= 0.85f &&
+            (recommendedIndex >= 0 || newReleasesIndex >= 0 || topSongsIndex >= 0 || moodsIndex >= 0),
+    ) {
+        ChipsRow(
+            chips = buildList {
+                if (recommendedIndex >= 0) add("recommended" to recommendedTitle)
+                if (newReleasesIndex >= 0) add("new" to newTitle)
+                if (topSongsIndex >= 0) add("top" to topTitle)
+                if (moodsIndex >= 0) add("moods" to stringResource(R.string.mood_and_genres))
+            },
+            currentValue = activeExploreSection,
+            onValueUpdate = { section ->
+                val index = when (section) {
+                    "recommended" -> recommendedIndex
+                    "new" -> newReleasesIndex
+                    "top" -> topSongsIndex
+                    else -> moodsIndex
+                }
+                if (index >= 0) coroutineScope.launch { exploreListState.animateScrollToItem(index) }
+            },
+            scrollState = pinnedExploreScrollState,
+            sideInset = sideInset,
+        )
+    }
     androidx.compose.foundation.lazy.LazyColumn(
         state = exploreListState,
         modifier = Modifier
@@ -236,7 +289,7 @@ fun ExploreScreen(
                 }
             }
         }
-        exploreShelf("recommended", recommendedTitle, recommended.orEmpty().distinctBy { it.id }, sideInset) { item ->
+        exploreShelf("recommended", recommendedTitle, recommendedItems, sideInset) { item ->
             Tile(item) { ExploreShelfCard(item) }
         }
         exploreShelf("new", newTitle, newReleases, sideInset) { item ->

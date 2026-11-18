@@ -48,6 +48,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -105,6 +106,14 @@ fun AppTopBar(
 ) {
         val currentEntry by navController.currentBackStackEntryAsState()
         val screenKey = currentEntry?.id ?: effectiveRoute ?: "app"
+        val density = LocalDensity.current
+        val largeTitleHeight = with(density) {
+            SmoothHeaderTokens.BigTitleLineHeight.toDp()
+        }.coerceAtLeast(46.dp)
+        val headerContentHeight = maxOf(SmoothHeaderTokens.HeaderContentHeight, largeTitleHeight + 38.dp)
+        val hasPinnedHeaderRow = effectiveRoute == Screens.Home.route ||
+            effectiveRoute == Screens.Library.route ||
+            effectiveRoute == Screens.Explore.route
         val headerProgressProvider = remember(screenKey) { { SmoothHeaderProgress.progressFor(screenKey) } }
         val titleMotion = rememberSmoothHeaderTitleMotion(headerProgressProvider)
         AnimatedVisibility(
@@ -125,6 +134,8 @@ fun AppTopBar(
                     scrimOpacity = SmoothHeaderTokens.TintPeakOpacity,
                     backdrop = backdrop,
                     progressProvider = { headerProgressProvider() },
+                    heightOverride = statusBarTop + headerContentHeight +
+                        if (hasPinnedHeaderRow) SmoothHeaderTokens.PinnedRowHeight else 0.dp,
                     startFade = if (showRail) startInset else 0.dp,
                 )
                 // Explore's title remains theme-neutral and cannot inherit cover-derived tint.
@@ -161,7 +172,7 @@ fun AppTopBar(
                             ),
                             color = topBarTitleColor,
                             maxLines = 1,
-                            modifier = (if (showRail) Modifier else Modifier.height(46.dp)).semantics { heading() }.graphicsLayer {
+                            modifier = (if (showRail) Modifier else Modifier.height(largeTitleHeight)).semantics { heading() }.graphicsLayer {
                                 if (!showRail) {
                                     val p = headerProgressProvider()
                                     alpha = titleMotion.largeAlpha()

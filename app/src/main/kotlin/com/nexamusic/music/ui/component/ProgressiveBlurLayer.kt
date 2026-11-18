@@ -39,6 +39,8 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
@@ -140,20 +142,21 @@ fun ProgressiveBlurLayer(
                 SmoothHeaderTokens.SlowFrameIntervalMultiplier).toLong()
             val choreographer = Choreographer.getInstance()
             var previousFrame = 0L
+            var previousProgress = readProgress()
             var slowFrames = 0
             val callback = object : Choreographer.FrameCallback {
                 override fun doFrame(frameTimeNanos: Long) {
-                    if (previousFrame != 0L && frameTimeNanos - previousFrame > frameBudget) {
-                        slowFrames += 1
-                    } else {
-                        slowFrames = 0
-                    }
+                    val currentProgress = readProgress()
+                    val transitioning = kotlin.math.abs(currentProgress - previousProgress) >=
+                        SmoothHeaderTokens.ProgressQuantum
+                    if (transitioning && previousFrame != 0L &&
+                        frameTimeNanos - previousFrame > frameBudget
+                    ) slowFrames += 1 else slowFrames = 0
                     previousFrame = frameTimeNanos
+                    previousProgress = currentProgress
                     if (slowFrames >= SmoothHeaderTokens.ConsecutiveSlowFramesBeforeFallback) {
                         forceSmoothHeaderScrimForSession()
-                    } else {
-                        choreographer.postFrameCallback(this)
-                    }
+                    } else choreographer.postFrameCallback(this)
                 }
             }
             choreographer.postFrameCallback(callback)
@@ -164,21 +167,29 @@ fun ProgressiveBlurLayer(
     val saturation = remember {
         ColorMatrix().apply { setToSaturation(SmoothHeaderTokens.BlurLayerSaturation) }
     }
+    val layoutDirection = LocalLayoutDirection.current
     val horizontalFade = if (startFade > 0.dp) {
         Modifier.graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
             .drawWithContent {
                 drawContent()
                 val fadePx = with(density) { startFade.toPx() }
                 val fadeWidth = with(density) { SmoothHeaderTokens.RailFadeWidth.toPx() }
-                drawRect(
-                    brush = Brush.horizontalGradient(
+                val stops = if (layoutDirection == LayoutDirection.Ltr) {
+                    arrayOf(
                         0f to Color.Transparent,
                         ((fadePx - fadeWidth) / size.width).coerceIn(0f, 1f) to Color.Transparent,
                         ((fadePx + fadeWidth) / size.width).coerceIn(0f, 1f) to Color.Black,
                         1f to Color.Black,
-                    ),
-                    blendMode = BlendMode.DstIn,
-                )
+                    )
+                } else {
+                    arrayOf(
+                        0f to Color.Black,
+                        (1f - (fadePx + fadeWidth) / size.width).coerceIn(0f, 1f) to Color.Black,
+                        (1f - (fadePx - fadeWidth) / size.width).coerceIn(0f, 1f) to Color.Transparent,
+                        1f to Color.Transparent,
+                    )
+                }
+                drawRect(brush = Brush.horizontalGradient(*stops), blendMode = BlendMode.DstIn)
             }
     } else Modifier
 
