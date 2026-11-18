@@ -77,19 +77,19 @@ fun SmoothHeaderCompactTitle(
 ) {
     val motion = rememberSmoothHeaderTitleMotion(progressProvider)
     Box(
-        modifier = modifier.fillMaxWidth().height(52.dp),
+        modifier = modifier.fillMaxWidth().height(SmoothHeaderTokens.TopBarContentHeight),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             text = title,
-            style = AppTheme.typography.titleMedium.copy(fontSize = 17.sp),
+            style = AppTheme.typography.titleMedium.copy(fontSize = SmoothHeaderTokens.SmallTitleSize),
             color = color,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
-                .padding(horizontal = 88.dp)
+                .padding(horizontal = SmoothHeaderTokens.SmallTitleSideInset)
                 .graphicsLayer {
                     val p = progressProvider().coerceIn(0f, 1f)
                     alpha = motion.compactAlpha()
