@@ -2,14 +2,16 @@
  * NexaMusic Project (C) 2026
  * Licensed under GPL-3.0 | See git history for contributors
  *
- * Scroll progress is scoped to a NavBackStackEntry. The app-level tab header
- * reads only the active entry's value, so retained destinations never share p.
+ * Scroll progress is scoped to a NavBackStackEntry. Screens with Compose
+ * scroll states read their restored offset directly; custom scroll containers
+ * use the keyed nested-scroll bridge below.
  */
 package com.nexamusic.music.ui.component
 
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -29,11 +31,13 @@ import androidx.compose.runtime.snapshotFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
 
-/** Per-destination progress plus a legacy signal for older, local-only chrome. */
+/**
+ * Progress is stored by navigation-entry ID. The legacy value remains only
+ * for older detail chrome that has not yet been migrated to a keyed provider.
+ */
 object SmoothHeaderProgress {
     private val byScreen = mutableStateMapOf<String, Float>()
 
-    /** Legacy value; the persistent tab header must use [progressFor]. */
     var progress by mutableFloatStateOf(0f)
 
     fun progressFor(screenKey: String): Float = byScreen[screenKey] ?: 0f
@@ -48,12 +52,13 @@ object SmoothHeaderProgress {
 }
 
 /**
- * Nested-scroll bridge for custom containers without a Compose scroll-state API.
- * Pass the owning NavBackStackEntry.id; the default remains isolated legacy use.
+ * Nested-scroll bridge for custom scroll containers without a Compose state
+ * API. The owning back-stack key is mandatory in new call sites; overscroll
+ * at the top contributes no consumed distance and therefore keeps p at zero.
  */
 fun Modifier.smoothHeaderScrollProgress(screenKey: String? = null): Modifier = composed {
     val density = LocalDensity.current
-    val scrollPx = remember { mutableFloatStateOf(0f) }
+    val scrollPx = remember(screenKey) { mutableFloatStateOf(0f) }
     val connection = remember(density, screenKey) {
         object : NestedScrollConnection {
             override fun onPostScroll(
@@ -61,8 +66,9 @@ fun Modifier.smoothHeaderScrollProgress(screenKey: String? = null): Modifier = c
                 available: Offset,
                 source: NestedScrollSource,
             ): Offset {
-                scrollPx.floatValue = (scrollPx.floatValue - consumed.y).coerceAtLeast(0f)
-                val value = SmoothHeaderTokens.progress(scrollPx.floatValue / density.density)
+                val nextOffset = (scrollPx.floatValue - consumed.y).coerceAtLeast(0f)
+                scrollPx.floatValue = nextOffset
+                val value = SmoothHeaderTokens.progress(nextOffset / density.density)
                 if (screenKey == null) SmoothHeaderProgress.progress = value
                 else SmoothHeaderProgress.setForScreen(screenKey, value)
                 return Offset.Zero
@@ -72,35 +78,60 @@ fun Modifier.smoothHeaderScrollProgress(screenKey: String? = null): Modifier = c
     nestedScroll(connection)
 }
 
-/** Reads restored list position directly; no animated or delta-based warm-up. */
+/** Direct, first-frame progress from the restored LazyListState offset. */
 @Composable
 fun rememberSmoothHeaderProgress(state: LazyListState): () -> Float {
     val density = LocalDensity.current
-    return remember(state, density) {
+    val collapseDistancePx = with(density) { SmoothHeaderTokens.HeaderScrollDistance.roundToPx() }
+    return remember(state, density, collapseDistancePx) {
         {
-            if (state.firstVisibleItemIndex > 0) 1f
-            else SmoothHeaderTokens.progress(
-                state.firstVisibleItemScrollOffset.coerceAtLeast(0) / density.density,
-            )
+            val layout = state.layoutInfo
+            val visible = layout.visibleItemsInfo
+            val contentFitsViewport = layout.totalItemsCount > 0 &&
+                visible.size >= layout.totalItemsCount &&
+                ((visible.maxOfOrNull { it.offset + it.size } ?: 0) -
+                    (visible.minOfOrNull { it.offset } ?: 0)) <= layout.viewportSize.height
+            when {
+                contentFitsViewport -> 0f
+                state.firstVisibleItemIndex > 0 -> 1f
+                else -> SmoothHeaderTokens.progress(
+                    state.firstVisibleItemScrollOffset.coerceAtLeast(0) / density.density,
+                )
+            }
         }
     }
 }
 
-/** Reads restored grid position directly; short grids and top overscroll stay clear. */
+/** Direct, first-frame progress from the restored LazyGridState offset. */
 @Composable
 fun rememberSmoothHeaderProgress(state: LazyGridState): () -> Float {
     val density = LocalDensity.current
-    return remember(state, density) {
+    val collapseDistancePx = with(density) { SmoothHeaderTokens.HeaderScrollDistance.roundToPx() }
+    return remember(state, density, collapseDistancePx) {
         {
-            if (state.firstVisibleItemIndex > 0) 1f
-            else SmoothHeaderTokens.progress(
-                state.firstVisibleItemScrollOffset.coerceAtLeast(0) / density.density,
-            )
+            val layout = state.layoutInfo
+            val visible = layout.visibleItemsInfo
+            val contentFitsViewport = layout.totalItemsCount > 0 &&
+                visible.size >= layout.totalItemsCount &&
+                ((visible.maxOfOrNull { it.offset.y + it.size.height } ?: 0) -
+                    (visible.minOfOrNull { it.offset.y } ?: 0)) <= layout.viewportSize.height
+            when {
+                contentFitsViewport -> 0f
+                state.firstVisibleItemIndex > 0 -> 1f
+                else -> SmoothHeaderTokens.progress(
+                    state.firstVisibleItemScrollOffset.coerceAtLeast(0) / density.density,
+                )
+            }
         }
     }
 }
 
-/** Publishes one screen's actual progress under its unique back-stack entry key. */
+/**
+ * Publishes only this destination's value. The initial SideEffect publishes
+ * restored scroll position immediately (without an animated warm-up), while
+ * disposal removes stale entries so long navigation sessions do not grow
+ * the progress map indefinitely.
+ */
 @Composable
 fun SmoothHeaderProgressSync(
     progressProvider: () -> Float,
@@ -113,6 +144,12 @@ fun SmoothHeaderProgressSync(
         val value = SmoothHeaderTokens.quantizeProgress(progress)
         if (screenKey == "legacy") SmoothHeaderProgress.progress = value
         else SmoothHeaderProgress.setForScreen(screenKey, value)
+    }
+    DisposableEffect(screenKey) {
+        onDispose {
+            if (screenKey == "legacy") SmoothHeaderProgress.progress = 0f
+            else SmoothHeaderProgress.clearScreen(screenKey)
+        }
     }
     LaunchedEffect(progressProvider, screenKey) {
         snapshotFlow { progressProvider().coerceIn(0f, 1f) }
