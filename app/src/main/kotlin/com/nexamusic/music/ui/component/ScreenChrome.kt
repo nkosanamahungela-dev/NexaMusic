@@ -43,9 +43,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.nexamusic.music.LocalPlayerAwareWindowInsets
 import com.nexamusic.music.ui.ios.compat.AppTheme
 import com.nexamusic.music.ui.ios.compat.Text
@@ -204,12 +207,12 @@ fun ScreenScaffold(
 fun ScreenLargeTitle(title: String, modifier: Modifier = Modifier) {
     Text(
         text = title,
-        style = AppTheme.typography.headlineLarge,
-        fontWeight = FontWeight.Bold,
+        style = AppTheme.typography.headlineLarge.copy(fontSize = 40.sp, letterSpacing = (-1.6).sp),
+        fontWeight = FontWeight.ExtraBold,
         color = AppTheme.colorScheme.onSurface,
         maxLines = 2,
         overflow = TextOverflow.Ellipsis,
-        modifier = modifier.padding(start = 20.dp, end = 20.dp, top = 24.dp, bottom = 14.dp),
+        modifier = modifier.semantics { heading() }.padding(start = 20.dp, end = 20.dp, top = 24.dp, bottom = 14.dp),
     )
 }
 
