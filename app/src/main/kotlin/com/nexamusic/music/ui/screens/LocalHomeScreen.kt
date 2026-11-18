@@ -142,7 +142,7 @@ fun LocalHomeScreen(
 
             LazyColumn(
                 state = lazyListState,
-                modifier = Modifier.smoothHeaderScrollProgress(),
+                modifier = Modifier,
                 verticalArrangement = Arrangement.spacedBy(AppPage.ItemSpacing),
                 contentPadding = run {
                     val ins = LocalPlayerAwareWindowInsets.current.asPaddingValues()
