@@ -41,6 +41,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -153,7 +155,7 @@ fun AppTopBar(
                             ),
                             color = topBarTitleColor,
                             maxLines = 1,
-                            modifier = (if (showRail) Modifier else Modifier.height(46.dp)).graphicsLayer {
+                            modifier = (if (showRail) Modifier else Modifier.height(46.dp)).semantics { heading() }.graphicsLayer {
                                 if (!showRail) {
                                     val p = SmoothHeaderProgress.progress
                                     alpha = SmoothHeaderTokens.bigTitleOpacity(p)
