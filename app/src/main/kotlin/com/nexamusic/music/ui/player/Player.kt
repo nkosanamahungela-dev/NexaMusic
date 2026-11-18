@@ -69,6 +69,7 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateTopPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -1559,6 +1560,28 @@ fun BottomSheetPlayer(
                             SmoothHeaderTokens.HeaderContentHeight,
                     ),
             )
+            Box(
+                Modifier
+                    .align(Alignment.TopCenter)
+                    .fillMaxWidth()
+                    .padding(top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding())
+                    .height(52.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = mediaMetadata?.title.orEmpty(),
+                    style = AppTheme.typography.titleMedium.copy(fontSize = 17.sp),
+                    color = AppTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.graphicsLayer {
+                        val p = state.progress.coerceIn(0f, 1f)
+                        alpha = SmoothHeaderTokens.smallTitleOpacity(p)
+                        translationY = (1f - p) * SmoothHeaderTokens.SmallTitleTravel.toPx()
+                    },
+                )
+            }
             }
         },
         onDismiss = {
