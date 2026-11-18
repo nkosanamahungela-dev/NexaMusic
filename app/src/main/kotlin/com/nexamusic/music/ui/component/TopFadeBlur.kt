@@ -39,7 +39,7 @@ fun TopFadeBlur(
     heightOverride: Dp? = null,
     backdrop: Backdrop? = null,
     startFade: Dp = 0.dp,
-    progressProvider: () -> Float = { 1f },
+    progressProvider: () -> Float = { SmoothHeaderProgress.progress },
 ) {
     val reduceDynamicBlur = rememberPreference(ReduceDynamicBlurKey, false).value
     val topInset = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
