@@ -7,12 +7,15 @@
  */
 package com.nexamusic.music.ui.component
 
+import android.app.Activity
 import android.app.ActivityManager
 import android.content.Context
+import android.content.ContextWrapper
 import android.os.Build
 import android.os.PowerManager
 import android.view.Choreographer
 import android.view.WindowManager
+import android.graphics.Color as AndroidColor
 import androidx.compose.foundation.background
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.BlendMode
@@ -24,21 +27,27 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.HazeInputScale
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.hazeEffect
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
+import com.nexamusic.music.ui.ios.compat.AppTheme
 
 private enum class HeaderRenderMode { BLUR, SCRIM }
 
@@ -87,6 +96,23 @@ fun ProgressiveBlurLayer(
     startFade: androidx.compose.ui.unit.Dp = 0.dp,
 ) {
     val context = LocalContext.current
+    val view = LocalView.current
+    val window = remember(context) { context.findSmoothHeaderActivity()?.window }
+    val darkTheme = AppTheme.colorScheme.background.luminance() <= 0.5f
+    SideEffect {
+        window?.let { target ->
+            target.statusBarColor = AndroidColor.TRANSPARENT
+            target.navigationBarColor = AndroidColor.TRANSPARENT
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                target.isStatusBarContrastEnforced = false
+                target.isNavigationBarContrastEnforced = false
+            }
+            WindowCompat.getInsetsController(target, view).apply {
+                isAppearanceLightStatusBars = !darkTheme
+                isAppearanceLightNavigationBars = !darkTheme
+            }
+        }
+    }
     val density = LocalDensity.current
     val mode = remember(context) { HeaderRenderPolicy.mode(context) }
     val progress by remember { derivedStateOf { progressProvider().coerceIn(0f, 1f) } }
@@ -214,4 +240,11 @@ fun ProgressiveBlurLayer(
             )
         }
     }
+}
+
+
+private tailrec fun Context.findSmoothHeaderActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findSmoothHeaderActivity()
+    else -> null
 }
