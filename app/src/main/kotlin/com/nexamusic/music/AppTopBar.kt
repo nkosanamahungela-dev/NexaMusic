@@ -39,11 +39,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.isSpecified
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.composables.sfsymbols.SfSymbols
@@ -126,6 +128,8 @@ fun AppTopBar(
                     AppTheme.colorScheme.onSurface
                 }
                 if (chromeVisible) FrostedTopBar(
+                    title = titleRes?.let { stringResource(it) } ?: "",
+                    titleAlphaProvider = { SmoothHeaderTokens.smallTitleOpacity(SmoothHeaderProgress.progress) },
                     // The blur above spans the full width; only the content clears the side bar and cutouts.
                     modifier = Modifier
                         .windowInsetsPadding(cutoutInsets.only(WindowInsetsSides.Start + WindowInsetsSides.End))
@@ -142,26 +146,46 @@ fun AppTopBar(
                             text = titleRes?.let { stringResource(it) } ?: "",
                             style = AppTheme.typography.titleLarge.copy(
                                 fontFamily = SfProFontFamily,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = if (effectiveRoute == Screens.Explore.route || effectiveRoute == Screens.Radio.route) 40.sp else 34.sp,
-                                lineHeight = if (effectiveRoute == Screens.Explore.route || effectiveRoute == Screens.Radio.route) 46.sp else 41.sp,
-                                letterSpacing = if (effectiveRoute == Screens.Explore.route || effectiveRoute == Screens.Radio.route) (-1.6).sp else (-0.6).sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 40.sp,
+                                lineHeight = 46.sp,
+                                letterSpacing = (-1.6).sp,
                             ),
                             color = topBarTitleColor,
                             maxLines = 1,
-                            modifier = if (showRail) Modifier else Modifier.height(41.dp),
+                            modifier = (if (showRail) Modifier else Modifier.height(46.dp)).graphicsLayer {
+                                if (!showRail) {
+                                    val p = SmoothHeaderProgress.progress
+                                    alpha = SmoothHeaderTokens.bigTitleOpacity(p)
+                                    translationY = -SmoothHeaderTokens.BigTitleTravel.toPx() * p
+                                    val scale = SmoothHeaderTokens.bigTitleScale(p)
+                                    scaleX = scale
+                                    scaleY = scale
+                                    transformOrigin = TransformOrigin(0f, 0.5f)
+                                }
+                            },
                         )
                     },
                     actions = {
                         if (effectiveRoute == Screens.Library.route) {
                             LibraryTopBarActions(navController)
                         } else {
-                            GlassCircleButton(size = 44.dp, applyAdditiveChrome = false, forceFlat = true, onClick = onAccountClick) {
-                                BadgedBox(badge = {}) {
-                                    AccountAvatar(
-                                        accountImageUrl, accountName,
-                                        description = stringResource(R.string.account),
-                                    )
+                            Box(
+                                Modifier.graphicsLayer {
+                                    val p = SmoothHeaderProgress.progress
+                                    alpha = SmoothHeaderTokens.profileOpacity(p)
+                                    val scale = SmoothHeaderTokens.profileScale(p)
+                                    scaleX = scale
+                                    scaleY = scale
+                                },
+                            ) {
+                                GlassCircleButton(size = 44.dp, applyAdditiveChrome = false, forceFlat = true, onClick = onAccountClick) {
+                                    BadgedBox(badge = {}) {
+                                        AccountAvatar(
+                                            accountImageUrl, accountName,
+                                            description = stringResource(R.string.account),
+                                        )
+                                    }
                                 }
                             }
                         }
