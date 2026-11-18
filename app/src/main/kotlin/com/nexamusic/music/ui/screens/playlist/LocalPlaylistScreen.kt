@@ -103,6 +103,7 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.nexamusic.music.ui.component.smoothHeaderScrollProgress
+import com.nexamusic.music.ui.component.rememberSmoothHeaderProgress
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
@@ -532,6 +533,7 @@ fun LocalPlaylistScreen(
 
     val headerItems = 2
     val lazyListState = rememberLazyListState()
+    val detailHeaderProgress = rememberSmoothHeaderProgress(lazyListState)
     var dragInfo by remember {
         mutableStateOf<Pair<Int, Int>?>(null)
     }
@@ -943,7 +945,7 @@ fun LocalPlaylistScreen(
             hazeState = hazeState,
             pageColor = tint,
             modifier = Modifier.align(Alignment.TopCenter),
-            progressProvider = { com.nexamusic.music.ui.component.SmoothHeaderProgress.progress },
+            progressProvider = detailHeaderProgress,
         )
         com.nexamusic.music.ui.component.SmoothHeaderCompactTitle(
             title = playlist?.playlist?.name.orEmpty(),
