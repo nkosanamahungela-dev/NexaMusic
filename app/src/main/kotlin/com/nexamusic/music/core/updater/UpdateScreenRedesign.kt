@@ -126,7 +126,12 @@ fun UpdateScreen(navController: NavHostController) {
     val scope = rememberCoroutineScope()
     val pageColor = AppTheme.colorScheme.background
     val updateHaze = remember { HazeState() }
-    val updateTitleMotion = rememberSmoothHeaderTitleMotion { SmoothHeaderProgress.progress }
+    val updateScrollState = rememberScrollState()
+    val headerDensity = LocalDensity.current
+    val updateHeaderProgress = remember(updateScrollState, headerDensity) {
+        { SmoothHeaderTokens.progress(updateScrollState.value / headerDensity.density) }
+    }
+    val updateTitleMotion = rememberSmoothHeaderTitleMotion(updateHeaderProgress)
     val darkTheme = pageColor.luminance() < 0.5f
     val palette = if (darkTheme) UpdateScreenTokens.Dark else UpdateScreenTokens.Light
 
@@ -273,7 +278,7 @@ fun UpdateScreen(navController: NavHostController) {
                 .fillMaxSize()
                 .smoothHeaderScrollProgress()
                 .hazeSource(updateHaze)
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(updateScrollState)
                 .padding(
                     start = UpdateScreenTokens.SideMargin,
                     end = UpdateScreenTokens.SideMargin,
@@ -367,7 +372,7 @@ fun UpdateScreen(navController: NavHostController) {
             hazeState = updateHaze,
             pageColor = pageColor,
             modifier = Modifier.align(Alignment.TopCenter),
-            progressProvider = { SmoothHeaderProgress.progress },
+            progressProvider = updateHeaderProgress,
         )
         FrostedTopBar(
             title = stringResource(R.string.settings_check_updates_title),
