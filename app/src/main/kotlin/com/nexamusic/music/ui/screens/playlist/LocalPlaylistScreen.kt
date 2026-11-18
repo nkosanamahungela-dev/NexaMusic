@@ -949,7 +949,7 @@ fun LocalPlaylistScreen(
         )
         com.nexamusic.music.ui.component.SmoothHeaderCompactTitle(
             title = playlist?.playlist?.name.orEmpty(),
-            progressProvider = { com.nexamusic.music.ui.component.SmoothHeaderProgress.progress },
+            progressProvider = detailHeaderProgress,
             color = chromeContentColor,
             modifier = Modifier.align(Alignment.TopCenter)
                 .windowInsetsPadding(WindowInsets.statusBars),
