@@ -51,9 +51,13 @@ private object HeaderRenderPolicy {
         cachedMode ?: run {
             val power = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
             val activity = context.getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager
+            val performanceClass = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                Build.VERSION.MEDIA_PERFORMANCE_CLASS
+            } else 0
             val capable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
                 power?.isPowerSaveMode != true &&
-                activity?.isLowRamDevice != true
+                activity?.isLowRamDevice != true &&
+                (performanceClass == 0 || performanceClass >= 31)
             (if (capable) HeaderRenderMode.BLUR else HeaderRenderMode.SCRIM)
                 .also { cachedMode = it }
         }
@@ -197,15 +201,18 @@ fun ProgressiveBlurLayer(
         }
 
         // Theme tint is independent from the blur and always follows the same p.
-        Box(
-            Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        0f to pageColor.copy(alpha = SmoothHeaderTokens.TintPeakOpacity * progress),
-                        1f to pageColor.copy(alpha = 0f),
+        // The fallback gradient already contains its specified 85% / 92% tint.
+        if (!useScrim) {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            0f to pageColor.copy(alpha = SmoothHeaderTokens.TintPeakOpacity * progress),
+                            1f to pageColor.copy(alpha = 0f),
+                        ),
                     ),
-                ),
-        )
+            )
+        }
     }
 }
