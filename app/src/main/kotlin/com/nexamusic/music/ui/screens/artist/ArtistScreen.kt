@@ -1205,7 +1205,7 @@ fun ArtistScreen(
             // visible over the hero photo as well as the scrolled list.
             TopFadeBlur(
                 hazeState = hazeState,
-                pageColor = tint,
+                pageColor = AppTheme.colorScheme.background,
                 modifier = Modifier.align(Alignment.TopCenter),
                 progressProvider = detailHeaderProgress,
             )
