@@ -151,7 +151,7 @@ fun ScrollHeaderScaffold(
             Box(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .padding(top = topInset + TopBarContentHeight)
+                    .padding(top = topInset + SmoothHeaderTokens.TopBarContentHeight)
                     .fillMaxWidth()
                     .height(pinnedRowHeight),
             ) {
@@ -213,7 +213,7 @@ fun ScreenScaffold(
 fun ScreenLargeTitle(title: String, modifier: Modifier = Modifier) {
     Text(
         text = title,
-        style = AppTheme.typography.headlineLarge.copy(fontSize = 40.sp, letterSpacing = (-1.6).sp),
+        style = AppTheme.typography.headlineLarge.copy(fontSize = SmoothHeaderTokens.BigTitleSize, letterSpacing = SmoothHeaderTokens.BigTitleLetterSpacing),
         fontWeight = FontWeight.ExtraBold,
         color = AppTheme.colorScheme.onSurface,
         maxLines = 2,
