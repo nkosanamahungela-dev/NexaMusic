@@ -47,7 +47,7 @@ fun Modifier.smoothHeaderScrollProgress(): Modifier = composed {
             ): Offset {
                 scrollPx.floatValue = (scrollPx.floatValue - consumed.y).coerceAtLeast(0f)
                 val raw = SmoothHeaderTokens.progress(scrollPx.floatValue / density.density)
-                SmoothHeaderProgress.progress = (raw / SmoothHeaderTokens.ProgressQuantum).toInt() * SmoothHeaderTokens.ProgressQuantum
+                SmoothHeaderProgress.progress = SmoothHeaderTokens.quantizeProgress(raw)
                 return Offset.Zero
             }
         }
@@ -77,15 +77,13 @@ fun SmoothHeaderProgressSync(progressProvider: () -> Float) {
     }
     SideEffect {
         SmoothHeaderProgress.progress =
-            (progress / SmoothHeaderTokens.ProgressQuantum).toInt() *
-                SmoothHeaderTokens.ProgressQuantum
+            SmoothHeaderTokens.quantizeProgress(progress)
     }
     LaunchedEffect(progressProvider) {
         snapshotFlow { progressProvider().coerceIn(0f, 1f) }
             .collect { value ->
                 SmoothHeaderProgress.progress =
-                    (value / SmoothHeaderTokens.ProgressQuantum).toInt() *
-                        SmoothHeaderTokens.ProgressQuantum
+                    SmoothHeaderTokens.quantizeProgress(value)
             }
     }
 }
