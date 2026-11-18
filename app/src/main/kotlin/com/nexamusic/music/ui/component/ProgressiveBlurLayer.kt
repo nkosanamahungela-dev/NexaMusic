@@ -229,6 +229,7 @@ fun ProgressiveBlurLayer(
                         },
                 )
             }
+            }
         }
 
         // Theme tint is independent from the blur and always follows the same p.
