@@ -9,6 +9,7 @@ package com.nexamusic.music.ui.component
 
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlin.math.roundToInt
 
 object SmoothHeaderTokens {
     // Geometry
@@ -68,8 +69,11 @@ object SmoothHeaderTokens {
         BlurLayer(24f, 0.20f),
     )
 
+    fun quantizeProgress(progress: Float): Float =
+        (progress.coerceIn(0f, 1f) / ProgressQuantum).roundToInt() * ProgressQuantum
+
     fun progress(scrollOffsetDp: Float): Float =
-        (scrollOffsetDp / HeaderScrollDistance.value).coerceIn(0f, 1f)
+        quantizeProgress(scrollOffsetDp / HeaderScrollDistance.value)
 
     fun blurOpacity(progress: Float): Float =
         (progress * HeaderBlurOpacityMultiplier).coerceIn(0f, 1f)
