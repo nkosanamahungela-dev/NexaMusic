@@ -43,7 +43,10 @@
         "Added API/device capability fallback, battery-saver and low-RAM scrims, reduced-transparency styling, reduced-motion crossfades, and a repeated slow-frame session fallback.",
         "Made status and navigation bars transparent with icon contrast selected from the app's active Appearance theme.",
         "Recorded the existing Haze 1.3.1 Apache-2.0 attribution in NOTICE; no additional blur library or dependency was introduced.",
-        "Expanded Smooth Header unit tests for all six blur radii, mask endpoints, fallback opacity, header geometry, and reduced-motion duration."
+        "Expanded Smooth Header unit tests for all six blur radii, mask endpoints, fallback opacity, header geometry, and reduced-motion duration.",
+        "Connected the tab header to the real restored list offsets on Home, Local Home, Radio, Explore, and Library without duplicate nested-scroll observers.",
+        "Added centred 17sp compact titles with the 8dp handoff and reduced-motion crossfade to artwork details and Now Playing while leaving the artwork intact.",
+        "Replaced the Changelog and Update header surfaces with transparent shared blur layers; removed the Update status-bar colour band."
       ]
     },
     {
@@ -57,7 +60,7 @@
         "Smooth Blur Header code now uses one shared scroll-progress contract, a six-layer masked Haze stack, theme-derived tint, and a pinnable Search source row.",
         "Fallback policy: API below 31, battery saver, low-RAM or low-performance devices use the 85% theme scrim; Reduce transparency uses 92%; Reduce motion crossfades titles over 150ms; repeated slow frames switch to scrim for the rest of the session.",
         "Haze 1.3.1 is already present in the project and is Apache-2.0 licensed; its attribution is recorded in NOTICE.",
-        "Automated token tests cover the design constants. CI and physical-device verification are tracked separately; no 60/120fps or low-end-device measurement is claimed until run."
+        "Smooth Header token unit tests cover the six blur layers, fade masks, 90dp collapse distance, tint and fallback values. Build verification is pending for the latest branch commit; physical-device 60/120fps measurements have not been run."
       ]
     }
   ]
