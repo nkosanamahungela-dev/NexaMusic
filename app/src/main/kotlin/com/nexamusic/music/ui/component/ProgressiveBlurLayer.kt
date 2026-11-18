@@ -114,12 +114,11 @@ fun ProgressiveBlurLayer(
     // Recompose only when entering/leaving the active state. Scroll ticks are
     // read by graphicsLayer blocks, so lists and blur nodes are not rebuilt.
     val isVisible by remember(progressProvider) {
-        derivedStateOf { progressProvider().coerceIn(0f, 1f) > 0f }
+        derivedStateOf { SmoothHeaderTokens.quantizeProgress(progressProvider()) > 0f }
     }
     if (!isVisible) return
     val readProgress = {
-        val raw = progressProvider().coerceIn(0f, 1f)
-        (raw / SmoothHeaderTokens.ProgressQuantum).toInt() * SmoothHeaderTokens.ProgressQuantum
+        SmoothHeaderTokens.quantizeProgress(progressProvider())
     }
 
     val useScrim = reduceTransparency || mode == HeaderRenderMode.SCRIM || HeaderRenderPolicy.forceScrim.value
