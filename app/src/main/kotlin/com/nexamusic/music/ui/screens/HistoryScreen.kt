@@ -91,6 +91,7 @@ import com.nexamusic.music.ui.component.HideOnScrollFAB
 import com.nexamusic.music.ui.ios.compat.IconButton as CupertinoIconButton
 import com.nexamusic.music.ui.component.FrostedTopBar
 import com.nexamusic.music.ui.component.rememberSmoothHeaderTitleMotion
+import com.nexamusic.music.ui.component.rememberSmoothHeaderProgress
 import com.nexamusic.music.ui.component.LargeScreenTitle
 import com.nexamusic.music.ui.component.LocalMenuState
 import com.nexamusic.music.ui.component.NavigationTitle
@@ -209,8 +210,8 @@ fun HistoryScreen(
     }
 
     val lazyListState = rememberLazyListState()
-    val historyTitleProgress = rememberTitleCollapseProgressState(lazyListState)
-    val historyTitleMotion = rememberSmoothHeaderTitleMotion { historyTitleProgress.value }
+    val historyHeaderProgress = rememberSmoothHeaderProgress(lazyListState)
+    val historyTitleMotion = rememberSmoothHeaderTitleMotion(historyHeaderProgress)
 
     LaunchedEffect(lazyListState, historySource) {
         snapshotFlow {
@@ -500,7 +501,7 @@ fun HistoryScreen(
                 pageColor = tint,
                 modifier = Modifier.align(Alignment.TopCenter),
                 progressProvider = {
-                    historyTitleProgress.value
+                    historyHeaderProgress()
                 },
             )
             // The large title's stand-in once it has scrolled away. Centred, so
