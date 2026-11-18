@@ -46,7 +46,8 @@
         "Kept Home's pinned All filter available when mood filters are disabled and made Library's pinned category row persist across its category pages.",
         "Corrected the pinned-row registrar's CompositionLocal default factory to keep the scaffold type-safe.",
         "Added the explicit Flow collector import used by the scroll-only frame watchdog.",
-        "Synced Home's pinned filter visibility to the restored collapse progress, including long first-feed cards."
+        "Synced Home's pinned filter visibility to the restored collapse progress, including long first-feed cards.",
+        "Fixed the debug-build compilation error in the shared scroll-header scaffold."
       ]
     },
     {
