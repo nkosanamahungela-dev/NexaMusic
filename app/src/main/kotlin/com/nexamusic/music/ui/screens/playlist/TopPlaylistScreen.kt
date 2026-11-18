@@ -68,6 +68,7 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.nexamusic.music.ui.component.smoothHeaderScrollProgress
+import com.nexamusic.music.ui.component.rememberSmoothHeaderProgress
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -281,6 +282,7 @@ fun TopPlaylistScreen(
     }
 
     val state = rememberLazyListState()
+    val detailHeaderProgress = rememberSmoothHeaderProgress(state)
 
     val heroUrl = songs?.firstOrNull()?.song?.thumbnailUrl
     // Instant seed: route thumb -> live tile thumb. Paints mesh bg frame one.
@@ -490,7 +492,7 @@ fun TopPlaylistScreen(
             // RenderNode cycle) rather than the ambient unattached heroBackdrop,
             // whose drawBackdrop early-returns and left this chrome flat.
             CompositionLocalProvider(LocalAppBackdrop provides listBackdrop) {
-            com.nexamusic.music.ui.component.TopFadeBlur(hazeState, tint, Modifier.align(Alignment.TopCenter), progressProvider = { com.nexamusic.music.ui.component.SmoothHeaderProgress.progress })
+            com.nexamusic.music.ui.component.TopFadeBlur(hazeState, tint, Modifier.align(Alignment.TopCenter), progressProvider = detailHeaderProgress)
             com.nexamusic.music.ui.component.SmoothHeaderCompactTitle(
                 title = name,
                 progressProvider = { com.nexamusic.music.ui.component.SmoothHeaderProgress.progress },
