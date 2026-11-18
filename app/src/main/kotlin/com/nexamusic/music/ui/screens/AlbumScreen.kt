@@ -705,7 +705,7 @@ fun AlbumScreen(
         )
         com.nexamusic.music.ui.component.SmoothHeaderCompactTitle(
             title = albumWithSongs?.album?.title.orEmpty(),
-            progressProvider = { com.nexamusic.music.ui.component.SmoothHeaderProgress.progress },
+            progressProvider = detailHeaderProgress,
             color = chromeContentColor,
             modifier = Modifier.align(Alignment.TopCenter)
                 .windowInsetsPadding(WindowInsets.statusBars),
