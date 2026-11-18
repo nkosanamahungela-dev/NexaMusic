@@ -115,9 +115,12 @@ fun ProgressiveBlurLayer(
     }
     val density = LocalDensity.current
     val mode = remember(context) { HeaderRenderPolicy.mode(context) }
-    val progress by remember(progressProvider) { derivedStateOf { progressProvider().coerceIn(0f, 1f) } }
+    val progressState = remember(progressProvider) {
+        derivedStateOf { progressProvider().coerceIn(0f, 1f) }
+    }
+    val isVisible by remember(progressState) { derivedStateOf { progressState.value > 0f } }
 
-    if (progress <= 0f) return
+    if (!isVisible) return
 
     val useScrim = reduceTransparency || mode == HeaderRenderMode.SCRIM || HeaderRenderPolicy.forceScrim.value
     val scrimPeak = if (reduceTransparency) {
@@ -125,9 +128,8 @@ fun ProgressiveBlurLayer(
     } else {
         SmoothHeaderTokens.ScrimFallbackOpacity
     }
-    val stackOpacity = SmoothHeaderTokens.blurOpacity(progress)
-    DisposableEffect(useScrim, progress > 0f) {
-        if (useScrim || progress <= 0f) {
+    DisposableEffect(useScrim, isVisible) {
+        if (useScrim || !isVisible) {
             onDispose { }
         } else {
             val manager = context.getSystemService(Context.WINDOW_SERVICE) as? WindowManager
@@ -182,15 +184,18 @@ fun ProgressiveBlurLayer(
     Box(
         modifier = modifier
             .then(horizontalFade)
-            .graphicsLayer { alpha = if (useScrim) 1f else stackOpacity },
+            .graphicsLayer {
+                alpha = if (useScrim) 1f else SmoothHeaderTokens.blurOpacity(progressState.value)
+            },
     ) {
         if (useScrim) {
             Box(
                 Modifier
                     .fillMaxSize()
+                    .graphicsLayer { alpha = progressState.value }
                     .background(
                         Brush.verticalGradient(
-                            0f to pageColor.copy(alpha = scrimPeak * progress),
+                            0f to pageColor.copy(alpha = scrimPeak),
                             1f to pageColor.copy(alpha = 0f),
                         ),
                     ),
@@ -232,9 +237,10 @@ fun ProgressiveBlurLayer(
             Box(
                 Modifier
                     .fillMaxSize()
+                    .graphicsLayer { alpha = progressState.value }
                     .background(
                         Brush.verticalGradient(
-                            0f to pageColor.copy(alpha = SmoothHeaderTokens.TintPeakOpacity * progress),
+                            0f to pageColor.copy(alpha = SmoothHeaderTokens.TintPeakOpacity),
                             1f to pageColor.copy(alpha = 0f),
                         ),
                     ),
