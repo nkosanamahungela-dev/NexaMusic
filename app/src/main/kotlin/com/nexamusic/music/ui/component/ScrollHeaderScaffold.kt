@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.dp
 
 typealias ScrollHeaderPinnedRowContent = @Composable () -> Unit
 
-val LocalScrollHeaderProgressProvider = compositionLocalOf<() -> Float>({ { 0f } })
+val LocalScrollHeaderProgressProvider = compositionLocalOf<() -> Float> { { 0f } }
 private val LocalScrollHeaderPinnedRowRegistrar =
     compositionLocalOf<(String, ScrollHeaderPinnedRowContent?) -> Unit>({ _, _ -> })
 

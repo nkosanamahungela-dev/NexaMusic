@@ -41,7 +41,8 @@
         "Mirrored the floating-rail fade for right-to-left layouts and scaled the shared title zone for larger system font settings.",
         "Added a shared destination-scoped pinned-row registrar so Home, Library and Explore controls render above page content without sharing state across back-stack entries.",
         "Fixed the Explore pinned-row action import so its section shortcuts dispatch through the screen coroutine scope.",
-        "Limited the dropped-frame monitor to actual scroll-progress changes so stationary blur does not keep a frame callback running."
+        "Limited the dropped-frame monitor to actual scroll-progress changes so stationary blur does not keep a frame callback running.",
+        "Corrected the shared header progress CompositionLocal default factory so the debug build compiles."
       ]
     },
     {
