@@ -87,6 +87,7 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.nexamusic.music.ui.component.smoothHeaderScrollProgress
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.BlendMode
@@ -412,7 +413,7 @@ fun AlbumScreen(
     LazyColumn(
         state = lazyListState,
         overscrollEffect = heroZoom.listOverscroll(),
-        modifier = Modifier.heroPullZoom(heroZoom),
+        modifier = Modifier.smoothHeaderScrollProgress().heroPullZoom(heroZoom),
         // The artwork is full-bleed from y=0; only list controls keep safe-area padding.
         contentPadding = LocalPlayerAwareWindowInsets.current
             .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)
@@ -710,6 +711,7 @@ fun AlbumScreen(
             hazeState = hazeState,
             pageColor = tint,
             modifier = Modifier.align(Alignment.TopCenter),
+            progressProvider = { com.nexamusic.music.ui.component.SmoothHeaderProgress.progress },
         )
         Box(
             modifier = Modifier
