@@ -210,10 +210,7 @@ fun ProgressiveBlurLayer(
                             layer.fadeEndFraction to Color.Transparent,
                         )
                     }
-                    val radiusPx = with(density) { layer.radius.dp.toPx() }
-                    val style = remember {
-                        HazeStyle(blurRadius = 0.dp, noiseFactor = 0f)
-                    }
+                    val style = HazeStyle(blurRadius = layer.radius.dp, noiseFactor = 0f)
                     Box(
                         Modifier
                             .fillMaxSize()
@@ -221,7 +218,6 @@ fun ProgressiveBlurLayer(
                                 colorFilter = ColorFilter.colorMatrix(saturation)
                             }
                             .hazeEffect(state = hazeState, style = style) {
-                                blurRadius = layer.radius.dp
                                 this.mask = mask
                                 noiseFactor = 0f
                                 inputScale = HazeInputScale.Fixed(
