@@ -70,6 +70,7 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.runtime.State
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.nexamusic.music.ui.component.smoothHeaderScrollProgress
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
@@ -368,7 +369,7 @@ fun OnlinePlaylistScreen(
         LazyColumn(
             state = lazyListState,
             overscrollEffect = heroZoom.listOverscroll(),
-            modifier = Modifier.heroPullZoom(heroZoom),
+            modifier = Modifier.smoothHeaderScrollProgress().heroPullZoom(heroZoom),
             contentPadding = LocalPlayerAwareWindowInsets.current
                 .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)
                 .union(WindowInsets.ime)
@@ -638,6 +639,7 @@ fun OnlinePlaylistScreen(
             hazeState = hazeState,
             pageColor = tint,
             modifier = Modifier.align(Alignment.TopCenter),
+            progressProvider = { com.nexamusic.music.ui.component.SmoothHeaderProgress.progress },
         )
         Box(
             modifier = Modifier
