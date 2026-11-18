@@ -120,6 +120,8 @@ import com.nexamusic.music.ui.utils.backToMain
 import com.nexamusic.music.utils.rememberPreference
 import kotlinx.coroutines.launch
 import com.nexamusic.music.ui.component.ScreenScaffold
+import com.nexamusic.music.ui.component.rememberSmoothHeaderProgress
+import com.nexamusic.music.ui.component.SmoothHeaderProgressSync
 import androidx.compose.ui.platform.LocalLocale
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
@@ -240,6 +242,9 @@ fun ListenTogetherScreen(
     val coroutineScope = rememberCoroutineScope()
     val bringIntoViewRequester = remember { BringIntoViewRequester() }
     
+    val partyHeaderProgress = rememberSmoothHeaderProgress(lazyListState)
+    SmoothHeaderProgressSync(partyHeaderProgress)
+
     val backStackEntry by navController.currentBackStackEntryAsState()
     val scrollToTop = backStackEntry?.savedStateHandle?.getStateFlow("scrollToTop", false)?.collectAsStateWithLifecycle()
     
@@ -255,6 +260,7 @@ fun ListenTogetherScreen(
         // Shown as a pushed page it needs the bar; as a tab it is one of the
         // top-level screens and carries no chrome at all.
         titleAlpha = if (shouldShowTopBar) 1f else 0f,
+        progressProvider = partyHeaderProgress,
         onBack = if (shouldShowTopBar) { { navController.navigateUp() } } else null,
         onBackLongClick = if (shouldShowTopBar) { { navController.backToMain() } } else null,
     ) { chrome ->
