@@ -6,6 +6,7 @@
 package com.nexamusic.music
 
 import com.nexamusic.music.ui.component.sf
+import com.nexamusic.music.ui.component.SmoothHeaderTokens
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.core.tween
