@@ -277,13 +277,22 @@ fun SearchScreen(
         if (!searching) {
             // Frosted strip under the status bar once tiles scroll up into it.
             val browseHaze = remember { HazeState() }
+            val scopePinned = browseGridState.firstVisibleItemIndex >= 2
+            val headerProgressProvider = {
+                val scrollDp = if (browseGridState.firstVisibleItemIndex > 0) {
+                    SmoothHeaderTokens.ScrollDistance.value
+                } else {
+                    with(headerDensity) { browseGridState.firstVisibleItemScrollOffset.toDp().value }
+                }
+                SmoothHeaderTokens.progress(scrollDp)
+            }
             Box(Modifier.fillMaxSize().hazeSource(browseHaze)) {
                 AppleSearchBrowse(
                     navController = navController,
                     contentPadding = PaddingValues(start = sideInset, top = titleTop, bottom = bottomPadding + 16.dp),
                     gridState = browseGridState,
                     header = { AppleSearchHeader(accountImageUrl, accountName, onAccountClick,
-                        horizontalInset = 0.dp, bottomInset = 2.dp) },
+                        progressProvider = headerProgressProvider, horizontalInset = 0.dp, bottomInset = 2.dp) },
                     recentSearches = recentSearches.map { it.query }.distinct().take(12),
                     onRecentSearchClick = onSearchFromSuggestion,
                     onClearRecent = {
@@ -303,15 +312,34 @@ fun SearchScreen(
                 scrimColor = pageColor,
                 scrimOpacity = SmoothHeaderTokens.TintPeakOpacity,
                 modifier = Modifier.align(Alignment.TopCenter),
-                progressProvider = {
-                    val scrollDp = if (browseGridState.firstVisibleItemIndex > 0) {
-                        SmoothHeaderTokens.ScrollDistance.value
-                    } else {
-                        with(headerDensity) { browseGridState.firstVisibleItemScrollOffset.toDp().value }
-                    }
-                    SmoothHeaderTokens.blurOpacity(SmoothHeaderTokens.progress(scrollDp))
-                },
+                heightOverride = statusTop + SmoothHeaderTokens.HeaderContentHeight +
+                    if (scopePinned) 48.dp else 0.dp,
+                progressProvider = headerProgressProvider,
             )
+            Box(
+                Modifier.align(Alignment.TopCenter).fillMaxWidth().padding(top = statusTop).height(52.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = stringResource(R.string.search),
+                    style = AppTheme.typography.titleMedium.copy(fontSize = 17.sp),
+                    color = colors.label,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.graphicsLayer { alpha = SmoothHeaderTokens.smallTitleOpacity(headerProgressProvider()) },
+                )
+            }
+            if (scopePinned) {
+                Box(
+                    Modifier.align(Alignment.TopCenter).fillMaxWidth().padding(top = statusTop + 52.dp).height(48.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    SearchScopeSwitch(
+                        scope = navSearch.searchSource,
+                        onSelect = { if (it != navSearch.searchSource) navSearch.onToggleSource() },
+                    )
+                }
+            }
         } else {
             val searchBackdrop = com.nexamusic.music.ui.component.backdrop.backdrops.rememberLayerBackdrop(
                 onDraw = remember(pageColor) { { drawRect(pageColor); drawContent() } },
@@ -562,6 +590,7 @@ private fun AppleSearchHeader(
     accountImageUrl: String?,
     accountName: String,
     onAccountClick: () -> Unit,
+    progressProvider: () -> Float,
     horizontalInset: androidx.compose.ui.unit.Dp = 16.dp,
     bottomInset: androidx.compose.ui.unit.Dp = 10.dp,
 ) {
@@ -577,10 +606,24 @@ private fun AppleSearchHeader(
             style = com.nexamusic.music.ui.screens.library.apple.SfStyle(40.sp, 46.sp, FontWeight.ExtraBold, (-1.6).sp),
             color = com.nexamusic.music.ui.ios.foundation.IosTheme.colors.label,
             maxLines = 1,
-            modifier = Modifier.weight(1f).height(46.dp),
+            modifier = Modifier.weight(1f).height(46.dp).graphicsLayer {
+                val p = progressProvider()
+                alpha = SmoothHeaderTokens.bigTitleOpacity(p)
+                translationY = -SmoothHeaderTokens.BigTitleTravel.toPx() * p
+                val scale = SmoothHeaderTokens.bigTitleScale(p)
+                scaleX = scale
+                scaleY = scale
+                transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0f, 0.5f)
+            },
         )
         Box(
-            Modifier.size(44.dp).clip(CircleShape)
+            Modifier.size(44.dp).graphicsLayer {
+                val p = progressProvider()
+                alpha = SmoothHeaderTokens.profileOpacity(p)
+                val scale = SmoothHeaderTokens.profileScale(p)
+                scaleX = scale
+                scaleY = scale
+            }.clip(CircleShape)
                 .iosRowPress(onClick = onAccountClick)
                 .semantics { contentDescription = profileDescription },
         ) {
