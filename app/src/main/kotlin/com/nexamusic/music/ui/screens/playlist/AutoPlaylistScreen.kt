@@ -528,7 +528,7 @@ fun AutoPlaylistScreen(
                 // heroBackdrop, whose drawBackdrop early-returns and left this
                 // chrome flat with no real blur behind it.
                 CompositionLocalProvider(LocalAppBackdrop provides listBackdrop) {
-            com.nexamusic.music.ui.component.TopFadeBlur(hazeState, tint, Modifier.align(Alignment.TopCenter), progressProvider = detailHeaderProgress)
+            com.nexamusic.music.ui.component.TopFadeBlur(hazeState, AppTheme.colorScheme.background, Modifier.align(Alignment.TopCenter), progressProvider = detailHeaderProgress)
             com.nexamusic.music.ui.component.SmoothHeaderCompactTitle(
                 title = playlistName,
                 progressProvider = detailHeaderProgress,
