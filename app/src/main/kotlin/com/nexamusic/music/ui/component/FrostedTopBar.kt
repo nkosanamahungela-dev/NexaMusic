@@ -142,7 +142,7 @@ fun FrostedTopBar(
         ) {
             Text(
                 text = title,
-                style = AppTheme.typography.titleMedium.copy(fontSize = 17.sp),
+                style = AppTheme.typography.titleMedium.copy(fontSize = SmoothHeaderTokens.SmallTitleSize),
                 fontWeight = FontWeight.SemiBold,
                 color = resolvedTitleColor,
                 maxLines = 1,
