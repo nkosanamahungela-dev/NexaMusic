@@ -467,7 +467,7 @@ fun CachePlaylistScreen(
             // RenderNode cycle) rather than the ambient unattached heroBackdrop,
             // whose drawBackdrop early-returns and left this chrome flat.
             CompositionLocalProvider(LocalAppBackdrop provides listBackdrop) {
-            com.nexamusic.music.ui.component.TopFadeBlur(hazeState, tint, Modifier.align(Alignment.TopCenter), progressProvider = detailHeaderProgress)
+            com.nexamusic.music.ui.component.TopFadeBlur(hazeState, AppTheme.colorScheme.background, Modifier.align(Alignment.TopCenter), progressProvider = detailHeaderProgress)
             com.nexamusic.music.ui.component.SmoothHeaderCompactTitle(
                 title = stringResource(R.string.cached_playlist),
                 progressProvider = detailHeaderProgress,
