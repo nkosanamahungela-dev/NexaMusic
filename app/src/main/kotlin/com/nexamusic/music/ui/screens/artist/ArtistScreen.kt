@@ -94,6 +94,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.nexamusic.music.ui.component.smoothHeaderScrollProgress
+import com.nexamusic.music.ui.component.rememberSmoothHeaderProgress
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
@@ -269,6 +270,7 @@ fun ArtistScreen(
     }
 
     val lazyListState = rememberLazyListState()
+    val detailHeaderProgress = rememberSmoothHeaderProgress(lazyListState)
 
     // Per-screen Haze source: the list content the post-hero TopFadeBlur
     // samples once scrolled past the photo.
@@ -1205,7 +1207,7 @@ fun ArtistScreen(
                 hazeState = hazeState,
                 pageColor = tint,
                 modifier = Modifier.align(Alignment.TopCenter),
-                progressProvider = { com.nexamusic.music.ui.component.SmoothHeaderProgress.progress },
+                progressProvider = detailHeaderProgress,
             )
         com.nexamusic.music.ui.component.SmoothHeaderCompactTitle(
             title = artistPage?.artist?.title ?: libraryArtist?.artist?.name.orEmpty(),
