@@ -216,6 +216,7 @@ import com.nexamusic.music.viewmodels.ChartsViewModel
 import com.nexamusic.music.viewmodels.NewReleaseViewModel
 import com.nexamusic.music.ui.component.rememberAppBackgroundColor
 import com.nexamusic.music.ui.component.rememberTitleCollapseProgress
+import com.nexamusic.music.ui.component.smoothHeaderScrollProgress
 import com.nexamusic.music.ui.component.shimmer.GridItemPlaceHolder
 import com.nexamusic.music.ui.component.shimmer.ShimmerHost
 import com.nexamusic.music.ui.component.shimmer.TextPlaceholder
@@ -558,7 +559,7 @@ fun HomeScreen(
 
                 LazyColumn(
                     state = lazylistState,
-                    modifier = Modifier.nestedScroll(feedScrollTracker),
+                    modifier = Modifier.nestedScroll(feedScrollTracker).smoothHeaderScrollProgress(),
                     // Sections had nothing but NavigationTitle's own 12dp padding
                     // between them — ran into each other, felt cramped.
                     verticalArrangement = Arrangement.spacedBy(AppPage.ItemSpacing),
