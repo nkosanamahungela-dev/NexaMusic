@@ -47,6 +47,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.nexamusic.music.ui.component.smoothHeaderScrollProgress
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
@@ -185,6 +186,7 @@ fun SettingsScreen(
                     Column(
                         Modifier
                             .fillMaxSize()
+                            .smoothHeaderScrollProgress()
                             .verticalScroll(rememberScrollState())
                             .windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top + WindowInsetsSides.End))
                             .padding(horizontal = 24.dp, vertical = 24.dp),
