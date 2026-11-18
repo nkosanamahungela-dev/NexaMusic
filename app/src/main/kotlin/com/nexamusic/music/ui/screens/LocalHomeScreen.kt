@@ -48,6 +48,7 @@ import com.nexamusic.music.ui.component.HideOnScrollFAB
 import com.nexamusic.music.ui.component.HomeImageBackground
 import com.nexamusic.music.ui.component.LocalMenuState
 import com.nexamusic.music.ui.component.rememberAppBackgroundColor
+import com.nexamusic.music.ui.component.smoothHeaderScrollProgress
 import com.nexamusic.music.ui.ios.compat.AppTheme
 import com.nexamusic.music.ui.theme.AppPage
 import com.nexamusic.music.ui.theme.LocalMetadataColor
@@ -137,6 +138,7 @@ fun LocalHomeScreen(
 
             LazyColumn(
                 state = lazyListState,
+                modifier = Modifier.smoothHeaderScrollProgress(),
                 verticalArrangement = Arrangement.spacedBy(AppPage.ItemSpacing),
                 contentPadding = run {
                     val ins = LocalPlayerAwareWindowInsets.current.asPaddingValues()
