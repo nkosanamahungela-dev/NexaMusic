@@ -58,6 +58,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.nexamusic.music.ui.component.smoothHeaderScrollProgress
+import com.nexamusic.music.ui.component.TopFadeBlur
+import com.nexamusic.music.ui.component.FrostedTopBar
+import com.nexamusic.music.ui.component.SmoothHeaderProgress
+import com.nexamusic.music.ui.component.SmoothHeaderTokens
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.hazeSource
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.TransformOrigin
@@ -118,6 +124,7 @@ fun UpdateScreen(navController: NavHostController) {
     val view = LocalView.current
     val scope = rememberCoroutineScope()
     val pageColor = AppTheme.colorScheme.background
+    val updateHaze = remember { HazeState() }
     val darkTheme = pageColor.luminance() < 0.5f
     val palette = if (darkTheme) UpdateScreenTokens.Dark else UpdateScreenTokens.Light
 
@@ -225,7 +232,7 @@ fun UpdateScreen(navController: NavHostController) {
     androidx.compose.runtime.SideEffect {
         activity?.window?.let { window ->
             WindowCompat.setDecorFitsSystemWindows(window, false)
-            window.statusBarColor = pageColor.toArgb()
+            window.statusBarColor = AndroidColor.TRANSPARENT
             window.navigationBarColor = AndroidColor.TRANSPARENT
             if (Build.VERSION.SDK_INT >= 29) {
                 window.isNavigationBarContrastEnforced = false
@@ -263,6 +270,7 @@ fun UpdateScreen(navController: NavHostController) {
             modifier = Modifier
                 .fillMaxSize()
                 .smoothHeaderScrollProgress()
+                .hazeSource(updateHaze)
                 .verticalScroll(rememberScrollState())
                 .padding(
                     start = UpdateScreenTokens.SideMargin,
@@ -352,15 +360,18 @@ fun UpdateScreen(navController: NavHostController) {
             }
         }
 
-        // Paint a full opaque top scrim over the status-bar inset and the exposed
-        // transition gap. The system status bar also uses pageColor so content
-        // from the previous destination cannot show through either layer.
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .fillMaxWidth()
-                .height(WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 56.dp)
-                .background(pageColor)
+        // The former opaque status-bar/title band is now the shared scroll-driven blur.
+        TopFadeBlur(
+            hazeState = updateHaze,
+            pageColor = pageColor,
+            modifier = Modifier.align(Alignment.TopCenter),
+            progressProvider = { SmoothHeaderProgress.progress },
+        )
+        FrostedTopBar(
+            onBack = { navController.navigateUp() },
+            title = stringResource(R.string.settings_check_updates_title),
+            titleAlphaProvider = { SmoothHeaderTokens.smallTitleOpacity(SmoothHeaderProgress.progress) },
+            modifier = Modifier.align(Alignment.TopCenter),
         )
 
         // Bottom fade is intentionally below the status bar and above the fixed
