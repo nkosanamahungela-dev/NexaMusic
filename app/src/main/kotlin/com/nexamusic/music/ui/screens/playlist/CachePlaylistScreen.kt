@@ -471,7 +471,7 @@ fun CachePlaylistScreen(
             com.nexamusic.music.ui.component.SmoothHeaderCompactTitle(
                 title = stringResource(R.string.cached_playlist),
                 progressProvider = detailHeaderProgress,
-                color = onTint,
+                color = AppTheme.colorScheme.onSurface,
                 modifier = Modifier.align(Alignment.TopCenter)
                     .windowInsetsPadding(WindowInsets.statusBars),
             )
@@ -503,7 +503,7 @@ fun CachePlaylistScreen(
                     Text(
                         text = pluralStringResource(R.plurals.n_selected, selection.size, selection.size),
                         style = AppTheme.typography.titleMedium,
-                        color = onTint,
+                        color = AppTheme.colorScheme.onSurface,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.weight(1f)
                     )
@@ -555,7 +555,7 @@ fun CachePlaylistScreen(
 
                     Text(
                         text = stringResource(R.string.cached_playlist),
-                        color = onTint,
+                        color = AppTheme.colorScheme.onSurface,
                         style = AppTheme.typography.titleMedium,
                         maxLines = 1,
                         modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
