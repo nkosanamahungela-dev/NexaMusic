@@ -133,7 +133,7 @@ fun ProgressiveBlurLayer(
             val manager = context.getSystemService(Context.WINDOW_SERVICE) as? WindowManager
             @Suppress("DEPRECATION")
             val refreshRate = manager?.defaultDisplay?.refreshRate?.takeIf { it > 0f } ?: 60f
-            val slowFrameNanos = (1_000_000_000f / refreshRate * 1.8f).toLong()
+            val slowFrameNanos = (1_000_000_000f / refreshRate * SmoothHeaderTokens.SlowFrameIntervalMultiplier).toLong()
             val choreographer = Choreographer.getInstance()
             var lastFrame = 0L
             var consecutiveSlowFrames = 0
@@ -145,7 +145,7 @@ fun ProgressiveBlurLayer(
                         consecutiveSlowFrames = 0
                     }
                     lastFrame = frameTimeNanos
-                    if (consecutiveSlowFrames >= 3) {
+                    if (consecutiveSlowFrames >= SmoothHeaderTokens.ConsecutiveSlowFramesBeforeFallback) {
                         forceSmoothHeaderScrimForSession()
                     } else {
                         choreographer.postFrameCallback(this)
@@ -166,7 +166,7 @@ fun ProgressiveBlurLayer(
             .drawWithContent {
                 drawContent()
                 val fadePx = with(density) { startFade.toPx() }
-                val fadeWidth = with(density) { 28.dp.toPx() }
+                val fadeWidth = with(density) { SmoothHeaderTokens.RailFadeWidth.toPx() }
                 drawRect(
                     brush = Brush.horizontalGradient(
                         0f to Color.Transparent,
@@ -218,7 +218,7 @@ fun ProgressiveBlurLayer(
                             this.mask = mask
                             this.noiseFactor = 0f
                             this.inputScale = HazeInputScale.Fixed(
-                                if (layer.radius >= 12f) 0.5f else 1f,
+                                if (layer.radius >= 12f) SmoothHeaderTokens.LowResolutionBlurScale else SmoothHeaderTokens.StandardBlurScale,
                             )
                         },
                 )
