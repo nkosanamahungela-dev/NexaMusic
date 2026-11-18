@@ -5,6 +5,8 @@
 
 package com.nexamusic.music.ui.component
 
+import android.animation.ValueAnimator
+
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.animation.AnimatedVisibility
@@ -159,7 +161,11 @@ fun FrostedTopBar(
                     .padding(top = 4.dp)
                     .fillMaxWidth()
                     .graphicsLayer {
+                        val p = progressProvider().coerceIn(0f, 1f)
                         alpha = titleAlphaProvider?.invoke() ?: titleAlpha
+                        translationY = if (ValueAnimator.areAnimatorsEnabled()) {
+                            (1f - p) * SmoothHeaderTokens.SmallTitleTravel.toPx()
+                        } else 0f
                     }
                     .clearAndSetSemantics { },
             )
