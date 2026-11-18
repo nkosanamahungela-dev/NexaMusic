@@ -39,7 +39,9 @@ object SmoothHeaderTokens {
 
     // Title and profile motion
     val BigTitleSize = 40.sp
+    val BigTitleLineHeight = 46.sp
     val SmallTitleSize = 17.sp
+    val SmallTitleSideInset = 88.dp
     val BigTitleLetterSpacing = (-1.6).sp
     val BigTitleTravel = 14.dp
     const val BigTitleScale = 0.20f
