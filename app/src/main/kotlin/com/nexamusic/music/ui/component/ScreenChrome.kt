@@ -8,6 +8,7 @@ package com.nexamusic.music.ui.component
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateTopPadding
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
