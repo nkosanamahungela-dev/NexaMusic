@@ -147,16 +147,13 @@ fun ScrollHeaderScaffold(
             modifier = Modifier.align(Alignment.TopCenter),
         )
 
-        if (pinnedRow != null && pinnedRowHeight > 0.dp) {
+        if (pinnedRow != null && pinnedRowHeight > 0.dp && pinnedRowVisibleProvider()) {
             Box(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
                     .padding(top = topInset + TopBarContentHeight)
-                    .height(pinnedRowHeight)
-                    .fillMaxSize()
-                    .graphicsLayer {
-                        alpha = if (pinnedRowVisibleProvider()) 1f else 0f
-                    },
+                    .fillMaxWidth()
+                    .height(pinnedRowHeight),
             ) {
                 pinnedRow()
             }
@@ -185,6 +182,9 @@ fun ScreenScaffold(
     actions: @Composable () -> Unit = {},
     titleAlphaProvider: (() -> Float)? = null,
     progressProvider: () -> Float = { SmoothHeaderProgress.progress },
+    pinnedRow: (@Composable () -> Unit)? = null,
+    pinnedRowHeight: Dp = 0.dp,
+    pinnedRowVisibleProvider: () -> Boolean = { false },
     content: @Composable BoxScope.(GlassScreenChrome) -> Unit,
 ) {
     val chrome = rememberGlassScreenChrome(background = pageColor)
@@ -259,6 +259,9 @@ fun ScreenPage(
             titleAlpha = 0f,
             titleAlphaProvider = titleMotion.compactAlpha,
             progressProvider = progressProvider,
+            pinnedRow = pinnedRow,
+            pinnedRowHeight = pinnedRowHeight,
+            pinnedRowVisibleProvider = pinnedRowVisibleProvider,
             pageColor = pageColor,
             chrome = chrome,
             onBack = onBack,
