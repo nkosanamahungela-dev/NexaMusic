@@ -20,12 +20,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.BlendMode
@@ -47,6 +49,7 @@ import androidx.core.view.WindowCompat
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.HazeInputScale
 import dev.chrisbanes.haze.HazeState
+import kotlinx.coroutines.flow.distinctUntilChanged
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.hazeEffect
 import com.nexamusic.music.ui.ios.compat.AppTheme
@@ -130,37 +133,34 @@ fun ProgressiveBlurLayer(
         SmoothHeaderTokens.ScrimFallbackOpacity
     }
 
-    // Automatically disable blur after repeated missed frames, for this session.
-    DisposableEffect(useScrim) {
-        if (useScrim) {
-            onDispose { }
-        } else {
+    // Measure frame intervals only while the quantized scroll progress is changing.
+    // snapshotFlow cancels when the header leaves the active zone, avoiding an idle
+    // Choreographer callback loop while a stationary blurred header is on screen.
+    LaunchedEffect(useScrim, progressProvider) {
+        if (!useScrim) {
             val manager = context.getSystemService(Context.WINDOW_SERVICE) as? WindowManager
             @Suppress("DEPRECATION")
             val refreshRate = manager?.defaultDisplay?.refreshRate?.takeIf { it > 0f } ?: 60f
             val frameBudget = (1_000_000_000f / refreshRate *
                 SmoothHeaderTokens.SlowFrameIntervalMultiplier).toLong()
-            val choreographer = Choreographer.getInstance()
             var previousFrame = 0L
-            var previousProgress = readProgress()
             var slowFrames = 0
-            val callback = object : Choreographer.FrameCallback {
-                override fun doFrame(frameTimeNanos: Long) {
-                    val currentProgress = readProgress()
-                    val transitioning = kotlin.math.abs(currentProgress - previousProgress) >=
-                        SmoothHeaderTokens.ProgressQuantum
-                    if (transitioning && previousFrame != 0L &&
+            snapshotFlow { readProgress() }
+                .distinctUntilChanged()
+                .collect {
+                    val frameTimeNanos = withFrameNanos { it }
+                    if (previousFrame != 0L &&
                         frameTimeNanos - previousFrame > frameBudget
-                    ) slowFrames += 1 else slowFrames = 0
+                    ) {
+                        slowFrames += 1
+                    } else {
+                        slowFrames = 0
+                    }
                     previousFrame = frameTimeNanos
-                    previousProgress = currentProgress
                     if (slowFrames >= SmoothHeaderTokens.ConsecutiveSlowFramesBeforeFallback) {
                         forceSmoothHeaderScrimForSession()
-                    } else choreographer.postFrameCallback(this)
+                    }
                 }
-            }
-            choreographer.postFrameCallback(callback)
-            onDispose { choreographer.removeFrameCallback(callback) }
         }
     }
 

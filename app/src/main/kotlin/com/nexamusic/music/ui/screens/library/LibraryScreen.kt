@@ -9,10 +9,13 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.navigation.NavController
 import com.nexamusic.music.constants.ChipSortTypeKey
 import com.nexamusic.music.constants.LibraryFilter
@@ -30,6 +33,7 @@ import com.nexamusic.music.ui.component.SmoothHeaderProgressSync
 import com.nexamusic.music.ui.component.ChipsRow
 import com.nexamusic.music.ui.component.PinnedScrollHeaderRow
 import com.nexamusic.music.R
+import com.nexamusic.music.LocalPlayerAwareWindowInsets
 import androidx.compose.ui.res.stringResource
 
 @Composable
@@ -42,6 +46,8 @@ fun LibraryScreen(navController: NavController) {
     val libraryHeaderProgress = rememberSmoothHeaderProgress(libraryListState)
     if (filterType == LibraryFilter.LIBRARY) SmoothHeaderProgressSync(libraryHeaderProgress, headerScreenKey)
     val libraryPinnedScrollState = rememberScrollState()
+    val librarySideInset = LocalPlayerAwareWindowInsets.current.asPaddingValues()
+        .calculateStartPadding(LocalLayoutDirection.current)
     Box(modifier = Modifier.fillMaxSize().then(if (filterType == LibraryFilter.LIBRARY) Modifier else Modifier.smoothHeaderScrollProgress(headerScreenKey))) {
         PinnedScrollHeaderRow(
             screenKey = headerScreenKey,
@@ -58,6 +64,7 @@ fun LibraryScreen(navController: NavController) {
                 currentValue = filterType,
                 onValueUpdate = { filterType = it },
                 scrollState = libraryPinnedScrollState,
+                sideInset = librarySideInset,
             )
         }
         // Apple Music's Library and its lists: new screens on the plain system background.
