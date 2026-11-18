@@ -90,6 +90,7 @@ import com.nexamusic.music.ui.component.ChipsRow
 import com.nexamusic.music.ui.component.HideOnScrollFAB
 import com.nexamusic.music.ui.ios.compat.IconButton as CupertinoIconButton
 import com.nexamusic.music.ui.component.FrostedTopBar
+import com.nexamusic.music.ui.component.SmoothHeaderProgressSync
 import com.nexamusic.music.ui.component.rememberSmoothHeaderTitleMotion
 import com.nexamusic.music.ui.component.rememberSmoothHeaderProgress
 import com.nexamusic.music.ui.component.LargeScreenTitle
@@ -211,6 +212,7 @@ fun HistoryScreen(
 
     val lazyListState = rememberLazyListState()
     val historyHeaderProgress = rememberSmoothHeaderProgress(lazyListState)
+    SmoothHeaderProgressSync(historyHeaderProgress, navController.currentBackStackEntry?.id ?: "history")
     val historyTitleMotion = rememberSmoothHeaderTitleMotion(historyHeaderProgress)
 
     LaunchedEffect(lazyListState, historySource) {

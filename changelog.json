@@ -33,7 +33,8 @@
         "Connected the Home, Radio, Explore and Library tab headers to their own navigation entries, including restored scroll positions.",
         "Improved restored header scroll handling for short lists and grids, kept top overscroll clear, and cleaned up inactive screen progress.",
         "Added a shared destination scaffold so scroll-driven headers use the active screen's own navigation state.",
-        "Connected the Search browse header to its own restored grid position, keeping its compact title in sync with the active Search destination."
+        "Connected the Search browse header to its own restored grid position, keeping its compact title in sync with the active Search destination.",
+        "Synced the History header with its own restored list position so it no longer depends on another screen's scroll state."
       ]
     },
     {
