@@ -509,6 +509,7 @@ fun HistoryScreen(
                     title = stringResource(R.string.history),
                     titleAlpha = 0f,
                     titleAlphaProvider = { com.nexamusic.music.ui.component.SmoothHeaderTokens.smallTitleOpacity(historyTitleProgress.value) },
+                    progressProvider = { historyTitleProgress.value },
                     titleColor = onTint,
                     modifier = Modifier.align(Alignment.TopCenter),
                 )
