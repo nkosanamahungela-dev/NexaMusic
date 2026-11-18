@@ -353,7 +353,7 @@ fun HomeScreen(
 
     val lazylistState = rememberLazyListState()
     val homeHeaderProgress = rememberSmoothHeaderProgress(lazylistState)
-    SmoothHeaderProgressSync(homeHeaderProgress)
+    SmoothHeaderProgressSync(homeHeaderProgress, navController.currentBackStackEntry?.id ?: "home")
     val filterScrollState = rememberScrollState()
     val feedScroll = remember { mutableFloatStateOf(0f) }
     val feedScrollTracker = remember {

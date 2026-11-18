@@ -161,7 +161,7 @@ fun ExploreScreen(
     val art by tilesViewModel.art.collectAsStateWithLifecycle()
     val exploreListState = rememberLazyListState()
     val exploreHeaderProgress = rememberSmoothHeaderProgress(exploreListState)
-    SmoothHeaderProgressSync(exploreHeaderProgress)
+    SmoothHeaderProgressSync(exploreHeaderProgress, navController.currentBackStackEntry?.id ?: "explore")
     LaunchedEffect(Unit) { if (chartsPage == null) chartsViewModel.loadCharts() }
 
     val colors = com.nexamusic.music.ui.ios.foundation.IosTheme.colors

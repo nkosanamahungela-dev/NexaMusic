@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.composables.sfsymbols.SfSymbols
 import com.composables.sfsymbols.monochrome.SFChartBar
 import com.composables.sfsymbols.monochrome.SFClock
@@ -102,8 +103,10 @@ fun AppTopBar(
     onAccountClick: () -> Unit,
     chromeVisible: Boolean = visible,
 ) {
-        val titleMotion = rememberSmoothHeaderTitleMotion { SmoothHeaderProgress.progress }
-        LaunchedEffect(effectiveRoute) { SmoothHeaderProgress.progress = 0f }
+        val currentEntry by navController.currentBackStackEntryAsState()
+        val screenKey = currentEntry?.id ?: effectiveRoute ?: "app"
+        val headerProgressProvider = remember(screenKey) { { headerProgressProvider()For(screenKey) } }
+        val titleMotion = rememberSmoothHeaderTitleMotion(headerProgressProvider)
         AnimatedVisibility(
             visible = visible,
             enter = fadeIn(animationSpec = tween(durationMillis = 300)),
@@ -121,7 +124,7 @@ fun AppTopBar(
                     scrimColor = AppTheme.colorScheme.background,
                     scrimOpacity = SmoothHeaderTokens.TintPeakOpacity,
                     backdrop = backdrop,
-                    progressProvider = { SmoothHeaderProgress.progress },
+                    progressProvider = { headerProgressProvider() },
                     startFade = if (showRail) startInset else 0.dp,
                 )
                 // Explore's title remains theme-neutral and cannot inherit cover-derived tint.
@@ -134,7 +137,7 @@ fun AppTopBar(
                 if (chromeVisible) FrostedTopBar(
                     title = titleRes?.let { stringResource(it) } ?: "",
                     titleAlphaProvider = titleMotion.compactAlpha,
-                    progressProvider = { SmoothHeaderProgress.progress },
+                    progressProvider = { headerProgressProvider() },
                     // The blur above spans the full width; only the content clears the side bar and cutouts.
                     modifier = Modifier
                         .windowInsetsPadding(cutoutInsets.only(WindowInsetsSides.Start + WindowInsetsSides.End))
@@ -160,7 +163,7 @@ fun AppTopBar(
                             maxLines = 1,
                             modifier = (if (showRail) Modifier else Modifier.height(46.dp)).semantics { heading() }.graphicsLayer {
                                 if (!showRail) {
-                                    val p = SmoothHeaderProgress.progress
+                                    val p = headerProgressProvider()
                                     alpha = titleMotion.largeAlpha()
                                     translationY = if (titleMotion.transformsEnabled) -SmoothHeaderTokens.BigTitleTravel.toPx() * p else 0f
                                     val scale = if (titleMotion.transformsEnabled) SmoothHeaderTokens.bigTitleScale(p) else 1f
@@ -177,7 +180,7 @@ fun AppTopBar(
                         } else {
                             Box(
                                 Modifier.graphicsLayer {
-                                    val p = SmoothHeaderProgress.progress
+                                    val p = headerProgressProvider()
                                     alpha = SmoothHeaderTokens.profileOpacity(p)
                                     val scale = if (titleMotion.transformsEnabled) SmoothHeaderTokens.profileScale(p) else 1f
                                     scaleX = scale
