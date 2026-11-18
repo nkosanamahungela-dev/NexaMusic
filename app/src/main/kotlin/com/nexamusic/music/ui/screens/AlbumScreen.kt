@@ -89,6 +89,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.nexamusic.music.ui.component.smoothHeaderScrollProgress
+import com.nexamusic.music.ui.component.rememberSmoothHeaderProgress
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.BlendMode
@@ -312,6 +313,7 @@ fun AlbumScreen(
     }
 
     val lazyListState = rememberLazyListState()
+    val detailHeaderProgress = rememberSmoothHeaderProgress(lazyListState)
 
     // Per-screen Haze source: the artwork head + its tint plane together become the
     // backdrop that HeroMergeBand/HeroTopBlur sample through, so the hero visibly
@@ -699,7 +701,7 @@ fun AlbumScreen(
             hazeState = hazeState,
             pageColor = tint,
             modifier = Modifier.align(Alignment.TopCenter),
-            progressProvider = { com.nexamusic.music.ui.component.SmoothHeaderProgress.progress },
+            progressProvider = detailHeaderProgress,
         )
         com.nexamusic.music.ui.component.SmoothHeaderCompactTitle(
             title = albumWithSongs?.album?.title.orEmpty(),
