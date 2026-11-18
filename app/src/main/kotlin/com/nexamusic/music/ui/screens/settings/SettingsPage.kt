@@ -22,6 +22,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.nexamusic.music.ui.component.smoothHeaderScrollProgress
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -82,7 +83,7 @@ fun SettingsPage(
         androidx.compose.material3.LocalContentColor provides IosTheme.colors.label,
     ) { ScreenPage(
         title = title,
-        modifier = modifier,
+        modifier = modifier.smoothHeaderScrollProgress(),
         onBack = onBack ?: { navController.navigateUp(); Unit },
         onBackLongClick = navController::backToMain,
         // Cards are painted on the iOS grouped fill, so the page behind them must be too.
