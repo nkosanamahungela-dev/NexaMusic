@@ -9,6 +9,7 @@ package com.nexamusic.music.ui.component
 
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableFloatStateOf
@@ -23,6 +24,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalDensity
+import kotlinx.coroutines.flow.collect
 
 /** Single app-window signal; AppTopBar is a sibling of the NavHost destination. */
 object SmoothHeaderProgress {
@@ -85,5 +87,17 @@ fun SmoothHeaderProgressSync(progressProvider: () -> Float) {
                     (value / SmoothHeaderTokens.ProgressQuantum).toInt() *
                         SmoothHeaderTokens.ProgressQuantum
             }
+    }
+}
+
+
+@androidx.compose.runtime.Composable
+fun rememberSmoothHeaderProgress(state: LazyGridState): () -> Float {
+    val density = LocalDensity.current
+    return remember(state, density) {
+        {
+            if (state.firstVisibleItemIndex > 0) 1f
+            else SmoothHeaderTokens.progress(state.firstVisibleItemScrollOffset / density.density)
+        }
     }
 }
