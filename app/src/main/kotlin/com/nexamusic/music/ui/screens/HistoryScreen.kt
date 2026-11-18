@@ -497,6 +497,9 @@ fun HistoryScreen(
                 hazeState = hazeState,
                 pageColor = tint,
                 modifier = Modifier.align(Alignment.TopCenter),
+                progressProvider = {
+                    com.nexamusic.music.ui.component.SmoothHeaderTokens.blurOpacity(historyTitleProgress.value)
+                },
             )
             // The large title's stand-in once it has scrolled away. Centred, so
             // it sits between the chrome row's edge buttons rather than under
@@ -505,7 +508,7 @@ fun HistoryScreen(
                 FrostedTopBar(
                     title = stringResource(R.string.history),
                     titleAlpha = 0f,
-                    titleAlphaProvider = { historyTitleProgress.value },
+                    titleAlphaProvider = { com.nexamusic.music.ui.component.SmoothHeaderTokens.smallTitleOpacity(historyTitleProgress.value) },
                     titleColor = onTint,
                     modifier = Modifier.align(Alignment.TopCenter),
                 )
