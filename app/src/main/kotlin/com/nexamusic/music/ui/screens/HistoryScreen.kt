@@ -498,7 +498,7 @@ fun HistoryScreen(
                 pageColor = tint,
                 modifier = Modifier.align(Alignment.TopCenter),
                 progressProvider = {
-                    com.nexamusic.music.ui.component.SmoothHeaderTokens.blurOpacity(historyTitleProgress.value)
+                    historyTitleProgress.value
                 },
             )
             // The large title's stand-in once it has scrolled away. Centred, so
