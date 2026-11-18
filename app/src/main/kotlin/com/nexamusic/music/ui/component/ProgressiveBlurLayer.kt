@@ -14,6 +14,9 @@ import android.os.PowerManager
 import android.view.Choreographer
 import android.view.WindowManager
 import androidx.compose.foundation.background
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -128,9 +131,28 @@ fun ProgressiveBlurLayer(
         ColorMatrix().apply { setToSaturation(SmoothHeaderTokens.BlurLayerSaturation) }
     }
 
+    val horizontalFade = if (startFade > 0.dp) {
+        Modifier.graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
+            .drawWithContent {
+                drawContent()
+                val fadePx = with(density) { startFade.toPx() }
+                val fadeWidth = with(density) { 28.dp.toPx() }
+                drawRect(
+                    brush = Brush.horizontalGradient(
+                        0f to Color.Transparent,
+                        ((fadePx - fadeWidth) / size.width).coerceIn(0f, 1f) to Color.Transparent,
+                        ((fadePx + fadeWidth) / size.width).coerceIn(0f, 1f) to Color.Black,
+                        1f to Color.Black,
+                    ),
+                    blendMode = BlendMode.DstIn,
+                )
+            }
+    } else Modifier
+
     Box(
         modifier = modifier
             .fillMaxSize()
+            .then(horizontalFade)
             .graphicsLayer { alpha = if (useScrim) 1f else stackOpacity },
     ) {
         if (useScrim) {
