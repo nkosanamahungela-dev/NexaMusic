@@ -498,7 +498,7 @@ fun HistoryScreen(
 
             com.nexamusic.music.ui.component.TopFadeBlur(
                 hazeState = hazeState,
-                pageColor = tint,
+                pageColor = AppTheme.colorScheme.background,
                 modifier = Modifier.align(Alignment.TopCenter),
                 progressProvider = {
                     historyHeaderProgress()
