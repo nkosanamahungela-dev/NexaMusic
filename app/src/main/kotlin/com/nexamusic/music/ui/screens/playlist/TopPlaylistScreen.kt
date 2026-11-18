@@ -496,7 +496,7 @@ fun TopPlaylistScreen(
             com.nexamusic.music.ui.component.SmoothHeaderCompactTitle(
                 title = name,
                 progressProvider = detailHeaderProgress,
-                color = onTint,
+                color = AppTheme.colorScheme.onSurface,
                 modifier = Modifier.align(Alignment.TopCenter)
                     .windowInsetsPadding(WindowInsets.statusBars),
             )
@@ -527,7 +527,7 @@ fun TopPlaylistScreen(
                     Text(
                         text = pluralStringResource(R.plurals.n_song, selection.size, selection.size),
                         style = AppTheme.typography.titleMedium,
-                        color = onTint,
+                        color = AppTheme.colorScheme.onSurface,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.weight(1f)
                     )
@@ -579,7 +579,7 @@ SymbolIcon(symbol = sf("chevron.left"), contentDescription = null)
 
                     Text(
                         text = name,
-                        color = onTint,
+                        color = AppTheme.colorScheme.onSurface,
                         style = AppTheme.typography.titleMedium,
                         maxLines = 1,
                         modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
