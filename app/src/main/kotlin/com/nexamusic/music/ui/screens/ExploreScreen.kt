@@ -68,6 +68,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import dev.chrisbanes.haze.hazeSource
 import com.nexamusic.music.ui.component.TopFadeBlur
+import com.nexamusic.music.ui.component.smoothHeaderScrollProgress
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -209,7 +210,8 @@ fun ExploreScreen(
     Box(Modifier.fillMaxSize().background(colors.systemBackground)) {
     androidx.compose.foundation.lazy.LazyColumn(
         modifier = Modifier
-            .fillMaxSize(),
+            .fillMaxSize()
+            .smoothHeaderScrollProgress(),
         contentPadding = PaddingValues(
             start = sideInset,
             top = maxOf(pageInsets.calculateTopPadding(), if (sideInset > 0.dp) 96.dp else 116.dp),
