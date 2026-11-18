@@ -47,7 +47,8 @@
         "Corrected the pinned-row registrar's CompositionLocal default factory to keep the scaffold type-safe.",
         "Added the explicit Flow collector import used by the scroll-only frame watchdog.",
         "Synced Home's pinned filter visibility to the restored collapse progress, including long first-feed cards.",
-        "Fixed the debug-build compilation error in the shared scroll-header scaffold."
+        "Fixed the debug-build compilation error in the shared scroll-header scaffold.",
+        "Fixed a startup crash in the shared progressive blur by providing Haze with the page background color."
       ]
     },
     {
