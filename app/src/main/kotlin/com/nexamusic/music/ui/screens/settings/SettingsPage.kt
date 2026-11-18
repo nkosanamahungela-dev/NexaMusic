@@ -117,7 +117,7 @@ fun SettingsLazyPage(
         androidx.compose.material3.LocalContentColor provides IosTheme.colors.label,
     ) { ScreenLazyPage(
         title = title,
-        modifier = modifier,
+        modifier = modifier.smoothHeaderScrollProgress(),
         onBack = onBack ?: { navController.navigateUp(); Unit },
         onBackLongClick = navController::backToMain,
         pageColor = IosTheme.colors.systemGroupedBackground,
@@ -154,7 +154,7 @@ fun SettingsScaffold(
         pageColor = pageColor,
         actions = actions,
         content = { chrome ->
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
+            Box(Modifier.fillMaxSize().smoothHeaderScrollProgress(), contentAlignment = Alignment.TopCenter) {
                 Box(Modifier.fillMaxSize().widthIn(max = maxContentWidth)) { content(chrome) }
             }
         },
