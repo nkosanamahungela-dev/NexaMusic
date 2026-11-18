@@ -10,9 +10,13 @@ package com.nexamusic.music.ui.component
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
@@ -59,5 +63,27 @@ fun rememberSmoothHeaderProgress(state: LazyListState): () -> Float {
             if (state.firstVisibleItemIndex > 0) 1f
             else SmoothHeaderTokens.progress(state.firstVisibleItemScrollOffset / density.density)
         }
+    }
+}
+
+
+/** Keeps the app-level tab header in sync with the real restored list offset. */
+@androidx.compose.runtime.Composable
+fun SmoothHeaderProgressSync(progressProvider: () -> Float) {
+    val progress by remember(progressProvider) {
+        derivedStateOf { progressProvider().coerceIn(0f, 1f) }
+    }
+    SideEffect {
+        SmoothHeaderProgress.progress =
+            (progress / SmoothHeaderTokens.ProgressQuantum).toInt() *
+                SmoothHeaderTokens.ProgressQuantum
+    }
+    LaunchedEffect(progressProvider) {
+        snapshotFlow { progressProvider().coerceIn(0f, 1f) }
+            .collect { value ->
+                SmoothHeaderProgress.progress =
+                    (value / SmoothHeaderTokens.ProgressQuantum).toInt() *
+                        SmoothHeaderTokens.ProgressQuantum
+            }
     }
 }
