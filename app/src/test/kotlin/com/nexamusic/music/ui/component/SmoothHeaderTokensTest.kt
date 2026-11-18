@@ -29,4 +29,27 @@ class SmoothHeaderTokensTest {
         assertEquals(1f, SmoothHeaderTokens.bigTitleScale(0f), 0.001f)
         assertEquals(0.8f, SmoothHeaderTokens.bigTitleScale(1f), 0.001f)
     }
+    @Test
+    fun `six blur layers match the progressive mask contract`() {
+        assertEquals(
+            listOf(0.5f, 1.5f, 3f, 6f, 12f, 24f),
+            SmoothHeaderTokens.BlurLayers.map { it.radius },
+        )
+        assertEquals(
+            listOf(1f, 0.84f, 0.68f, 0.52f, 0.36f, 0.20f),
+            SmoothHeaderTokens.BlurLayers.map { it.fadeEndFraction },
+        )
+        assertEquals(1.2f, SmoothHeaderTokens.BlurLayerSaturation, 0.001f)
+    }
+
+    @Test
+    fun `fallback and header zone values match the design contract`() {
+        assertEquals(90f, SmoothHeaderTokens.HeaderScrollDistance.value, 0.001f)
+        assertEquals(80f, SmoothHeaderTokens.HeaderContentHeight.value, 0.001f)
+        assertEquals(0.62f, SmoothHeaderTokens.HeaderTintPeak, 0.001f)
+        assertEquals(0.85f, SmoothHeaderTokens.ScrimFallbackPeak, 0.001f)
+        assertEquals(0.92f, SmoothHeaderTokens.ReducedTransparencyPeak, 0.001f)
+        assertEquals(150, SmoothHeaderTokens.ReduceMotionCrossfadeMillis)
+    }
+
 }
