@@ -706,7 +706,7 @@ fun AlbumScreen(
         com.nexamusic.music.ui.component.SmoothHeaderCompactTitle(
             title = albumWithSongs?.album?.title.orEmpty(),
             progressProvider = detailHeaderProgress,
-            color = chromeContentColor,
+            color = AppTheme.colorScheme.onSurface,
             modifier = Modifier.align(Alignment.TopCenter)
                 .windowInsetsPadding(WindowInsets.statusBars),
         )
@@ -733,7 +733,7 @@ fun AlbumScreen(
                 Text(
                     text = pluralStringResource(R.plurals.n_selected, selection.size, selection.size),
                     style = AppTheme.typography.titleMedium,
-                    color = chromeContentColor,
+                    color = AppTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.weight(1f)
                 )
