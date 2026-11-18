@@ -183,6 +183,7 @@ fun ScreenScaffold(
     pageColor: Color = AppTheme.colorScheme.background,
     actions: @Composable () -> Unit = {},
     titleAlphaProvider: (() -> Float)? = null,
+    progressProvider: () -> Float = { SmoothHeaderProgress.progress },
     content: @Composable BoxScope.(GlassScreenChrome) -> Unit,
 ) {
     val chrome = rememberGlassScreenChrome(background = pageColor)
@@ -191,6 +192,7 @@ fun ScreenScaffold(
             title = title,
             titleAlpha = titleAlpha,
             titleAlphaProvider = titleAlphaProvider,
+            progressProvider = progressProvider,
             pageColor = pageColor,
             chrome = chrome,
             onBack = onBack,
