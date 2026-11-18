@@ -25,6 +25,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -152,6 +154,7 @@ fun AppleLibraryScreen(
     navController: NavController,
     onOpen: (AppleLibraryDestination) -> Unit,
     viewModel: AppleLibraryViewModel = hiltViewModel(),
+    listState: LazyListState = rememberLazyListState(),
 ) {
     val pinned by viewModel.pinned.collectAsStateWithLifecycle()
     val recent by viewModel.recentlyAdded.collectAsStateWithLifecycle()
@@ -176,6 +179,7 @@ fun AppleLibraryScreen(
         maxOf(pageInsets.calculateTopPadding(), 115.dp) - pageInsets.calculateTopPadding()
     }
     LazyColumn(
+        state = listState,
         modifier = Modifier
             .fillMaxSize()
             .background(colors.systemBackground),
