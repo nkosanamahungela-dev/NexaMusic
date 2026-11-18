@@ -608,7 +608,7 @@ private fun AppleSearchHeader(
     ) {
         Text(
             text = stringResource(R.string.search),
-            style = com.nexamusic.music.ui.screens.library.apple.SfStyle(40.sp, 46.sp, FontWeight.ExtraBold, (-1.6).sp),
+            style = com.nexamusic.music.ui.screens.library.apple.SfStyle(SmoothHeaderTokens.BigTitleSize, SmoothHeaderTokens.BigTitleLineHeight, FontWeight.ExtraBold, SmoothHeaderTokens.BigTitleLetterSpacing),
             color = com.nexamusic.music.ui.ios.foundation.IosTheme.colors.label,
             maxLines = 1,
             modifier = Modifier.weight(1f).height(46.dp).semantics { heading() }.graphicsLayer {
