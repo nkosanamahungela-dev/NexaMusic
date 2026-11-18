@@ -49,7 +49,6 @@ import com.nexamusic.music.ui.ios.compat.Text
 import com.nexamusic.music.ui.ios.compat.ToggleButton
 import com.nexamusic.music.ui.ios.compat.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -66,6 +65,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.nexamusic.music.ui.component.smoothHeaderScrollProgress
 import com.nexamusic.music.ui.component.TopFadeBlur
+import com.nexamusic.music.ui.component.FrostedTopBar
+import com.nexamusic.music.ui.component.SmoothHeaderTokens
 import com.nexamusic.music.ui.component.SmoothHeaderProgress
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
@@ -297,18 +298,11 @@ fun ChangelogScreen(
                     modifier = Modifier.align(Alignment.TopCenter),
                     progressProvider = { SmoothHeaderProgress.progress },
                 )
-                TopAppBar(
-                    title = { Text(stringResource(R.string.changelog_title)) },
-                    navigationIcon = {
-                        IconButton(onClick = navController::navigateUp) {
-                            SymbolIcon(symbol = sf("SFChevronLeft"), contentDescription = null)
-                        }
-                    },
-                    scrollBehavior = scrollBehavior,
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = androidx.compose.ui.graphics.Color.Transparent,
-                        scrolledContainerColor = androidx.compose.ui.graphics.Color.Transparent,
-                    ),
+                FrostedTopBar(
+                    onBack = { navController.navigateUp() },
+                    title = stringResource(R.string.changelog_title),
+                    titleAlphaProvider = { SmoothHeaderTokens.smallTitleOpacity(SmoothHeaderProgress.progress) },
+                    modifier = Modifier.align(Alignment.TopCenter),
                 )
             }
         }
