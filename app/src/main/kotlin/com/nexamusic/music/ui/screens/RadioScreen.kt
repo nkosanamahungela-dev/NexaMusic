@@ -65,6 +65,8 @@ import com.nexamusic.music.models.toMediaMetadata
 import com.nexamusic.music.playback.queues.YouTubeQueue
 import com.nexamusic.music.ui.component.GlassCircleButton
 import com.nexamusic.music.ui.component.smoothHeaderScrollProgress
+import com.nexamusic.music.ui.component.rememberSmoothHeaderProgress
+import com.nexamusic.music.ui.component.SmoothHeaderProgressSync
 import com.nexamusic.music.ui.component.NavigationTitle
 import com.nexamusic.music.ui.component.YouTubeListItem
 import com.nexamusic.music.ui.ios.compat.AppTheme
@@ -252,6 +254,8 @@ fun RadioScreen(
     val sideInset = insets.calculateStartPadding(androidx.compose.ui.platform.LocalLayoutDirection.current)
     val recentTitle = stringResource(R.string.radio_recent_tracks)
     val gridState = rememberLazyGridState()
+    val radioHeaderProgress = rememberSmoothHeaderProgress(gridState)
+    SmoothHeaderProgressSync(radioHeaderProgress)
 
     Box(
         Modifier
