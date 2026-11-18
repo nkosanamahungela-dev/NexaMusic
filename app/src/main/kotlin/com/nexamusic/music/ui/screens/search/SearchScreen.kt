@@ -155,6 +155,7 @@ import androidx.compose.ui.text.font.FontWeight
 import com.nexamusic.music.ui.component.GlassCircleButton
 import com.nexamusic.music.ui.component.TopFadeBlur
 import com.nexamusic.music.ui.component.SmoothHeaderTokens
+import com.nexamusic.music.ui.component.rememberSmoothHeaderTitleMotion
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
 import androidx.compose.ui.text.style.TextAlign
@@ -288,6 +289,7 @@ fun SearchScreen(
                 }
                 SmoothHeaderTokens.progress(scrollDp)
             }
+            val searchTitleMotion = rememberSmoothHeaderTitleMotion(headerProgressProvider)
             Box(Modifier.fillMaxSize().hazeSource(browseHaze)) {
                 AppleSearchBrowse(
                     navController = navController,
@@ -328,7 +330,7 @@ fun SearchScreen(
                     color = colors.label,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.graphicsLayer { alpha = SmoothHeaderTokens.smallTitleOpacity(headerProgressProvider()) }.clearAndSetSemantics { },
+                    modifier = Modifier.graphicsLayer { alpha = searchTitleMotion.compactAlpha() }.clearAndSetSemantics { },
                 )
             }
             if (scopePinned) {
@@ -595,8 +597,9 @@ private fun AppleSearchHeader(
     progressProvider: () -> Float,
     horizontalInset: androidx.compose.ui.unit.Dp = 16.dp,
     bottomInset: androidx.compose.ui.unit.Dp = 10.dp,
-) {
+ ) {
     val profileDescription = stringResource(R.string.account)
+    val titleMotion = rememberSmoothHeaderTitleMotion(progressProvider)
     Row(
         modifier = Modifier.padding(start = horizontalInset, end = horizontalInset, bottom = bottomInset)
             .fillMaxWidth(),
@@ -610,9 +613,9 @@ private fun AppleSearchHeader(
             maxLines = 1,
             modifier = Modifier.weight(1f).height(46.dp).semantics { heading() }.graphicsLayer {
                 val p = progressProvider()
-                alpha = SmoothHeaderTokens.bigTitleOpacity(p)
-                translationY = -SmoothHeaderTokens.BigTitleTravel.toPx() * p
-                val scale = SmoothHeaderTokens.bigTitleScale(p)
+                alpha = titleMotion.largeAlpha()
+                translationY = if (titleMotion.transformsEnabled) -SmoothHeaderTokens.BigTitleTravel.toPx() * p else 0f
+                val scale = if (titleMotion.transformsEnabled) SmoothHeaderTokens.bigTitleScale(p) else 1f
                 scaleX = scale
                 scaleY = scale
                 transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0f, 0.5f)
@@ -622,7 +625,7 @@ private fun AppleSearchHeader(
             Modifier.size(44.dp).graphicsLayer {
                 val p = progressProvider()
                 alpha = SmoothHeaderTokens.profileOpacity(p)
-                val scale = SmoothHeaderTokens.profileScale(p)
+                val scale = if (titleMotion.transformsEnabled) SmoothHeaderTokens.profileScale(p) else 1f
                 scaleX = scale
                 scaleY = scale
             }.clip(CircleShape)
