@@ -15,6 +15,8 @@ import androidx.compose.foundation.lazy.items as rowItems
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -141,6 +143,7 @@ fun AppleSearchBrowse(
     onClearRecent: () -> Unit = {},
     scope: SearchSource = SearchSource.ONLINE,
     onScopeChange: (SearchSource) -> Unit = {},
+    gridState: LazyGridState = rememberLazyGridState(),
     viewModel: AppleSearchViewModel = hiltViewModel(),
 ) {
     val all by viewModel.categories.collectAsStateWithLifecycle()
@@ -155,6 +158,7 @@ fun AppleSearchBrowse(
     val featured = categories.take(8)
 
     LazyVerticalGrid(
+        state = gridState,
         columns = GridCells.Fixed(2), modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(SearchDesignTokens.pageSide, contentPadding.calculateTopPadding(),
             SearchDesignTokens.pageSide, contentPadding.calculateBottomPadding() + 36.dp),
