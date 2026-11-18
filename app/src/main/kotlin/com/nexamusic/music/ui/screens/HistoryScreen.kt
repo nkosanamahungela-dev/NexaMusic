@@ -90,6 +90,7 @@ import com.nexamusic.music.ui.component.ChipsRow
 import com.nexamusic.music.ui.component.HideOnScrollFAB
 import com.nexamusic.music.ui.ios.compat.IconButton as CupertinoIconButton
 import com.nexamusic.music.ui.component.FrostedTopBar
+import com.nexamusic.music.ui.component.rememberSmoothHeaderTitleMotion
 import com.nexamusic.music.ui.component.LargeScreenTitle
 import com.nexamusic.music.ui.component.LocalMenuState
 import com.nexamusic.music.ui.component.NavigationTitle
@@ -209,6 +210,7 @@ fun HistoryScreen(
 
     val lazyListState = rememberLazyListState()
     val historyTitleProgress = rememberTitleCollapseProgressState(lazyListState)
+    val historyTitleMotion = rememberSmoothHeaderTitleMotion { historyTitleProgress.value }
 
     LaunchedEffect(lazyListState, historySource) {
         snapshotFlow {
@@ -508,7 +510,7 @@ fun HistoryScreen(
                 FrostedTopBar(
                     title = stringResource(R.string.history),
                     titleAlpha = 0f,
-                    titleAlphaProvider = { com.nexamusic.music.ui.component.SmoothHeaderTokens.smallTitleOpacity(historyTitleProgress.value) },
+                    titleAlphaProvider = historyTitleMotion.compactAlpha,
                     progressProvider = { historyTitleProgress.value },
                     titleColor = onTint,
                     modifier = Modifier.align(Alignment.TopCenter),
