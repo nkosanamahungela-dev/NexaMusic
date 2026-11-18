@@ -188,11 +188,15 @@ fun ScreenScaffold(
     content: @Composable BoxScope.(GlassScreenChrome) -> Unit,
 ) {
     val chrome = rememberGlassScreenChrome(background = pageColor)
+    val titleMotion = rememberSmoothHeaderTitleMotion(progressProvider)
+    val resolvedTitleAlphaProvider: () -> Float = titleAlphaProvider ?: {
+        titleAlpha * titleMotion.compactAlpha()
+    }
     CompositionLocalProvider(LocalAppBackdrop provides chrome.backdrop) {
         ScreenChromeBox(
             title = title,
             titleAlpha = titleAlpha,
-            titleAlphaProvider = titleAlphaProvider,
+            titleAlphaProvider = resolvedTitleAlphaProvider,
             progressProvider = progressProvider,
             pinnedRow = pinnedRow,
             pinnedRowHeight = pinnedRowHeight,
