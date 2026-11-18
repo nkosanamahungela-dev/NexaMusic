@@ -495,7 +495,7 @@ fun TopPlaylistScreen(
             com.nexamusic.music.ui.component.TopFadeBlur(hazeState, tint, Modifier.align(Alignment.TopCenter), progressProvider = detailHeaderProgress)
             com.nexamusic.music.ui.component.SmoothHeaderCompactTitle(
                 title = name,
-                progressProvider = { com.nexamusic.music.ui.component.SmoothHeaderProgress.progress },
+                progressProvider = detailHeaderProgress,
                 color = onTint,
                 modifier = Modifier.align(Alignment.TopCenter)
                     .windowInsetsPadding(WindowInsets.statusBars),
