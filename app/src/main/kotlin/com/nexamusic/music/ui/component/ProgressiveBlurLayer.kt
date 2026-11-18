@@ -238,7 +238,7 @@ fun ProgressiveBlurLayer(
             Box(
                 Modifier
                     .fillMaxSize()
-                    .graphicsLayer { alpha = progress }
+                    .graphicsLayer { alpha = readProgress() }
                     .background(
                         Brush.verticalGradient(
                             0f to pageColor.copy(alpha = SmoothHeaderTokens.TintPeakOpacity),
