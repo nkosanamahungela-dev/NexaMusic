@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -33,14 +34,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -64,22 +64,61 @@ fun ScreenChromeBox(
     onBackLongClick: (() -> Unit)?,
     actions: @Composable () -> Unit,
     titleAlphaProvider: (() -> Float)? = null,
+    progressProvider: () -> Float = { 1f },
+    pinnedRow: (@Composable () -> Unit)? = null,
+    pinnedRowHeight: Dp = 0.dp,
+    pinnedRowVisibleProvider: () -> Boolean = { false },
     content: @Composable BoxScope.() -> Unit,
 ) {
+    ScrollHeaderScaffold(
+        title = title,
+        titleAlpha = titleAlpha,
+        pageColor = pageColor,
+        chrome = chrome,
+        onBack = onBack,
+        onBackLongClick = onBackLongClick,
+        actions = actions,
+        titleAlphaProvider = titleAlphaProvider,
+        progressProvider = progressProvider,
+        pinnedRow = pinnedRow,
+        pinnedRowHeight = pinnedRowHeight,
+        pinnedRowVisibleProvider = pinnedRowVisibleProvider,
+        content = content,
+    )
+}
+
+/**
+ * One reusable header scaffold for pushed screens and custom scroll containers.
+ * Content, blur and controls are siblings: the blur samples only the scrolling
+ * source and can never paint over the controls.
+ */
+@Composable
+fun ScrollHeaderScaffold(
+    title: String,
+    titleAlpha: Float,
+    pageColor: Color,
+    chrome: GlassScreenChrome,
+    onBack: (() -> Unit)? = null,
+    onBackLongClick: (() -> Unit)? = null,
+    actions: @Composable () -> Unit = {},
+    titleAlphaProvider: (() -> Float)? = null,
+    progressProvider: () -> Float,
+    pinnedRow: (@Composable () -> Unit)? = null,
+    pinnedRowHeight: Dp = 0.dp,
+    pinnedRowVisibleProvider: () -> Boolean = { false },
+    content: @Composable BoxScope.() -> Unit,
+) {
+    val topInset = androidx.compose.foundation.layout.WindowInsets.statusBars
+        .asPaddingValues().calculateTopPadding()
+    val zoneHeight = topInset + SmoothHeaderTokens.HeaderContentHeight +
+        if (pinnedRow != null) pinnedRowHeight else 0.dp
+
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            // Explicit rather than inherited from whatever the NavHost paints:
-            // a page that paints nothing shows the app background through the
-            // blur's own tint, which is what makes a top strip read as a
-            // different colour from the rest of the screen.
-            .background(pageColor),
+        modifier = Modifier.fillMaxSize().background(pageColor),
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                // Inside the source, so the blur samples a filled canvas rather
-                // than transparency at the top of the page.
                 .background(pageColor)
                 .then(chrome.screenModifier()),
             content = content,
@@ -89,6 +128,8 @@ fun ScreenChromeBox(
             hazeState = chrome.hazeState,
             pageColor = pageColor,
             modifier = Modifier.align(Alignment.TopCenter),
+            heightOverride = zoneHeight,
+            progressProvider = progressProvider,
         )
 
         FrostedTopBar(
@@ -100,6 +141,21 @@ fun ScreenChromeBox(
             actions = actions,
             modifier = Modifier.align(Alignment.TopCenter),
         )
+
+        if (pinnedRow != null && pinnedRowHeight > 0.dp) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = topInset + TopBarContentHeight)
+                    .height(pinnedRowHeight)
+                    .fillMaxSize()
+                    .graphicsLayer {
+                        alpha = if (pinnedRowVisibleProvider()) 1f else 0f
+                    },
+            ) {
+                pinnedRow()
+            }
+        }
     }
 }
 
