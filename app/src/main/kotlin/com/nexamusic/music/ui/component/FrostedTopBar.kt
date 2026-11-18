@@ -41,6 +41,7 @@ import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -140,7 +141,7 @@ fun FrostedTopBar(
         ) {
             Text(
                 text = title,
-                style = AppTheme.typography.titleMedium,
+                style = AppTheme.typography.titleMedium.copy(fontSize = 17.sp),
                 fontWeight = FontWeight.SemiBold,
                 color = resolvedTitleColor,
                 maxLines = 1,
@@ -158,7 +159,8 @@ fun FrostedTopBar(
                     .fillMaxWidth()
                     .graphicsLayer {
                         alpha = titleAlphaProvider?.invoke() ?: titleAlpha
-                    },
+                    }
+                    .clearAndSetSemantics { },
             )
             // On a pushed page the back affordance is always visible, since
             // there is no large in-list header to fall back on.
