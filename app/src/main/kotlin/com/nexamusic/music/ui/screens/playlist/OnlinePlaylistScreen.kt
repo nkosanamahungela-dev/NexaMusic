@@ -631,7 +631,6 @@ fun OnlinePlaylistScreen(
         }
 
         // Keep search and selection behavior; fade the title after scrolling past the hero.
-        val chromeScrimProgress = rememberChromeScrimProgress(lazyListState)
         // Sample the attached list capture so the glass blurs list and hero content.
         CompositionLocalProvider(LocalAppBackdrop provides listBackdrop) {
         // Draw the blur before the chrome row so it stays behind the buttons and scrim.
@@ -646,7 +645,6 @@ fun OnlinePlaylistScreen(
                 .fillMaxWidth()
                 .align(Alignment.TopCenter)
         ) {
-        ChromeScrim(progress = chromeScrimProgress)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
