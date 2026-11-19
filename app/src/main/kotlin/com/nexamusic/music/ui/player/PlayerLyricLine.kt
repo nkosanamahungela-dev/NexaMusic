@@ -19,6 +19,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -49,7 +50,6 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.clipRect
@@ -59,12 +59,10 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -73,7 +71,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.round
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.lifecycle.Lifecycle
@@ -158,7 +155,7 @@ fun PlayerLyricLine(
         if (lyrics.isNullOrBlank() || lyrics == LYRICS_NOT_FOUND || !lyrics.startsWith("[")) {
             emptyList()
         } else {
-            parseLyrics(lyrics).filter { it.text.isNotBlank() || it.words?.isNotEmpty() == true }
+            parseLyrics(lyrics)
         }
     }
     val hasTimedLyrics = timedLyrics.isNotEmpty()
@@ -226,7 +223,7 @@ fun PlayerLyricLine(
     }
 
     val sampleFallback = isPreview && mediaMetadata == null && !previewSampleText.isNullOrBlank()
-    val rowVisible = enabled && (hasTimedLyrics || sampleFallback) && !resolvedNoTimedLyrics
+    val rowVisible = enabled && (hasTimedLyrics || sampleFallback || !resolvedNoTimedLyrics)
     val displayedLine = currentLine?.takeIf { it.text.isNotBlank() }
     val displayText = displayedLine?.text ?: previewSampleText.orEmpty()
     val lineKey = when {
@@ -267,6 +264,10 @@ fun PlayerLyricLine(
                             "Current lyric: $displayText"
                         } else {
                             "Current lyric: instrumental"
+                        }
+                        onClick(label = "Open lyrics") {
+                            onOpenLyrics()
+                            true
                         }
                         customActions = listOf(
                             CustomAccessibilityAction("Hide lyric line") {
