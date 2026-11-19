@@ -117,7 +117,13 @@ fun rememberSmoothHeaderProgress(state: LazyListState): () -> Float {
 fun rememberSmoothHeaderProgress(state: LazyGridState): () -> Float {
     val density = LocalDensity.current
     val collapseDistancePx = with(density) { SmoothHeaderTokens.HeaderScrollDistance.roundToPx() }
-    return remember(state, density, collapseDistancePx) {
+    val firstRowHeightPx = remember(state) { mutableIntStateOf(0) }
+    SideEffect {
+        state.layoutInfo.visibleItemsInfo
+            .firstOrNull { it.index == 0 }
+            ?.let { firstRowHeightPx.intValue = it.size.height }
+    }
+    return remember(state, density, collapseDistancePx, firstRowHeightPx) {
         {
             val layout = state.layoutInfo
             val visible = layout.visibleItemsInfo
@@ -125,13 +131,15 @@ fun rememberSmoothHeaderProgress(state: LazyGridState): () -> Float {
                 visible.size >= layout.totalItemsCount &&
                 ((visible.maxOfOrNull { it.offset.y + it.size.height } ?: 0) -
                     (visible.minOfOrNull { it.offset.y } ?: 0)) <= layout.viewportSize.height
-            when {
-                contentFitsViewport -> 0f
-                state.firstVisibleItemIndex > 0 -> 1f
-                else -> SmoothHeaderTokens.progress(
-                    state.firstVisibleItemScrollOffset.coerceAtLeast(0) / density.density,
-                )
+            val firstVisible = visible.firstOrNull()
+            val scrolledPx = when {
+                state.firstVisibleItemIndex == 0 -> state.firstVisibleItemScrollOffset
+                firstRowHeightPx.intValue > 0 ->
+                    firstRowHeightPx.intValue + (-(firstVisible?.offset?.y ?: 0)).coerceAtLeast(0)
+                else -> collapseDistancePx
             }
+            if (contentFitsViewport) 0f
+            else SmoothHeaderTokens.progress(scrolledPx.coerceAtLeast(0) / density.density)
         }
     }
 }
