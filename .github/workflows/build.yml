@@ -64,6 +64,11 @@ jobs:
       - name: Run lyrics module unit tests
         run: ./gradlew :lyrics:testDebugUnitTest --no-configuration-cache --console=plain --warning-mode summary
 
+      - name: Run header style unit test and compile Compose UI test
+        run: |
+          ./gradlew :app:testUniversalGmsDebugUnitTest --tests "com.nexamusic.music.ui.component.SmoothHeaderHazeTest" --no-configuration-cache --console=plain --warning-mode summary
+          ./gradlew :app:compileUniversalGmsDebugAndroidTestKotlin --no-configuration-cache --console=plain --warning-mode summary
+
       - name: Build Debug APK
         env:
           LASTFM_API_KEY: ${{ secrets.LASTFM_API_KEY }}

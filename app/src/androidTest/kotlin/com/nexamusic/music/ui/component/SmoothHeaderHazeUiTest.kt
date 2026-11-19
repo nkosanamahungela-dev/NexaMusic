@@ -56,7 +56,7 @@ class SmoothHeaderHazeUiTest {
         composeRule.onNodeWithTag("restored-header").assertExists()
 
         // Change Appearance while the same scrolled screen remains composed.
-        composeRule.runOnUiThread { darkThemeState.value = false }
+        composeRule.runOnIdle { darkThemeState.value = false }
         composeRule.waitForIdle()
         composeRule.onNodeWithTag("restored-header").assertExists()
     }

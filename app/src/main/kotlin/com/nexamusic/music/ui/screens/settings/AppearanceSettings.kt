@@ -27,8 +27,6 @@ import com.nexamusic.music.ui.ios.compat.AlertDialog
 import com.nexamusic.music.ui.ios.compat.ModalBottomSheet
 import com.nexamusic.music.ui.ios.compat.rememberIosModalSheetState
 import com.nexamusic.music.ui.ios.foundation.IosTheme
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.hazeSource
 import com.nexamusic.music.ui.utils.appTopBarWindowInsets
 import android.app.Activity
 import android.os.Build
