@@ -1,65 +1,36 @@
 {
-  "description": "NexaMusic 0.1.4 Beta — Radio and Explore redesign, Pod selection polish, and the new Smooth Blur Header experience.",
+  "description": "NexaMusic 0.1.4 Beta — Radio and Explore redesign, Pod selection polish, and the Smooth Blur Header experience.",
   "image": "",
   "changelog": [
     {
-      "title": "What's new",
+      "title": "New Things",
       "items": [
         "Introduced Apple Music V3 lyrics as a beta style, with improved typography, spacing, word timing, and smoother lyric auto-scrolling.",
-        "Improved duet and multi-vocalist lyric alignment so each singer's lines retain their identity and positioning.",
-        "Added animated interlude indicators and refined timed-lyrics rendering.",
-        "Refreshed Search colours and Settings icons with a more consistent, colourful Apple Music-inspired appearance.",
-        "Restored YouTube Music playlist synchronization in the Library.",
-        "Fixed guest playback truncation on streams that do not report their total length.",
-        "Improved transition timing and playback handoff behaviour.",
-        "Optimized lyrics rendering, Liquid Glass effects, and tab animations to reduce unnecessary work.",
-        "Added a sign-in reminder for logged-out users, with a preference to hide it.",
-        "Added automatic update checks, beta-release support, background APK downloads, and update notifications.",
-        "Moved the Pod BETA label out of the playback screen and into the Player Style selection, where users choose Pod.",
-        "Redesigned Radio station cards so artwork stays unobstructed, station names and first tracks sit below covers, and the on-air station has a dedicated hero card.",
-        "Made the red ON AIR hero appear only while a radio station is actively playing; it stays hidden when playback is paused, stopped, or playing unrelated content.",
-        "Redesigned Explore featured albums, release shelves, and mood tiles with clean cover-first layouts and a stable, non-repeating flat-colour palette.",
-        "Removed artwork-derived blur and tint from the Radio and Explore top chrome so titles and status-bar areas stay readable.",
-        "Added a smooth scrolling header animation that transforms large page titles into compact centred titles.",
-        "Added a progressive frosted-glass effect that stays clear at the top of each page and gently appears as you scroll.",
-        "Brought the updated header experience to Home, Radio, Library, Explore, Search, History, Settings, Changelog, Party and Update.",
-        "Updated Album, Artist, Playlist and Now Playing headers with a matching scroll transition while keeping their artwork layouts unchanged.",
-        "Kept the YouTube Music / Your Library switch pinned below the compact Search title while browsing results.",
-        "Removed fixed colour strips behind headers on supported screens for a cleaner, theme-matched appearance.",
-        "Improved header motion and appearance support with lighter visual effects for battery-saving, reduced-transparency and reduced-motion settings.",
-        "Matched the status and navigation bar appearance to the app's active light or dark theme.",
-        "Separated tab-header scroll progress by navigation entry and reads restored Home, Radio, Explore and Library positions directly, preventing one tab's collapse state from leaking into another.",
-        "Fixed a tab-header progress handoff so each restored destination starts from its own saved scroll position.",
-        "Connected the Home, Radio, Explore and Library tab headers to their own navigation entries, including restored scroll positions.",
-        "Improved restored header scroll handling for short lists and grids, kept top overscroll clear, and cleaned up inactive screen progress.",
-        "Added a shared destination scaffold so scroll-driven headers use the active screen's own navigation state.",
-        "Connected the Search browse header to its own restored grid position, keeping its compact title in sync with the active Search destination.",
-        "Synced the History header with its own restored list position so it no longer depends on another screen's scroll state.",
-        "Connected Settings, detail pages and other pushed screens to their own navigation-entry scroll progress without sharing collapse state.",
-        "Added destination-owned pinned filter rows to Home, Library and Explore, aligned with each screen's own scroll state.",
-        "Improved the blur watchdog so missed frames are evaluated only while the header is transitioning, avoiding fallback during stationary blur.",
-        "Mirrored the floating-rail fade for right-to-left layouts and scaled the shared title zone for larger system font settings.",
-        "Added a shared destination-scoped pinned-row registrar so Home, Library and Explore controls render above page content without sharing state across back-stack entries.",
-        "Fixed the Explore pinned-row action import so its section shortcuts dispatch through the screen coroutine scope.",
-        "Limited the dropped-frame monitor to actual scroll-progress changes so stationary blur does not keep a frame callback running.",
-        "Corrected the shared header progress CompositionLocal default factory so the debug build compiles.",
-        "Kept Home's pinned All filter available when mood filters are disabled and made Library's pinned category row persist across its category pages.",
-        "Corrected the pinned-row registrar's CompositionLocal default factory to keep the scaffold type-safe.",
-        "Added the explicit Flow collector import used by the scroll-only frame watchdog.",
-        "Synced Home's pinned filter visibility to the restored collapse progress, including long first-feed cards.",
-        "Fixed the debug-build compilation error in the shared scroll-header scaffold.",
-        "Fixed a startup crash in the shared progressive blur by providing Haze with the page background color."
+        "Added animated interlude indicators for timed lyrics.",
+        "Added a sign-in reminder for logged-out users, with an option to hide it.",
+        "Added automatic update checks, beta-release support, background APK downloads, and update notifications."
       ]
     },
     {
-      "title": "Notes",
+      "title": "Improvements",
       "items": [
-        "Apple Music V3 lyrics are still in beta; timing and alignment can vary by track and lyrics provider.",
-        "Playlist synchronization requires a signed-in YouTube Music account.",
-        "Playback transitions and performance may vary across devices and tracks.",
-        "Some visual effects use lighter alternatives on devices or settings that limit blur and motion.",
-        "Reduced Dynamic Blur uses the high-opacity theme scrim; reduced-motion title handoff remains a 150ms cross-fade without translation or scaling.",
-        "60/120Hz frame pacing, thermal behaviour, and final contrast checks still require physical-device validation."
+        "Improved duet and multi-vocalist lyric alignment so each singer's lines retain their identity and positioning.",
+        "Refreshed Search colours and Settings icons for a more consistent appearance.",
+        "Improved playback transition timing and handoff behaviour.",
+        "Redesigned Radio station cards, including a dedicated hero card for the station currently on air.",
+        "Updated Explore featured albums, release shelves, and mood tiles with cleaner, cover-first layouts.",
+        "Added smooth scrolling title transitions and a progressive frosted-glass header across the app's main screens and detail pages.",
+        "Kept Home, Library, and Explore filter rows pinned and aligned with their scrolling content.",
+        "Improved header readability and accessibility across light and dark themes, reduced-motion settings, reduced-transparency settings, and larger text sizes."
+      ]
+    },
+    {
+      "title": "Bug Fixes",
+      "items": [
+        "Restored YouTube Music playlist synchronization in the Library.",
+        "Fixed guest playback ending too early on streams that do not report their total length.",
+        "Fixed the ON AIR hero appearing when a radio station is paused, stopped, or unrelated content is playing.",
+        "Fixed a crash that could occur when opening the player."
       ]
     }
   ]
