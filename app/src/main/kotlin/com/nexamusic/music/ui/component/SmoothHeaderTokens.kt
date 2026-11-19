@@ -23,6 +23,9 @@ object SmoothHeaderTokens {
     // Scroll progress and compositing
     const val ProgressQuantum = 0.001f
     const val HeaderTintPeak = 0.62f
+    val HeaderBlurRadius = 24.dp
+    const val HeaderBlurInputScale = 0.5f
+    const val HeaderBlurNoiseFactor = 0f
     const val HeaderBlurOpacityMultiplier = 1.3f
     const val ScrimFallbackPeak = 0.85f
     const val ReducedTransparencyPeak = 0.92f
@@ -57,17 +60,6 @@ object SmoothHeaderTokens {
     // Frame-time fallback: repeated frames slower than 1.8 refresh intervals.
     const val SlowFrameIntervalMultiplier = 1.8f
     const val ConsecutiveSlowFramesBeforeFallback = 3
-
-    data class BlurLayer(val radius: Float, val fadeEndFraction: Float)
-
-    val BlurLayers = listOf(
-        BlurLayer(0.5f, 1.00f),
-        BlurLayer(1.5f, 0.84f),
-        BlurLayer(3f, 0.68f),
-        BlurLayer(6f, 0.52f),
-        BlurLayer(12f, 0.36f),
-        BlurLayer(24f, 0.20f),
-    )
 
     fun quantizeProgress(progress: Float): Float =
         (progress.coerceIn(0f, 1f) / ProgressQuantum).roundToInt() * ProgressQuantum

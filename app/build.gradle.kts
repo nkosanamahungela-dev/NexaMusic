@@ -382,6 +382,10 @@ dependencies {
     implementation(libs.onnxruntime)
 
     testImplementation(libs.junit)
+
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:${libs.versions.compose.get()}")
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    debugImplementation("androidx.compose.ui:ui-test-manifest:${libs.versions.compose.get()}")
 }
 
 

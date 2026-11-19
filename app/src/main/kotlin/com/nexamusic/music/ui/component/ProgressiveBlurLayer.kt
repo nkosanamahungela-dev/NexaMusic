@@ -46,12 +46,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import dev.chrisbanes.haze.ExperimentalHazeApi
-import dev.chrisbanes.haze.HazeInputScale
 import dev.chrisbanes.haze.HazeState
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
-import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.hazeEffect
 import com.nexamusic.music.ui.ios.compat.AppTheme
 
 private enum class HeaderRenderMode { BLUR, SCRIM }
@@ -97,6 +94,8 @@ fun ProgressiveBlurLayer(
     val view = LocalView.current
     val window = remember(context) { context.findSmoothHeaderActivity()?.window }
     val darkTheme = AppTheme.colorScheme.background.luminance() <= 0.5f
+    // Resolve before the visibility check: restored scroll offsets blur on frame one.
+    val headerHazeStyle = rememberHeaderHazeStyle(pageColor, darkTheme)
 
     // System bars are transparent and follow the app theme, not the phone theme.
     SideEffect {
@@ -126,7 +125,8 @@ fun ProgressiveBlurLayer(
         SmoothHeaderTokens.quantizeProgress(progressProvider())
     }
 
-    val useScrim = reduceTransparency || mode == HeaderRenderMode.SCRIM || HeaderRenderPolicy.forceScrim.value
+    val useScrim = reduceTransparency || !headerHazeStyle.blurAllowed ||
+        mode == HeaderRenderMode.SCRIM || HeaderRenderPolicy.forceScrim.value
     val scrimPeak = if (reduceTransparency) {
         SmoothHeaderTokens.ReducedTransparencyOpacity
     } else {
@@ -202,53 +202,36 @@ fun ProgressiveBlurLayer(
                     .graphicsLayer { alpha = readProgress() }
                     .background(
                         Brush.verticalGradient(
-                            0f to pageColor.copy(alpha = scrimPeak),
-                            1f to pageColor.copy(alpha = 0f),
+                            0f to headerHazeStyle.pageColor.copy(alpha = scrimPeak),
+                            1f to headerHazeStyle.pageColor.copy(alpha = 0f),
                         ),
                     ),
             )
         } else {
-            // Each pass samples the same header backdrop with a progressively shorter mask.
+            // One built-in progressive Haze effect replaces the six stacked passes.
             Box(
                 Modifier
                     .fillMaxSize()
-                    .graphicsLayer { alpha = SmoothHeaderTokens.blurOpacity(readProgress()) },
-            ) {
-                SmoothHeaderTokens.BlurLayers.forEach { layer ->
-                    val mask = remember(layer.fadeEndFraction) {
-                        Brush.verticalGradient(
-                            0f to Color.Black,
-                            layer.fadeEndFraction to Color.Transparent,
-                        )
+                    .graphicsLayer { alpha = SmoothHeaderTokens.blurOpacity(readProgress()) }
+                    .graphicsLayer {
+                        colorFilter = ColorFilter.colorMatrix(saturation)
                     }
-                    val style = HazeStyle(backgroundColor = pageColor, tint = null, blurRadius = layer.radius.dp, noiseFactor = 0f)
-                    Box(
-                        Modifier
-                            .fillMaxSize()
-                            .graphicsLayer {
-                                colorFilter = ColorFilter.colorMatrix(saturation)
-                            }
-                            .hazeEffect(state = hazeState, style = style) {
-                                this.mask = mask
-                                noiseFactor = 0f
-                                inputScale = HazeInputScale.Fixed(
-                                    if (layer.radius >= 12f) SmoothHeaderTokens.LowResolutionBlurScale
-                                    else SmoothHeaderTokens.StandardBlurScale,
-                                )
-                            },
-                    )
-                }
-            }
+                    .nexaHeaderBlur(
+                        state = hazeState,
+                        headerStyle = headerHazeStyle,
+                        inputScale = SmoothHeaderTokens.HeaderBlurInputScale,
+                    ),
+            )
 
-            // Theme tint is a separate pass: p opacity, not multiplied by blur-stack opacity.
+            // Theme tint remains a separate 62% page-colour pass, driven by scroll progress.
             Box(
                 Modifier
                     .fillMaxSize()
                     .graphicsLayer { alpha = readProgress() }
                     .background(
                         Brush.verticalGradient(
-                            0f to pageColor.copy(alpha = SmoothHeaderTokens.TintPeakOpacity),
-                            1f to pageColor.copy(alpha = 0f),
+                            0f to headerHazeStyle.pageColor.copy(alpha = SmoothHeaderTokens.TintPeakOpacity),
+                            1f to headerHazeStyle.pageColor.copy(alpha = 0f),
                         ),
                     ),
             )

@@ -30,15 +30,10 @@ class SmoothHeaderTokensTest {
         assertEquals(0.8f, SmoothHeaderTokens.bigTitleScale(1f), 0.001f)
     }
     @Test
-    fun `six blur layers match the progressive mask contract`() {
-        assertEquals(
-            listOf(0.5f, 1.5f, 3f, 6f, 12f, 24f),
-            SmoothHeaderTokens.BlurLayers.map { it.radius },
-        )
-        assertEquals(
-            listOf(1f, 0.84f, 0.68f, 0.52f, 0.36f, 0.20f),
-            SmoothHeaderTokens.BlurLayers.map { it.fadeEndFraction },
-        )
+    fun `single progressive haze effect keeps the strongest layer contract`() {
+        assertEquals(24f, SmoothHeaderTokens.HeaderBlurRadius.value, 0.001f)
+        assertEquals(0.5f, SmoothHeaderTokens.HeaderBlurInputScale, 0.001f)
+        assertEquals(0f, SmoothHeaderTokens.HeaderBlurNoiseFactor, 0.001f)
         assertEquals(1.2f, SmoothHeaderTokens.BlurLayerSaturation, 0.001f)
     }
 

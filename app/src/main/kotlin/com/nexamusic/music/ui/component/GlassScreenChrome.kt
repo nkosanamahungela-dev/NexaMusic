@@ -17,7 +17,6 @@ import com.nexamusic.music.ui.component.backdrop.backdrops.layerBackdrop
 import com.nexamusic.music.ui.component.backdrop.backdrops.rememberBackdropFreeze
 import com.nexamusic.music.ui.component.backdrop.backdrops.rememberLayerBackdrop
 import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.hazeSource
 
 /** Provides attached backdrop and Haze wiring for flat screens. Keep [FrostedTopBar] a sibling of the captured scrolling content to avoid self-capture. */
 @Stable
@@ -31,7 +30,7 @@ class GlassScreenChrome internal constructor(
     // Keep the haze source around scrollable content only. If it contains the blur overlay,
     // Haze captures that overlay itself and the blur has no useful source.
     /** Apply to a Box that wraps only the screen's scrolling content. */
-    fun screenModifier(): Modifier = Modifier.hazeSource(hazeState)
+    fun screenModifier(): Modifier = Modifier.nexaHazeSource(hazeState)
 
     /** Apply to the screen's scrolling root (LazyColumn/Column/etc). */
     fun contentModifier(): Modifier = Modifier

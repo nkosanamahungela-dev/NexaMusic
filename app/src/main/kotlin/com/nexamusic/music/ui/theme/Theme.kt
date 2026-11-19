@@ -10,6 +10,9 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import com.nexamusic.music.ui.ios.foundation.IosTheme
+import com.nexamusic.music.ui.ios.compat.AppTheme
+import com.nexamusic.music.ui.component.rememberHeaderHazeStyle
+import dev.chrisbanes.haze.LocalHazeStyle
 import com.nexamusic.music.ui.ios.foundation.darkIosColors
 import com.nexamusic.music.ui.ios.foundation.iosColorScheme
 import com.nexamusic.music.ui.ios.foundation.iosMaterialTypography
@@ -114,13 +117,23 @@ fun NexaMusicTheme(
             accent = themeColor,
             typography = remember(appFont) { com.nexamusic.music.ui.ios.foundation.iosTypography(appFont) },
         ) {
-            // Keeps unported screens on the app palette while they still use Material3.
-            MaterialTheme(
-                colorScheme = colorScheme,
-                typography = remember(appFont) { iosMaterialTypography(appFont) },
-                shapes = AppShapes,
-                content = content
+            // Root safety net for every Haze effect, including effects outside the
+            // shared header. This is resolved from the active app page theme.
+            val headerHazeStyle = rememberHeaderHazeStyle(
+                pageColor = AppTheme.colorScheme.background,
+                darkTheme = darkTheme,
             )
+            androidx.compose.runtime.CompositionLocalProvider(
+                LocalHazeStyle provides headerHazeStyle.hazeStyle,
+            ) {
+                // Keeps unported screens on the app palette while they still use Material3.
+                MaterialTheme(
+                    colorScheme = colorScheme,
+                    typography = remember(appFont) { iosMaterialTypography(appFont) },
+                    shapes = AppShapes,
+                    content = content
+                )
+            }
         }
     }
 }

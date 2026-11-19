@@ -148,6 +148,7 @@ import com.nexamusic.music.ui.component.SideBarAccountRow
 import com.nexamusic.music.ui.component.AppTabViewTopPill
 import com.nexamusic.music.ui.component.NavMorph
 import com.nexamusic.music.ui.component.ScrollHeaderScaffold
+import com.nexamusic.music.ui.component.nexaHazeSource
 import com.nexamusic.music.ui.component.smoothHeaderScrollProgress
 import com.nexamusic.music.ui.component.SideBarCollapsedWidth
 import com.nexamusic.music.ui.component.SideBarContentInset
@@ -204,7 +205,6 @@ import com.valentinilk.shimmer.LocalShimmerTheme
 import dev.chrisbanes.haze.HazeState
 import com.nexamusic.music.constants.TopBarBlurStyle
 import com.nexamusic.music.constants.TopBarBlurStyleKey
-import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -925,7 +925,7 @@ internal fun AppRootContent(
                                         if ((directTopBlur && shouldShowTopBar) || currentRoute == "settings" || currentRoute?.startsWith("settings/") == true) {
                                             Modifier
                                         } else {
-                                            Modifier.hazeSource(topBarHazeState)
+                                            Modifier.nexaHazeSource(topBarHazeState)
                                         },
                                     )
                                     // WebViews render on a separate hardware canvas and flicker when
