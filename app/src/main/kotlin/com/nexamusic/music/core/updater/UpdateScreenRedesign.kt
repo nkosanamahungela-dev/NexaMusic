@@ -9,6 +9,10 @@ import android.net.Uri
 import android.os.Build
 import android.animation.ValueAnimator
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.keyframes
@@ -328,7 +332,8 @@ fun UpdateScreen(navController: NavHostController) {
                         title = "Checking for updates",
                         detail = "Looking for the latest NexaMusic release.",
                         palette = palette,
-                        loading = true
+                        loading = true,
+                        reduceMotion = reduceMotion
                     )
                 }
 
@@ -967,42 +972,123 @@ private fun EmptyUpdateState(
     title: String,
     detail: String,
     palette: UpdateScreenTokens.Palette,
-    loading: Boolean
+    loading: Boolean,
+    reduceMotion: Boolean = false
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 72.dp, bottom = 72.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        if (loading) {
-            androidx.compose.material3.CircularProgressIndicator(
-                color = UpdateScreenTokens.Action,
-                strokeWidth = 3.dp
-            )
-        } else {
+    if (loading) {
+        UpdateCheckSkeleton(palette = palette, reduceMotion = reduceMotion)
+    } else {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 72.dp, bottom = 72.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
             Icon(
                 imageVector = Icons.Rounded.CheckCircle,
                 contentDescription = null,
                 tint = UpdateScreenTokens.TileFix,
                 modifier = Modifier.size(64.dp)
             )
-        }
-        Text(
-            title,
-            color = palette.primaryText,
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold,
-            fontFamily = UpdateScreenTokens.BodyFont
-        )
-        if (detail.isNotBlank()) {
             Text(
-                detail,
-                color = palette.secondaryText,
-                fontSize = 14.sp,
+                title,
+                color = palette.primaryText,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
                 fontFamily = UpdateScreenTokens.BodyFont
             )
+            if (detail.isNotBlank()) {
+                Text(
+                    detail,
+                    color = palette.secondaryText,
+                    fontSize = 14.sp,
+                    fontFamily = UpdateScreenTokens.BodyFont
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun UpdateCheckSkeleton(
+    palette: UpdateScreenTokens.Palette,
+    reduceMotion: Boolean
+) {
+    val transition = rememberInfiniteTransition(label = "update-check-skeleton")
+    val shimmerPosition by transition.animateFloat(
+        initialValue = -0.8f,
+        targetValue = 1.8f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1250, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "update-check-shimmer"
+    )
+    val shimmer = if (reduceMotion) 0.5f else shimmerPosition
+
+    val shimmerBrush = androidx.compose.ui.graphics.Brush.horizontalGradient(
+        colors = listOf(
+            palette.card.copy(alpha = 0.72f),
+            palette.card.copy(alpha = 0.96f),
+            palette.card.copy(alpha = 0.72f)
+        ),
+        startX = shimmer * 900f,
+        endX = shimmer * 900f + 520f
+    )
+
+    @Composable
+    fun Placeholder(
+        modifier: Modifier,
+        radius: androidx.compose.ui.graphics.Shape = RoundedCornerShape(12.dp)
+    ) {
+        Box(
+            modifier = modifier
+                .clip(radius)
+                .background(shimmerBrush)
+        )
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 28.dp, bottom = 72.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // Mirrors the update hero, summary, and release-note structure.
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(28.dp))
+                .background(palette.card)
+                .padding(22.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Placeholder(Modifier.width(104.dp).height(22.dp))
+            Placeholder(Modifier.width(190.dp).height(58.dp), RoundedCornerShape(16.dp))
+            Placeholder(Modifier.fillMaxWidth(0.68f).height(14.dp))
+            Spacer(Modifier.height(22.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Placeholder(Modifier.weight(1f).height(42.dp))
+                Placeholder(Modifier.weight(1f).height(42.dp))
+            }
+        }
+        Placeholder(Modifier.fillMaxWidth(0.92f).height(14.dp))
+        Placeholder(Modifier.fillMaxWidth(0.66f).height(14.dp))
+        Spacer(Modifier.height(4.dp))
+        Placeholder(Modifier.width(116.dp).height(12.dp))
+        repeat(3) { index ->
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(18.dp))
+                    .background(palette.card)
+                    .padding(18.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Placeholder(Modifier.fillMaxWidth(if (index == 1) 0.72f else 0.88f).height(13.dp))
+                Placeholder(Modifier.fillMaxWidth(if (index == 2) 0.58f else 0.94f).height(13.dp))
+            }
         }
     }
 }

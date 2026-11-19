@@ -22,7 +22,9 @@
         "Updated Explore featured albums, release shelves, and mood tiles with cleaner, cover-first layouts.",
         "Added smooth scrolling title transitions and a progressive frosted-glass header across the app's main screens and detail pages.",
         "Kept Home, Library, and Explore filter rows pinned and aligned with their scrolling content.",
-        "Improved header readability and accessibility across light and dark themes, reduced-motion settings, reduced-transparency settings, and larger text sizes."
+        "Improved header readability and accessibility across light and dark themes, reduced-motion settings, reduced-transparency settings, and larger text sizes.",
+        "Added skeleton loading to the update-check screen, replacing the old circular loader.",
+        "Improved update-check loading smoothness with a lightweight shimmer animation."
       ]
     },
     {
