@@ -69,7 +69,7 @@ internal fun createHeaderHazeStyle(
  * fully resolved style.
  */
 @Composable
-fun rememberHeaderHazeStyle(
+internal fun rememberHeaderHazeStyle(
     pageColor: Color,
     darkTheme: Boolean,
 ): HeaderHazeStyle = remember(pageColor, darkTheme) {
@@ -81,14 +81,14 @@ fun rememberHeaderHazeStyle(
 }
 
 /** The single supported Haze source modifier entry point. */
-fun Modifier.nexaHazeSource(state: HazeState): Modifier = hazeSource(state)
+internal fun Modifier.nexaHazeSource(state: HazeState): Modifier = hazeSource(state)
 
 /**
  * The single supported Haze effect modifier entry point. Haze 1.3.1 supports
  * HazeProgressive, so the header uses one 24dp effect with a top-to-bottom ramp.
  */
 @OptIn(ExperimentalHazeApi::class)
-fun Modifier.nexaHeaderBlur(
+internal fun Modifier.nexaHeaderBlur(
     state: HazeState,
     headerStyle: HeaderHazeStyle,
     inputScale: Float = SmoothHeaderTokens.HeaderBlurInputScale,

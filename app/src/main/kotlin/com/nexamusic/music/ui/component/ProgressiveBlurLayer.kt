@@ -2,8 +2,7 @@
  * NexaMusic Project (C) 2026
  * Licensed under GPL-3.0 | See git history for contributors
  *
- * Six masked Haze passes for the shared progressive header. No external blur
- * library is added: the project already depends on Haze (Apache-2.0).
+ * Single built-in progressive Haze effect for the shared header.
  */
 package com.nexamusic.music.ui.component
 
@@ -220,19 +219,6 @@ fun ProgressiveBlurLayer(
                         state = hazeState,
                         headerStyle = headerHazeStyle,
                         inputScale = SmoothHeaderTokens.HeaderBlurInputScale,
-                    ),
-            )
-
-            // Theme tint remains a separate 62% page-colour pass, driven by scroll progress.
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .graphicsLayer { alpha = readProgress() }
-                    .background(
-                        Brush.verticalGradient(
-                            0f to headerHazeStyle.pageColor.copy(alpha = SmoothHeaderTokens.TintPeakOpacity),
-                            1f to headerHazeStyle.pageColor.copy(alpha = 0f),
-                        ),
                     ),
             )
         }

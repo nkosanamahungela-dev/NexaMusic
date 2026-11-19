@@ -1,7 +1,7 @@
 package com.nexamusic.music.ui.component
 
 import androidx.compose.ui.graphics.Color
-import dev.chrisbanes.haze.HazeStyle
+import androidx.compose.ui.graphics.isSpecified
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
