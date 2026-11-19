@@ -111,9 +111,7 @@ fun AppTopBar(
             SmoothHeaderTokens.BigTitleLineHeight.toDp()
         }.coerceAtLeast(46.dp)
         val headerContentHeight = maxOf(SmoothHeaderTokens.HeaderContentHeight, largeTitleHeight + 38.dp)
-        val hasPinnedHeaderRow = effectiveRoute == Screens.Home.route ||
-            effectiveRoute == Screens.Library.route ||
-            effectiveRoute == Screens.Explore.route
+        val hasPinnedHeaderRow = false
         val headerProgressProvider = remember(screenKey) { { SmoothHeaderProgress.progressFor(screenKey) } }
         val titleMotion = rememberSmoothHeaderTitleMotion(headerProgressProvider)
         AnimatedVisibility(
@@ -189,13 +187,21 @@ fun AppTopBar(
                         if (effectiveRoute == Screens.Library.route) {
                             LibraryTopBarActions(navController)
                         } else {
+                            // Keep the Home account action pinned and fully reachable
+                            // while the title and blur follow the scroll animation.
                             Box(
                                 Modifier.graphicsLayer {
-                                    val p = headerProgressProvider()
-                                    alpha = SmoothHeaderTokens.profileOpacity(p)
-                                    val scale = if (titleMotion.transformsEnabled) SmoothHeaderTokens.profileScale(p) else 1f
-                                    scaleX = scale
-                                    scaleY = scale
+                                    if (effectiveRoute != Screens.Home.route) {
+                                        val p = headerProgressProvider()
+                                        alpha = SmoothHeaderTokens.profileOpacity(p)
+                                        val scale = if (titleMotion.transformsEnabled) SmoothHeaderTokens.profileScale(p) else 1f
+                                        scaleX = scale
+                                        scaleY = scale
+                                    } else {
+                                        alpha = 1f
+                                        scaleX = 1f
+                                        scaleY = 1f
+                                    }
                                 },
                             ) {
                                 GlassCircleButton(size = 44.dp, applyAdditiveChrome = false, forceFlat = true, onClick = onAccountClick) {

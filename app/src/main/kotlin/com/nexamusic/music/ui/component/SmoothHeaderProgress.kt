@@ -16,6 +16,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -83,21 +84,27 @@ fun Modifier.smoothHeaderScrollProgress(screenKey: String? = null): Modifier = c
 fun rememberSmoothHeaderProgress(state: LazyListState): () -> Float {
     val density = LocalDensity.current
     val collapseDistancePx = with(density) { SmoothHeaderTokens.HeaderScrollDistance.roundToPx() }
-    return remember(state, density, collapseDistancePx) {
+    val firstItemSizePx = remember(state) { mutableIntStateOf(0) }
+    return remember(state, density, collapseDistancePx, firstItemSizePx) {
         {
             val layout = state.layoutInfo
             val visible = layout.visibleItemsInfo
+            val firstVisible = visible.firstOrNull()
+            if (state.firstVisibleItemIndex == 0) {
+                visible.firstOrNull { it.index == 0 }?.let { firstItemSizePx.intValue = it.size }
+            }
+            val scrolledPx = when {
+                state.firstVisibleItemIndex == 0 -> state.firstVisibleItemScrollOffset
+                state.firstVisibleItemIndex == 1 && firstItemSizePx.intValue > 0 ->
+                    firstItemSizePx.intValue + (-(firstVisible?.offset ?: 0)).coerceAtLeast(0)
+                else -> collapseDistancePx
+            }
             val contentFitsViewport = layout.totalItemsCount > 0 &&
                 visible.size >= layout.totalItemsCount &&
                 ((visible.maxOfOrNull { it.offset + it.size } ?: 0) -
                     (visible.minOfOrNull { it.offset } ?: 0)) <= layout.viewportSize.height
-            when {
-                contentFitsViewport -> 0f
-                state.firstVisibleItemIndex > 0 -> 1f
-                else -> SmoothHeaderTokens.progress(
-                    state.firstVisibleItemScrollOffset.coerceAtLeast(0) / density.density,
-                )
-            }
+            if (contentFitsViewport) 0f
+            else SmoothHeaderTokens.progress(scrolledPx.coerceAtLeast(0) / density.density)
         }
     }
 }
