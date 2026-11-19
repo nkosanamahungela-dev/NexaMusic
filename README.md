@@ -16,8 +16,8 @@
     </a>
   </p>
   <p>
-    <img src="https://img.shields.io/badge/iOS-Coming%20Soon-000000?style=flat&logo=apple&logoColor=white" alt="iOS coming soon">
-    <img src="https://img.shields.io/badge/Kotlin-Multiplatform-7F52FF?style=flat&logo=kotlin&logoColor=white" alt="Kotlin Multiplatform">
+    <img src="https://img.shields.io/badge/iOS-Coming%20Soon-000000?style=for-the-badge&logo=apple&logoColor=white" alt="iOS coming soon">
+    <img src="https://img.shields.io/badge/Kotlin-Multiplatform-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white" alt="Kotlin Multiplatform">
   </p>
 </div>
 
