@@ -1337,6 +1337,21 @@ private fun PlayerV2Content(
                                                 renderInOverlayDuringTransition = false,
                                             ))
                                         )
+                                        // Keep the synced lyric line in the compact/wide
+                                        // track-info layout too. PodPlayer is routed before
+                                        // this composable and intentionally never reaches here.
+                                        PlayerLyricLine(
+                                            modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
+                                            positionProvider = { sliderPosition ?: position },
+                                            onOpenLyrics = { playerState = PlayerInternalState.LYRICS },
+                                            textStyle = AppTheme.typography.bodyLarge.copy(
+                                                fontSize = 17.sp,
+                                                lineHeight = 20.sp,
+                                                fontWeight = FontWeight.Bold,
+                                            ),
+                                            textColor = adaptivePrimary,
+                                            isVisible = targetState == PlayerInternalState.COVER,
+                                        )
                                     }
 
                                     Row(
