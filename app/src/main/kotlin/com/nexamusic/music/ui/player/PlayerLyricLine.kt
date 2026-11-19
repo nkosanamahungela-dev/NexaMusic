@@ -20,6 +20,7 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -58,6 +59,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
@@ -291,6 +293,9 @@ fun PlayerLyricLine(
                 AnimatedContent(
                     targetState = lineKey,
                     transitionSpec = {
+                        if (reduceMotion) {
+                            fadeIn(tween(100)) togetherWith fadeOut(tween(100))
+                        } else {
                         val enter = fadeIn(tween(PlayerLyricLineEnterMs)) +
                             slideInVertically(
                                 animationSpec = spring(
@@ -303,16 +308,20 @@ fun PlayerLyricLine(
                                 -with(density) { 10.dp.roundToPx() }
                             }
                         enter togetherWith exit
+                        }
                     },
                     label = "player-current-lyric",
                 ) { target ->
                     if (target == "instrumental-gap") {
                         PlayerLyricLineDots()
                     } else {
+                        val targetEntry = remember(target, timedLyrics) {
+                            timedLyrics.firstOrNull { "${it.time}:${it.text}" == target }
+                        }
                         val targetText = if (target.startsWith("preview:")) {
                             target.removePrefix("preview:")
                         } else {
-                            displayedLine?.text.orEmpty()
+                            targetEntry?.text.orEmpty()
                         }
                         if (targetText.isNotBlank()) {
                             BoxWithConstraints(Modifier.fillMaxWidth()) {
@@ -344,7 +353,7 @@ fun PlayerLyricLine(
                                             maxLines = 2,
                                             overflow = TextOverflow.Ellipsis,
                                         )
-                                        if (!result.didOverflowHeight) {
+                                        if (!result.didOverflowHeight && !result.didOverflowWidth) {
                                             chosen = candidate
                                             break
                                         }
@@ -358,9 +367,9 @@ fun PlayerLyricLine(
                                     color = textColor,
                                     fontWeight = FontWeight.Bold,
                                 )
-                                if (displayedLine?.words?.isNotEmpty() == true && !reduceMotion && !target.startsWith("preview:")) {
+                                if (targetEntry?.words?.isNotEmpty() == true && !reduceMotion && !target.startsWith("preview:")) {
                                     PlayerLyricLineWordFill(
-                                        line = displayedLine,
+                                        line = targetEntry,
                                         positionMs = playbackPosition + lyricsOffset,
                                         style = finalStyle,
                                         textAlign = lyricsTextAlign,
