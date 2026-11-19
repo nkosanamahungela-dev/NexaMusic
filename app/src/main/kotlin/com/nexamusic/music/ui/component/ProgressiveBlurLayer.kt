@@ -15,6 +15,7 @@ import android.os.Build
 import android.os.PowerManager
 import android.view.WindowManager
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -36,6 +37,7 @@ import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
@@ -92,7 +94,12 @@ fun ProgressiveBlurLayer(
     val context = LocalContext.current
     val view = LocalView.current
     val window = remember(context) { context.findSmoothHeaderActivity()?.window }
-    val darkTheme = AppTheme.colorScheme.background.luminance() <= 0.5f
+    val themePageColor = AppTheme.colorScheme.background
+    val darkTheme = when {
+        themePageColor.isSpecified -> themePageColor.luminance() <= 0.5f
+        AppTheme.colorScheme.surface.isSpecified -> AppTheme.colorScheme.surface.luminance() <= 0.5f
+        else -> isSystemInDarkTheme()
+    }
     // Resolve before the visibility check: restored scroll offsets blur on frame one.
     val headerHazeStyle = rememberHeaderHazeStyle(pageColor, darkTheme)
 
