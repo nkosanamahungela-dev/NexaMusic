@@ -32,7 +32,7 @@
         "Fixed guest playback ending too early on streams that do not report their total length.",
         "Fixed the ON AIR hero appearing when a radio station is paused, stopped, or unrelated content is playing.",
         "Fixed a crash that could occur when opening the player.",
-        "Fixed a crash that could occur when scrolling with the new header, including on screens restored at a scrolled position."
+        "Fixed a crash that could occur when scrolling with the new header, including after returning to a previously scrolled screen."
       ]
     }
   ]

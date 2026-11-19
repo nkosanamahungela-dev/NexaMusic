@@ -16,6 +16,8 @@ class SmoothHeaderHazeTest {
         assertTrue(resolved.blurAllowed)
         assertEquals(page, resolved.pageColor)
         assertEquals(page, resolved.hazeStyle.backgroundColor)
+        assertEquals(page, resolved.rootDefaultStyle.backgroundColor)
+        assertEquals(page, resolved.rootDefaultStyle.backgroundColor)
         assertEquals(0.62f, resolved.hazeStyle.tints.single().color.alpha, 0.001f)
         assertEquals(24f, resolved.hazeStyle.blurRadius.value, 0.001f)
         assertEquals(0f, resolved.hazeStyle.noiseFactor, 0.001f)
@@ -42,6 +44,8 @@ class SmoothHeaderHazeTest {
         assertEquals(Color.White, light.pageColor)
         assertTrue(dark.hazeStyle.backgroundColor.isSpecified)
         assertTrue(light.hazeStyle.backgroundColor.isSpecified)
+        assertTrue(dark.rootDefaultStyle.backgroundColor.isSpecified)
+        assertTrue(light.rootDefaultStyle.backgroundColor.isSpecified)
     }
 
     @Test(expected = IllegalStateException::class)

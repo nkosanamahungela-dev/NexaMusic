@@ -124,7 +124,7 @@ fun NexaMusicTheme(
                 darkTheme = darkTheme,
             )
             androidx.compose.runtime.CompositionLocalProvider(
-                LocalHazeStyle provides headerHazeStyle.hazeStyle,
+                LocalHazeStyle provides headerHazeStyle.rootDefaultStyle,
             ) {
                 // Keeps unported screens on the app palette while they still use Material3.
                 MaterialTheme(

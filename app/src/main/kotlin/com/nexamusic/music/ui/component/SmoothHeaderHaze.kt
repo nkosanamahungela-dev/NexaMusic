@@ -27,6 +27,7 @@ import dev.chrisbanes.haze.hazeSource
 internal data class HeaderHazeStyle(
     val pageColor: Color,
     val hazeStyle: HazeStyle,
+    val rootDefaultStyle: HazeStyle,
     val blurAllowed: Boolean,
 )
 
@@ -53,6 +54,7 @@ internal fun createHeaderHazeStyle(
 
     return HeaderHazeStyle(
         pageColor = safePageColor,
+        rootDefaultStyle = HazeStyle(backgroundColor = safePageColor),
         hazeStyle = HazeStyle(
             backgroundColor = safePageColor,
             tint = HazeTint(safePageColor.copy(alpha = SmoothHeaderTokens.HeaderTintPeak)),
