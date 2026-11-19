@@ -1997,6 +1997,18 @@ fun BottomSheetPlayer(
                         }
                     }
 
+                    PlayerLyricLine(
+                        modifier = Modifier.fillMaxWidth().padding(top = 7.dp),
+                        positionProvider = { sliderPosition ?: effectivePosition },
+                        onOpenLyrics = { showInlineLyrics = true },
+                        textStyle = AppTheme.typography.titleLarge.copy(
+                            fontSize = 24.sp,
+                            lineHeight = 27.sp,
+                            fontWeight = FontWeight.Bold,
+                        ),
+                        textColor = TextBackgroundColor,
+                        isVisible = !showInlineLyrics,
+                    )
                     DjReadout(
                         modifier = Modifier.padding(top = 2.dp)
                             .flamingoChrome(additiveChrome)

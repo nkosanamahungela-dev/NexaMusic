@@ -612,6 +612,8 @@ val PlayerButtonsStyleKey = stringPreferencesKey("player_buttons_style")
 val PlayerBackgroundStyleKey = stringPreferencesKey("playerBackgroundStyle")
 val MiniPlayerBackgroundStyleKey = stringPreferencesKey("miniPlayerBackgroundStyle")
 val ShowLyricsKey = booleanPreferencesKey("showLyrics")
+/** Controls the synced one-line lyric shown in the Now Playing metadata block. */
+val PlayerLyricLineEnabledKey = booleanPreferencesKey("player_lyric_line_enabled")
 val SwipeLyricsKey = booleanPreferencesKey("swipeLyrics")
 val EnableLyricsThumbnailPlayPauseKey = booleanPreferencesKey("enableLyricsThumbnailPlayPause")
 val LyricsTextPositionKey = stringPreferencesKey("lyricsTextPosition")

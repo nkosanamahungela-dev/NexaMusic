@@ -813,6 +813,8 @@ fun ColumnScope.LyricsAnimationSheetContent() {
     val (position, onPositionChange) = rememberEnumPreference(LyricsTextPositionKey, defaultValue = LyricsPosition.LEFT)
     val (autoScroll, onAutoScrollChange) = rememberPreference(LyricsScrollKey, defaultValue = true)
     val (swipeToChange, onSwipeToChangeChange) = rememberPreference(SwipeLyricsKey, defaultValue = false)
+    val (showPlayerLyricLine, onShowPlayerLyricLineChange) = rememberPreference(com.nexamusic.music.constants.PlayerLyricLineEnabledKey, defaultValue = true)
+    val (lyricsGloballyEnabled) = rememberPreference(com.nexamusic.music.constants.ShowLyricsKey, defaultValue = true)
     val animation = androidx.compose.animation.core.rememberInfiniteTransition(label = "lyrics sample")
     val progress by animation.animateFloat(
         initialValue = 0.18f,
@@ -1111,8 +1113,49 @@ fun ColumnScope.LyricsAnimationSheetContent() {
                 LyricsSheetSwitch(stringResource(R.string.lyrics_auto_scroll), autoScroll, onAutoScrollChange)
                 HorizontalDivider(Modifier.padding(start = 16.dp), color = IosTheme.colors.separator, thickness = IosMetrics.SeparatorThickness)
                 LyricsSheetSwitch(stringResource(R.string.lyrics_swipe_to_change_song), swipeToChange, onSwipeToChangeChange)
+                HorizontalDivider(Modifier.padding(start = 16.dp), color = IosTheme.colors.separator, thickness = IosMetrics.SeparatorThickness)
+                LyricsLineSettingRow(
+                    checked = showPlayerLyricLine,
+                    enabled = lyricsGloballyEnabled,
+                    onChange = onShowPlayerLyricLineChange,
+                )
             }
+            com.nexamusic.music.ui.player.PlayerLyricLinePreviewCard(
+                enabled = showPlayerLyricLine && lyricsGloballyEnabled,
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
         }
+    }
+}
+
+@Composable
+private fun LyricsLineSettingRow(
+    checked: Boolean,
+    enabled: Boolean,
+    onChange: (Boolean) -> Unit,
+) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clickable(enabled = enabled) { onChange(!checked) }
+            .defaultMinSize(minHeight = 64.dp)
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(
+                "Show lyric line in player",
+                style = IosTheme.typography.body.copy(fontSize = 17.sp),
+                fontWeight = FontWeight.Medium,
+                color = if (enabled) IosTheme.colors.label else IosTheme.colors.tertiaryLabel,
+            )
+            Text(
+                if (enabled) "Shows the current lyric under the song title" else "Lyrics are turned off",
+                style = IosTheme.typography.footnote.copy(fontSize = 13.sp),
+                color = IosTheme.colors.secondaryLabel,
+            )
+        }
+        Switch(checked = checked, onCheckedChange = onChange, enabled = enabled)
     }
 }
 
