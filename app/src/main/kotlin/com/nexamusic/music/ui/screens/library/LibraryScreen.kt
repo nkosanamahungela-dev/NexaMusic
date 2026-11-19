@@ -6,7 +6,6 @@
 package com.nexamusic.music.ui.screens.library
 
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.asPaddingValues
@@ -32,7 +31,6 @@ import com.nexamusic.music.ui.component.rememberSmoothHeaderProgress
 import com.nexamusic.music.ui.component.SmoothHeaderProgressSync
 import com.nexamusic.music.ui.component.SmoothHeaderProgress
 import com.nexamusic.music.ui.component.ChipsRow
-import com.nexamusic.music.ui.component.PinnedScrollHeaderRow
 import com.nexamusic.music.R
 import com.nexamusic.music.LocalPlayerAwareWindowInsets
 import androidx.compose.ui.res.stringResource
@@ -46,35 +44,29 @@ fun LibraryScreen(navController: NavController) {
     val headerScreenKey = navController.currentBackStackEntry?.id ?: "library"
     val libraryHeaderProgress = rememberSmoothHeaderProgress(libraryListState)
     if (filterType == LibraryFilter.LIBRARY) SmoothHeaderProgressSync(libraryHeaderProgress, headerScreenKey)
-    val libraryPinnedScrollState = rememberScrollState()
     val librarySideInset = LocalPlayerAwareWindowInsets.current.asPaddingValues()
         .calculateStartPadding(LocalLayoutDirection.current)
-    val pinnedProgress = SmoothHeaderProgress.progressFor(headerScreenKey)
     Box(modifier = Modifier.fillMaxSize().then(if (filterType == LibraryFilter.LIBRARY) Modifier else Modifier.smoothHeaderScrollProgress(headerScreenKey))) {
-        PinnedScrollHeaderRow(
-            screenKey = headerScreenKey,
-            visible = pinnedProgress >= 0.85f,
-        ) {
-            ChipsRow(
-                chips = listOf(
-                    LibraryFilter.LIBRARY to stringResource(R.string.filter_library),
-                    LibraryFilter.PLAYLISTS to stringResource(R.string.filter_playlists),
-                    LibraryFilter.ARTISTS to stringResource(R.string.filter_artists),
-                    LibraryFilter.ALBUMS to stringResource(R.string.filter_albums),
-                    LibraryFilter.SONGS to stringResource(R.string.filter_songs),
-                    LibraryFilter.LOCAL to stringResource(R.string.filter_local),
-                ),
-                currentValue = filterType,
-                onValueUpdate = { filterType = it },
-                scrollState = libraryPinnedScrollState,
-                sideInset = librarySideInset,
-            )
-        }
         // Apple Music's Library and its lists: new screens on the plain system background.
         when (filterType) {
             LibraryFilter.LIBRARY -> AppleLibraryScreen(
                 navController = navController,
                 listState = libraryListState,
+                headerContent = {
+                    ChipsRow(
+                        chips = listOf(
+                            LibraryFilter.LIBRARY to stringResource(R.string.filter_library),
+                            LibraryFilter.PLAYLISTS to stringResource(R.string.filter_playlists),
+                            LibraryFilter.ARTISTS to stringResource(R.string.filter_artists),
+                            LibraryFilter.ALBUMS to stringResource(R.string.filter_albums),
+                            LibraryFilter.SONGS to stringResource(R.string.filter_songs),
+                            LibraryFilter.LOCAL to stringResource(R.string.filter_local),
+                        ),
+                        currentValue = filterType,
+                        onValueUpdate = { filterType = it },
+                        sideInset = librarySideInset,
+                    )
+                },
                 onOpen = { destination ->
                     when (destination) {
                         AppleLibraryDestination.Playlists -> filterType = LibraryFilter.PLAYLISTS

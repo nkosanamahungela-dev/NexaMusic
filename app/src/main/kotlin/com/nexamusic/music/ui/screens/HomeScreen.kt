@@ -356,15 +356,6 @@ fun HomeScreen(
     val homeHeaderProgress = rememberSmoothHeaderProgress(lazylistState)
     SmoothHeaderProgressSync(homeHeaderProgress, navController.currentBackStackEntry?.id ?: "home")
     val filterScrollState = rememberScrollState()
-    val pinnedFilterScrollState = rememberScrollState()
-    val homeFiltersPinned by remember(lazylistState) {
-        derivedStateOf {
-            val layoutInfo = lazylistState.layoutInfo
-            layoutInfo.visibleItemsInfo.isNotEmpty() &&
-                layoutInfo.visibleItemsInfo.none { it.key == "home_feed_filters" } &&
-                (lazylistState.firstVisibleItemIndex > 0 || lazylistState.firstVisibleItemScrollOffset > 0)
-        }
-    }
     val feedScroll = remember { mutableFloatStateOf(0f) }
     val feedScrollTracker = remember {
         object : NestedScrollConnection {
@@ -556,19 +547,6 @@ fun HomeScreen(
                 val sideInset = LocalPlayerAwareWindowInsets.current
                     .asPaddingValues()
                     .calculateStartPadding(LocalLayoutDirection.current)
-
-                com.nexamusic.music.ui.component.PinnedScrollHeaderRow(
-                    screenKey = navController.currentBackStackEntry?.id ?: "home",
-                    visible = homeFiltersPinned && homeHeaderProgress() >= 0.85f,
-                ) {
-                    HomeFeedFilterRow(
-                        moodChips = if (showMoodFilters) homePage?.chips.orEmpty().filter { it.endpoint?.browseId?.isNotBlank() == true } else emptyList(),
-                        selectedChip = shownChip,
-                        onSelected = viewModel::toggleChip,
-                        scrollState = pinnedFilterScrollState,
-                        sideInset = sideInset,
-                    )
-                }
 
                 val deps = HomeSectionDeps(
                     context = LocalContext.current,

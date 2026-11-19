@@ -155,6 +155,7 @@ fun AppleLibraryScreen(
     onOpen: (AppleLibraryDestination) -> Unit,
     viewModel: AppleLibraryViewModel = hiltViewModel(),
     listState: LazyListState = rememberLazyListState(),
+    headerContent: (@Composable () -> Unit)? = null,
 ) {
     val pinned by viewModel.pinned.collectAsStateWithLifecycle()
     val recent by viewModel.recentlyAdded.collectAsStateWithLifecycle()
@@ -185,8 +186,13 @@ fun AppleLibraryScreen(
             .background(colors.systemBackground),
         contentPadding = pageInsets,
     ) {
-        // Reference: 13pt between the large title and the first row.
+        // Category controls are part of the list, so they leave with the content.
         item(key = "top_gap", contentType = "gap") { Spacer(Modifier.height(firstItemGap)) }
+        if (headerContent != null) {
+            item(key = "library_category_chips", contentType = "category_chips") {
+                headerContent()
+            }
+        }
         if (!needsAccess && pinned.isNotEmpty()) {
             item(key = "pinned", contentType = "pinned") {
                 PinnedGrid(pinned, onOpen = open, onReorder = viewModel::reorderPinned)
