@@ -9,7 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.test.assertExists
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import dev.chrisbanes.haze.HazeState
@@ -53,7 +53,7 @@ class SmoothHeaderHazeUiTest {
 
         // First frame: dark theme with a restored non-zero scroll offset.
         composeRule.waitForIdle()
-        composeRule.onNodeWithTag("restored-header").assertExists()
+        composeRule.onNodeWithTag("restored-header").assertIsDisplayed()
 
         // Change Appearance while the same scrolled screen remains composed.
         composeRule.runOnIdle { darkThemeState.value = false }
