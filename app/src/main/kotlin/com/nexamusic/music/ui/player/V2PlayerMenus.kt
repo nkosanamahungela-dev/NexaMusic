@@ -101,6 +101,8 @@ fun V2OptionsMenu(
     onGoTo: () -> Unit,
     onViewCredits: () -> Unit,
     onShareLyrics: () -> Unit,
+    lyricLineEnabled: Boolean,
+    onToggleLyricLine: () -> Unit,
     onMore: () -> Unit,
     onOpenSleepTimer: () -> Unit,
     onOpenAudioDevices: () -> Unit,
@@ -139,6 +141,11 @@ fun V2OptionsMenu(
                 IosMenuItem(stringResource(R.string.v2_menu_go_to), icon = glyph(SfSymbols.Monochrome.SFSquareStack), onClick = onGoTo),
                 IosMenuItem(stringResource(R.string.v2_menu_view_credits), icon = glyph(SfSymbols.Monochrome.SFInfoCircle), onClick = onViewCredits),
                 IosMenuItem(stringResource(R.string.v2_menu_share_lyrics), icon = glyph(SfSymbols.Monochrome.SFQuoteBubble), onClick = onShareLyrics),
+                IosMenuItem(
+                    title = "Lyric line: ${if (lyricLineEnabled) "On" else "Off"}",
+                    icon = glyph(SfSymbols.Monochrome.SFQuoteBubble),
+                    onClick = { onToggleLyricLine(); onDismiss() },
+                ),
             )),
             IosMenuSection(listOf(
                 IosMenuItem(stringResource(R.string.sleep_timer), icon = symbolGlyph(com.nexamusic.music.ui.component.sf("moon.zzz.fill")), onClick = { onDismiss(); onOpenSleepTimer() }),
@@ -206,6 +213,10 @@ fun V2OptionsMenuHost(
     val database = com.nexamusic.music.LocalDatabase.current.get()
     val coroutineScope = androidx.compose.runtime.rememberCoroutineScope()
     val librarySong by database.song(mediaMetadata.id).collectAsState(initial = null)
+    val (lyricLineEnabled, setLyricLineEnabled) = com.nexamusic.music.utils.rememberPreference(
+        com.nexamusic.music.constants.PlayerLyricLineEnabledKey,
+        true,
+    )
     var showGoTo by remember { mutableStateOf(false) }
     var showAddToPlaylist by remember { mutableStateOf(false) }
 
@@ -230,6 +241,8 @@ fun V2OptionsMenuHost(
             onGoTo = { showGoTo = true },
             onViewCredits = onViewCredits,
             onShareLyrics = onShareLyrics,
+            lyricLineEnabled = lyricLineEnabled,
+            onToggleLyricLine = { setLyricLineEnabled(!lyricLineEnabled) },
             onMore = onMore,
             onOpenSleepTimer = onOpenSleepTimer,
             onOpenAudioDevices = onOpenAudioDevices,

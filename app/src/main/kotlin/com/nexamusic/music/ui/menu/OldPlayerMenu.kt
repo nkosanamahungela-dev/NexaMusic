@@ -92,6 +92,7 @@ fun OldPlayerMenu(
     val ringtoneViewModel = com.nexamusic.music.LocalRingtoneViewModel.current
     val database = LocalDatabase.current.get()
     val playerConnection = LocalPlayerConnection.current ?: return
+    val (playerLyricLineEnabled, setPlayerLyricLineEnabled) = rememberPreference(com.nexamusic.music.constants.PlayerLyricLineEnabledKey, true)
     val coroutineScope = rememberCoroutineScope()
     val playerVolume = playerConnection.service.playerVolume.collectAsStateWithLifecycle()
 
@@ -403,6 +404,17 @@ fun OldPlayerMenu(
         item {
             IosMenuGroup(
                 items = buildList {
+                    add(
+                        IosMenuItemData(
+                            title = { Text("Lyric line: ${if (playerLyricLineEnabled) "On" else "Off"}") },
+                            description = { Text("Show or hide the current synced lyric in the player") },
+                            icon = { SymbolIcon(symbol = sf("quote.bubble"), contentDescription = null, size = 24.dp) },
+                            onClick = {
+                                setPlayerLyricLineEnabled(!playerLyricLineEnabled)
+                                onDismiss()
+                            },
+                        )
+                    )
                     // Always visible. Re-triggers the full resolution chain.
                     add(
                         IosMenuItemData(

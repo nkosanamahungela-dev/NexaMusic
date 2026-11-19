@@ -140,6 +140,7 @@ fun PlayerMenu(
     val librarySong by database.song(mediaMetadata.id).collectAsState(initial = null)
     val coroutineScope = rememberCoroutineScope()
     val (saavnEnabled) = rememberPreference(EnableSaavnStreamingKey, defaultValue = false)
+    val (playerLyricLineEnabled, setPlayerLyricLineEnabled) = rememberPreference(com.nexamusic.music.constants.PlayerLyricLineEnabledKey, true)
     val (playerStyle, onPlayerStyleChange) = rememberEnumPreference(PlayerStyleKey, PlayerStyle.DEFAULT)
     var showPlayerStyleDialog by rememberSaveable { mutableStateOf(false) }
     if (showPlayerStyleDialog) {
@@ -322,6 +323,17 @@ fun PlayerMenu(
                                 SymbolIcon(symbol = sf("dial.low"), contentDescription = null, size = 24.dp)
                             },
                             onClick = { showPlayerStyleDialog = true }
+                        )
+                    )
+                    add(
+                        IosMenuItemData(
+                            title = { Text("Lyric line: ${if (playerLyricLineEnabled) "On" else "Off"}") },
+                            description = { Text("Show or hide the current synced lyric in the player") },
+                            icon = { SymbolIcon(symbol = sf("quote.bubble"), contentDescription = null, size = 24.dp) },
+                            onClick = {
+                                setPlayerLyricLineEnabled(!playerLyricLineEnabled)
+                                onDismiss()
+                            },
                         )
                     )
                     // Always visible. Re-triggers the full resolution chain.

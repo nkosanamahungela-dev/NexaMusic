@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
@@ -58,6 +59,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextLayoutResult
@@ -71,6 +73,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.round
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.lifecycle.Lifecycle
@@ -83,7 +86,7 @@ import com.nexamusic.music.constants.ShowLyricsKey
 import com.nexamusic.music.db.entities.LyricsEntity.Companion.LYRICS_NOT_FOUND
 import com.nexamusic.music.lyrics.LyricsEntry
 import com.nexamusic.music.lyrics.LyricsUtils.parseLyrics
-import com.nexamusic.music.lyrics.LyricsPosition
+import com.nexamusic.music.ui.screens.settings.LyricsPosition
 import com.nexamusic.music.ui.ios.compat.AppTheme
 import com.nexamusic.music.ui.ios.compat.Text
 import com.nexamusic.music.ui.ios.foundation.IosTheme
@@ -122,7 +125,8 @@ fun PlayerLyricLine(
     isPreview: Boolean = false,
     previewSampleText: String? = null,
 ) {
-    val connection = LocalPlayerConnection.current ?: return
+    val connection = LocalPlayerConnection.current
+    if (connection == null && !isPreview) return
     val context = LocalContext.current
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     val density = LocalDensity.current
@@ -132,11 +136,22 @@ fun PlayerLyricLine(
     val (globalLyricsEnabled) = rememberPreference(ShowLyricsKey, true)
     val enabled = (enabledOverride ?: savedEnabled) && globalLyricsEnabled && isVisible
 
-    val lyricsEntity by connection.currentLyrics.collectAsStateWithLifecycle(initialValue = null)
-    val currentSong by connection.currentSong.collectAsStateWithLifecycle(initialValue = null)
-    val mediaMetadata by connection.mediaMetadata.collectAsStateWithLifecycle()
-    val isPlaying by connection.isPlaying.collectAsStateWithLifecycle()
-    val playbackState by connection.playbackState.collectAsStateWithLifecycle()
+    val lyricsEntity by connection?.currentLyrics?.collectAsStateWithLifecycle(initialValue = null)
+        ?: remember { mutableStateOf(null) }
+    val currentSong by connection?.currentSong?.collectAsStateWithLifecycle(initialValue = null)
+        ?: remember { mutableStateOf(null) }
+    val mediaMetadata by connection?.mediaMetadata?.collectAsStateWithLifecycle()
+        ?: remember { mutableStateOf(null) }
+    val isPlaying by connection?.isPlaying?.collectAsStateWithLifecycle()
+        ?: remember { mutableStateOf(false) }
+    val playbackState by connection?.playbackState?.collectAsStateWithLifecycle()
+        ?: remember { mutableIntStateOf(androidx.media3.common.Player.STATE_IDLE) }
+    val (lyricsTextPosition) = rememberEnumPreference(LyricsTextPositionKey, LyricsPosition.LEFT)
+    val lyricsTextAlign = when (lyricsTextPosition) {
+        LyricsPosition.LEFT -> TextAlign.Start
+        LyricsPosition.CENTER -> TextAlign.Center
+        LyricsPosition.RIGHT -> TextAlign.End
+    }
 
     val lyrics = remember(lyricsEntity) { lyricsEntity?.lyrics?.trim() }
     val timedLyrics = remember(lyrics, mediaMetadata?.id) {
@@ -159,7 +174,7 @@ fun PlayerLyricLine(
     }
 
     var playbackPosition by remember(mediaMetadata?.id) {
-        mutableLongStateOf(connection.player.currentPosition.coerceAtLeast(0L))
+        mutableLongStateOf((connection?.player?.currentPosition ?: 0L).coerceAtLeast(0L))
     }
     var currentLineIndex by remember(mediaMetadata?.id) { mutableIntStateOf(-1) }
     val currentLine = timedLyrics.getOrNull(currentLineIndex)
@@ -193,7 +208,7 @@ fun PlayerLyricLine(
                     continue
                 }
 
-                val position = (positionProvider?.invoke() ?: connection.player.currentPosition)
+                val position = (positionProvider?.invoke() ?: connection?.player?.currentPosition ?: 0L)
                     .coerceAtLeast(0L)
                 playbackPosition = position
                 val nextIndex = timedLyrics.indexOfLast { it.time <= position + lyricsOffset }
@@ -347,11 +362,7 @@ fun PlayerLyricLine(
                                         line = displayedLine,
                                         positionMs = playbackPosition + lyricsOffset,
                                         style = finalStyle,
-                                        textAlign = when (rememberEnumPreference(LyricsTextPositionKey, LyricsPosition.LEFT).first) {
-                                            LyricsPosition.LEFT -> TextAlign.Start
-                                            LyricsPosition.CENTER -> TextAlign.Center
-                                            LyricsPosition.RIGHT -> TextAlign.End
-                                        },
+                                        textAlign = lyricsTextAlign,
                                         layoutDirection = layoutDirection,
                                         modifier = Modifier.fillMaxWidth(),
                                     )
@@ -361,11 +372,7 @@ fun PlayerLyricLine(
                                         style = finalStyle,
                                         color = textColor,
                                         fontWeight = FontWeight.Bold,
-                                        textAlign = when (rememberEnumPreference(LyricsTextPositionKey, LyricsPosition.LEFT).first) {
-                                            LyricsPosition.LEFT -> TextAlign.Start
-                                            LyricsPosition.CENTER -> TextAlign.Center
-                                            LyricsPosition.RIGHT -> TextAlign.End
-                                        },
+                                        textAlign = lyricsTextAlign,
                                         maxLines = 2,
                                         overflow = TextOverflow.Ellipsis,
                                         modifier = Modifier.fillMaxWidth(),
@@ -450,10 +457,8 @@ private fun PlayerLyricLineDots() {
             )
             Box(
                 Modifier
-                    .height(5.dp)
-                    .background(Color.White.copy(alpha = alpha), RoundedCornerShape(50))
-                    .padding(horizontal = 2.dp)
-                    .then(Modifier),
+                    .size(5.dp)
+                    .background(Color.White.copy(alpha = alpha), RoundedCornerShape(50)),
             )
         }
     }
