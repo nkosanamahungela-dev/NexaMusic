@@ -8,7 +8,8 @@
         "Introduced Apple Music V3 lyrics as a beta style, with improved typography, spacing, word timing, and smoother lyric auto-scrolling.",
         "Added animated interlude indicators for timed lyrics.",
         "Added a sign-in reminder for logged-out users, with an option to hide it.",
-        "Added automatic update checks, beta-release support, background APK downloads, and update notifications."
+        "Added automatic update checks, beta-release support, background APK downloads, and update notifications.",
+        "Introduced the new scroll-responsive header, with large titles smoothly collapsing into compact titles as you scroll."
       ]
     },
     {
