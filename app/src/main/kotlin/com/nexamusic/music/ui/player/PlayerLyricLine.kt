@@ -208,15 +208,24 @@ fun PlayerLyricLine(
 
                 val position = (positionProvider?.invoke() ?: connection?.player?.currentPosition ?: 0L)
                     .coerceAtLeast(0L)
-                playbackPosition = position
                 val nextIndex = timedLyrics.indexOfLast { it.time <= position + lyricsOffset }
                 if (nextIndex != currentLineIndex) currentLineIndex = nextIndex
 
-                val hasWordTiming = timedLyrics.getOrNull(currentLineIndex)?.words?.isNotEmpty() == true
+                val hasWordTiming = timedLyrics.getOrNull(nextIndex)?.words?.isNotEmpty() == true
                 if (isPlaying && hasWordTiming && !reduceMotion) {
-                    // One frame-clock update, scoped to this small composable only.
-                    withFrameNanos { }
+                    // The position state is read only in the lyric's draw lambda:
+                    // word fill redraws this row without recomposing the player.
+                    withFrameNanos {
+                        playbackPosition = (
+                            positionProvider?.invoke()
+                                ?: connection?.player?.currentPosition
+                                ?: position
+                            ).coerceAtLeast(0L)
+                    }
                 } else {
+                    // Line-timed lyrics only invalidate on line changes. Paused
+                    // playback still samples occasionally so a paused seek is exact.
+                    if (!isPlaying) playbackPosition = position
                     delay(PlayerLyricLinePositionPollMs)
                 }
             }
@@ -369,7 +378,7 @@ fun PlayerLyricLine(
                                 if (targetEntry?.words?.isNotEmpty() == true && !reduceMotion && !target.startsWith("preview:")) {
                                     PlayerLyricLineWordFill(
                                         line = targetEntry,
-                                        positionMs = playbackPosition + lyricsOffset,
+                                        positionMs = { playbackPosition + lyricsOffset },
                                         style = finalStyle,
                                         textAlign = lyricsTextAlign,
                                         layoutDirection = layoutDirection,
@@ -476,7 +485,7 @@ private fun PlayerLyricLineDots() {
 @Composable
 private fun PlayerLyricLineWordFill(
     line: LyricsEntry,
-    positionMs: Long,
+    positionMs: () -> Long,
     style: TextStyle,
     textAlign: TextAlign,
     layoutDirection: LayoutDirection,
@@ -511,7 +520,7 @@ private fun PlayerLyricLineWordFill(
         modifier = modifier.drawWithContent {
             val measured = layout
             if (measured == null || words.isEmpty()) return@drawWithContent
-            val seconds = positionMs / 1000.0
+            val seconds = positionMs() / 1000.0
             val activeIndex = words.indexOfLast { it.startTime <= seconds }
             val edge = when {
                 activeIndex < 0 -> if (layoutDirection == LayoutDirection.Rtl) size.width else 0f
