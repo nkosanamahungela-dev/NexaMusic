@@ -85,14 +85,17 @@ fun rememberSmoothHeaderProgress(state: LazyListState): () -> Float {
     val density = LocalDensity.current
     val collapseDistancePx = with(density) { SmoothHeaderTokens.HeaderScrollDistance.roundToPx() }
     val firstItemSizePx = remember(state) { mutableIntStateOf(0) }
+    SideEffect {
+        if (state.firstVisibleItemIndex == 0) {
+            state.layoutInfo.visibleItemsInfo.firstOrNull { it.index == 0 }
+                ?.let { firstItemSizePx.intValue = it.size }
+        }
+    }
     return remember(state, density, collapseDistancePx, firstItemSizePx) {
         {
             val layout = state.layoutInfo
             val visible = layout.visibleItemsInfo
             val firstVisible = visible.firstOrNull()
-            if (state.firstVisibleItemIndex == 0) {
-                visible.firstOrNull { it.index == 0 }?.let { firstItemSizePx.intValue = it.size }
-            }
             val scrolledPx = when {
                 state.firstVisibleItemIndex == 0 -> state.firstVisibleItemScrollOffset
                 state.firstVisibleItemIndex == 1 && firstItemSizePx.intValue > 0 ->
