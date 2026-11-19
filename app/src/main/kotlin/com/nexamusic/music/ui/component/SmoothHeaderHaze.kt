@@ -54,7 +54,7 @@ internal fun createHeaderHazeStyle(
 
     return HeaderHazeStyle(
         pageColor = safePageColor,
-        rootDefaultStyle = HazeStyle(backgroundColor = safePageColor),
+        rootDefaultStyle = HazeStyle(backgroundColor = safePageColor, tints = emptyList()),
         hazeStyle = HazeStyle(
             backgroundColor = safePageColor,
             tint = HazeTint(safePageColor.copy(alpha = SmoothHeaderTokens.HeaderTintPeak)),
