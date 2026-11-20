@@ -52,6 +52,7 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -103,6 +104,9 @@ private const val PlayerLyricLineUnsungAlpha = 0.55f
 private const val PlayerLyricLineMinFontSp = 18f
 private const val PlayerLyricLineMaxFontSp = 28f
 private const val PlayerLyricLinePositionPollMs = 80L
+private const val PlayerLyricLineFadeFraction = 0.28f
+private const val PlayerLyricLineFadeMinMs = 160L
+private const val PlayerLyricLineFadeMaxMs = 700L
 
 /**
  * Shared line for the default and Apple-style player layouts.
@@ -225,7 +229,7 @@ fun PlayerLyricLine(
                 } else {
                     // Line-timed lyrics only invalidate on line changes. Paused
                     // playback still samples occasionally so a paused seek is exact.
-                    if (!isPlaying) playbackPosition = position
+                    playbackPosition = position
                     delay(PlayerLyricLinePositionPollMs)
                 }
             }
@@ -295,6 +299,21 @@ fun PlayerLyricLine(
             ) {
                 AnimatedContent(
                     targetState = lineKey,
+                    modifier = Modifier.graphicsLayer {
+                        val active = currentLine
+                        if (active == null || active.text.isBlank()) {
+                            alpha = 0.58f
+                        } else {
+                            val nextTime = timedLyrics.getOrNull(currentLineIndex + 1)?.time
+                                ?: (active.time + 4_000L)
+                            val duration = (nextTime - active.time).coerceAtLeast(1L)
+                            val fadeWindow = (duration * PlayerLyricLineFadeFraction)
+                                .toLong()
+                                .coerceIn(PlayerLyricLineFadeMinMs, PlayerLyricLineFadeMaxMs)
+                            val remaining = nextTime - (playbackPosition + lyricsOffset)
+                            alpha = (0.78f * (remaining.toFloat() / fadeWindow).coerceIn(0f, 1f))
+                        }
+                    },
                     transitionSpec = {
                         if (reduceMotion) {
                             fadeIn(tween(100)) togetherWith fadeOut(tween(100))
