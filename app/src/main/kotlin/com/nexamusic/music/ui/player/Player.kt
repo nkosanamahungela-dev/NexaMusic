@@ -1559,13 +1559,6 @@ fun BottomSheetPlayer(
                             SmoothHeaderTokens.HeaderContentHeight,
                     ),
             )
-            com.nexamusic.music.ui.component.SmoothHeaderCompactTitle(
-                title = mediaMetadata?.title.orEmpty(),
-                progressProvider = { state.progress.coerceIn(0f, 1f) },
-                color = AppTheme.colorScheme.onSurface,
-                modifier = Modifier.align(Alignment.TopCenter)
-                    .windowInsetsPadding(WindowInsets.statusBars),
-            )
             }
         },
         onDismiss = {
