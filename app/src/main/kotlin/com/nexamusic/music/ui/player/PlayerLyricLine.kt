@@ -264,11 +264,6 @@ fun PlayerLyricLine(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(PlayerLyricLineHeight)
-                    .background(
-                        Brush.verticalGradient(
-                            listOf(Color.Black.copy(alpha = 0.25f), Color.Transparent),
-                        ),
-                    )
                     .semantics {
                         contentDescription = if (displayText.isNotBlank()) {
                             "Current lyric: $displayText"
@@ -321,7 +316,13 @@ fun PlayerLyricLine(
                     label = "player-current-lyric",
                 ) { target ->
                     if (target == "instrumental-gap") {
-                        PlayerLyricLineDots()
+                        Text(
+                            text = "♪ Instrumental",
+                            style = textStyle.copy(fontWeight = FontWeight.Medium),
+                            color = textColor.copy(alpha = 0.58f),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
                     } else {
                         val targetEntry = remember(target, timedLyrics) {
                             timedLyrics.firstOrNull { "${it.time}:${it.text}" == target }
