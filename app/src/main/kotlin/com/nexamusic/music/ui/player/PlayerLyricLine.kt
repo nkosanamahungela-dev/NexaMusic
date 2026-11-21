@@ -52,7 +52,6 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.clipRect
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -104,9 +103,6 @@ private const val PlayerLyricLineUnsungAlpha = 0.55f
 private const val PlayerLyricLineMinFontSp = 18f
 private const val PlayerLyricLineMaxFontSp = 28f
 private const val PlayerLyricLinePositionPollMs = 80L
-private const val PlayerLyricLineFadeFraction = 0.28f
-private const val PlayerLyricLineFadeMinMs = 160L
-private const val PlayerLyricLineFadeMaxMs = 700L
 
 /**
  * Shared line for the default and Apple-style player layouts.
@@ -299,21 +295,6 @@ fun PlayerLyricLine(
             ) {
                 AnimatedContent(
                     targetState = lineKey,
-                    modifier = Modifier.graphicsLayer {
-                        val active = currentLine
-                        if (active == null || active.text.isBlank()) {
-                            alpha = 0.58f
-                        } else {
-                            val nextTime = timedLyrics.getOrNull(currentLineIndex + 1)?.time
-                                ?: (active.time + 4_000L)
-                            val duration = (nextTime - active.time).coerceAtLeast(1L)
-                            val fadeWindow = (duration * PlayerLyricLineFadeFraction)
-                                .toLong()
-                                .coerceIn(PlayerLyricLineFadeMinMs, PlayerLyricLineFadeMaxMs)
-                            val remaining = nextTime - (playbackPosition + lyricsOffset)
-                            alpha = (0.78f * (remaining.toFloat() / fadeWindow).coerceIn(0f, 1f))
-                        }
-                    },
                     transitionSpec = {
                         if (reduceMotion) {
                             fadeIn(tween(100)) togetherWith fadeOut(tween(100))
@@ -395,27 +376,16 @@ fun PlayerLyricLine(
                                     color = textColor,
                                     fontWeight = FontWeight.Bold,
                                 )
-                                if (targetEntry?.words?.isNotEmpty() == true && !reduceMotion && !target.startsWith("preview:")) {
-                                    PlayerLyricLineWordFill(
-                                        line = targetEntry,
-                                        positionMs = { playbackPosition + lyricsOffset },
-                                        style = finalStyle,
-                                        textAlign = lyricsTextAlign,
-                                        layoutDirection = layoutDirection,
-                                        modifier = Modifier.fillMaxWidth(),
-                                    )
-                                } else {
-                                    Text(
-                                        text = targetText,
-                                        style = finalStyle,
-                                        color = textColor,
-                                        fontWeight = FontWeight.Bold,
-                                        textAlign = lyricsTextAlign,
-                                        maxLines = 2,
-                                        overflow = TextOverflow.Ellipsis,
-                                        modifier = Modifier.fillMaxWidth(),
-                                    )
-                                }
+                                Text(
+                                    text = targetText,
+                                    style = finalStyle,
+                                    color = textColor,
+                                    fontWeight = FontWeight.Bold,
+                                    textAlign = lyricsTextAlign,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.fillMaxWidth(),
+                                )
                             }
                         } else {
                             PlayerLyricLineDots()
@@ -500,72 +470,6 @@ private fun PlayerLyricLineDots() {
             )
         }
     }
-}
-
-@Composable
-private fun PlayerLyricLineWordFill(
-    line: LyricsEntry,
-    positionMs: () -> Long,
-    style: TextStyle,
-    textAlign: TextAlign,
-    layoutDirection: LayoutDirection,
-    modifier: Modifier = Modifier,
-) {
-    var layout by remember(line) { mutableStateOf<TextLayoutResult?>(null) }
-    val words = line.words.orEmpty()
-    val wordRanges = remember(line.text, words) {
-        var cursor = 0
-        words.map { word ->
-            val found = line.text.indexOf(word.text, cursor).takeIf { it >= 0 } ?: cursor
-            val end = (found + word.text.length).coerceAtMost(line.text.length)
-            cursor = end
-            found until end
-        }
-    }
-    Text(
-        text = line.text,
-        style = style.copy(color = Color.White.copy(alpha = PlayerLyricLineUnsungAlpha)),
-        textAlign = textAlign,
-        maxLines = 2,
-        overflow = TextOverflow.Ellipsis,
-        modifier = modifier,
-    )
-    Text(
-        text = line.text,
-        style = style.copy(color = Color.White),
-        textAlign = textAlign,
-        maxLines = 2,
-        overflow = TextOverflow.Ellipsis,
-        onTextLayout = { layout = it },
-        modifier = modifier.drawWithContent {
-            val measured = layout
-            if (measured == null || words.isEmpty()) return@drawWithContent
-            val seconds = positionMs() / 1000.0
-            val activeIndex = words.indexOfLast { it.startTime <= seconds }
-            val edge = when {
-                activeIndex < 0 -> if (layoutDirection == LayoutDirection.Rtl) size.width else 0f
-                activeIndex >= words.lastIndex && seconds >= words.last().endTime ->
-                    if (layoutDirection == LayoutDirection.Rtl) 0f else size.width
-                else -> {
-                    val range = wordRanges.getOrNull(activeIndex)
-                    if (range == null || range.isEmpty()) 0f
-                    else {
-                        val word = words[activeIndex]
-                        val duration = (word.endTime - word.startTime).coerceAtLeast(0.02)
-                        val progress = ((seconds - word.startTime) / duration).toFloat().coerceIn(0f, 1f)
-                        val start = measured.getHorizontalPosition(range.first.coerceIn(0, line.text.length), true)
-                        val end = measured.getHorizontalPosition((range.last + 1).coerceIn(0, line.text.length), true)
-                        start + (end - start) * progress
-                    }
-                }
-            }
-            if (layoutDirection == LayoutDirection.Rtl) {
-                clipRect(left = edge.coerceIn(0f, size.width)) { this@drawWithContent.drawContent() }
-            } else {
-                clipRect(right = edge.coerceIn(0f, size.width)) { this@drawWithContent.drawContent() }
-            }
-        },
-    )
 }
 
 /** Live Settings preview: real metadata and timed lyrics when a track is playing,
