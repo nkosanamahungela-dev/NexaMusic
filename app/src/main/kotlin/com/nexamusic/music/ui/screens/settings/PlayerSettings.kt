@@ -136,7 +136,13 @@ fun PlayerSettings(
             title = "Player style",
             current = playerStyle,
             values = PlayerStyle.entries,
-            valueText = { if (it == PlayerStyle.POD) "Pod (BETA)" else "Default" }
+            valueText = {
+                when (it) {
+                    PlayerStyle.DEFAULT -> "Default"
+                    PlayerStyle.POD -> "Pod (BETA)"
+                    PlayerStyle.NEXAMUSIC -> "NexaMusic"
+                }
+            }
         )
     }
 
@@ -173,7 +179,15 @@ fun PlayerSettings(
                         IosSettingsItem(
                             icon = painterResource(R.drawable.graphic_eq),
                             title = { Text("Player style") },
-                            description = { Text(if (playerStyle == PlayerStyle.POD) "Pod (BETA)" else "Default") },
+                            description = {
+                                Text(
+                                    when (playerStyle) {
+                                        PlayerStyle.DEFAULT -> "Default"
+                                        PlayerStyle.POD -> "Pod (BETA)"
+                                        PlayerStyle.NEXAMUSIC -> "NexaMusic"
+                                    }
+                                )
+                            },
                             onClick = { showPlayerStyleDialog = true }
                         )
                     )
