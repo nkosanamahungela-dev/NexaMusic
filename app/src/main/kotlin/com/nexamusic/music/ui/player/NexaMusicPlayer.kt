@@ -37,6 +37,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateBottomPadding
 import androidx.compose.foundation.shape.CircleShape
@@ -105,6 +107,8 @@ fun NexaMusicPlayer(
     val playWhenReady by connection.playWhenReady.collectAsStateWithLifecycle()
     val currentLyrics by connection.currentLyrics.collectAsState(initial = null)
     val currentSong by connection.currentSong.collectAsState(initial = null)
+    val queueWindows by connection.queueWindows.collectAsStateWithLifecycle()
+    val currentWindowIndex by connection.currentWindowIndex.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val database = LocalDatabase.current.get()
 
@@ -133,7 +137,11 @@ fun NexaMusicPlayer(
     var position by remember { mutableLongStateOf(connection.player.currentPosition.coerceAtLeast(0L)) }
     var duration by remember { mutableLongStateOf(0L) }
     var showLyrics by remember { mutableStateOf(false) }
-    BackHandler(enabled = showLyrics) { showLyrics = false }
+    var showQueue by remember { mutableStateOf(false) }
+    BackHandler(enabled = showLyrics || showQueue) {
+        showLyrics = false
+        showQueue = false
+    }
     var dragging by remember { mutableStateOf(false) }
     var scrubValue by remember { mutableFloatStateOf(0f) }
 
@@ -212,6 +220,85 @@ fun NexaMusicPlayer(
                     Icon(Icons.Rounded.ArrowDownward, contentDescription = "Back to player", tint = Color.White)
                 }
             }
+        } else if (showQueue) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(WindowInsets.systemBars.asPaddingValues())
+                    .padding(horizontal = 22.dp),
+            ) {
+                Row(
+                    Modifier.fillMaxWidth().height(56.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    IconButton(onClick = { showQueue = false }) {
+                        Icon(Icons.Rounded.ArrowDownward, contentDescription = "Back to player", tint = Color.White)
+                    }
+                    Text(
+                        "UP NEXT",
+                        color = Color.White,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        letterSpacing = 1.6.sp,
+                    )
+                }
+                if (queueWindows.isEmpty()) {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("Your queue is empty", color = Color.White.copy(alpha = 0.62f))
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        itemsIndexed(
+                            items = queueWindows,
+                            key = { index, window -> "$index-${window.mediaItem.mediaId}" },
+                        ) { index, window ->
+                            val itemMetadata = window.mediaItem.mediaMetadata
+                            val selected = index == currentWindowIndex
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(if (selected) Color.White.copy(alpha = 0.12f) else Color.Transparent)
+                                    .clickable {
+                                        connection.player.seekTo(index, 0L)
+                                        connection.play()
+                                        showQueue = false
+                                    }
+                                    .padding(10.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                AsyncImage(
+                                    model = itemMetadata.artworkUri,
+                                    contentDescription = null,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.size(48.dp).clip(RoundedCornerShape(8.dp)),
+                                )
+                                Spacer(Modifier.width(12.dp))
+                                Column(Modifier.weight(1f)) {
+                                    Text(
+                                        itemMetadata.title?.toString().orEmpty().ifBlank { "Unknown title" },
+                                        color = Color.White,
+                                        fontSize = 14.sp,
+                                        fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                    Text(
+                                        itemMetadata.artist?.toString().orEmpty(),
+                                        color = Color.White.copy(alpha = 0.58f),
+                                        fontSize = 12.sp,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         } else Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -235,7 +322,7 @@ fun NexaMusicPlayer(
                     letterSpacing = 2.sp,
                     fontWeight = FontWeight.SemiBold,
                 )
-                IconButton(onClick = { connection.requestShowQueue.value = true }) {
+                IconButton(onClick = { showQueue = true }) {
                     Icon(Icons.Rounded.QueueMusic, contentDescription = "Queue", tint = Color.White)
                 }
             }
