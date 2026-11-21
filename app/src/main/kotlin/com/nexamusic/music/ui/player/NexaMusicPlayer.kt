@@ -165,21 +165,28 @@ fun NexaMusicPlayer(
     }
 
     val lyricsText = remember(currentLyrics) { currentLyrics?.lyrics?.trim().orEmpty() }
+    val isSyncedLyrics = remember(lyricsText) {
+        lyricsText.startsWith("[") && lyricsText != LyricsEntity.LYRICS_NOT_FOUND
+    }
     val lyricLines = remember(lyricsText) {
-        if (lyricsText.isBlank() || lyricsText == com.nexamusic.music.db.entities.LyricsEntity.LYRICS_NOT_FOUND) {
+        if (lyricsText.isBlank() || lyricsText == LyricsEntity.LYRICS_NOT_FOUND) {
             emptyList()
         } else {
             runCatching { LyricsUtils.parseLyrics(lyricsText) }.getOrDefault(emptyList())
         }
     }
     val lyricsOffset = currentSong?.song?.lyricsOffset?.toLong() ?: 0L
-    val lyricIndex = remember(lyricLines, position, lyricsOffset) {
-        if (lyricLines.isEmpty()) -1
+    val lyricIndex = remember(lyricLines, position, lyricsOffset, isSyncedLyrics) {
+        if (lyricLines.isEmpty() || !isSyncedLyrics) -1
         else LyricsUtils.findCurrentLineIndex(lyricLines, (position + lyricsOffset).coerceAtLeast(0L))
     }
-    val lyricText = lyricLines.getOrNull(lyricIndex)?.text
-        ?.takeIf { it.isNotBlank() }
-        ?: if (lyricsText.isBlank()) "Lyrics will appear here" else "♪"
+    val lyricText = when {
+        !isSyncedLyrics && lyricLines.isNotEmpty() -> "Open lyrics"
+        lyricLines.getOrNull(lyricIndex)?.text?.isNotBlank() == true -> lyricLines[lyricIndex].text
+        lyricsText == LyricsEntity.LYRICS_NOT_FOUND -> "Lyrics not available"
+        lyricsText.isBlank() -> "Finding synced lyrics…"
+        else -> "♪"
+    }
 
     val artworkScale by animateFloatAsState(
         targetValue = if (isPlaying) 1f else 0.965f,
