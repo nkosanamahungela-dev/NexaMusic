@@ -109,7 +109,7 @@ fun NexaMusicPlayer(
             duration = if (playerDuration > 0L && playerDuration != androidx.media3.common.C.TIME_UNSET) {
                 playerDuration
             } else {
-                (metadata?.duration?.coerceAtLeast(0L) ?: 0L) * 1000L
+                (metadata?.duration?.coerceAtLeast(0)?.toLong() ?: 0L) * 1000L
             }
             if (!dragging) {
                 position = connection.player.currentPosition.coerceAtLeast(0L)
