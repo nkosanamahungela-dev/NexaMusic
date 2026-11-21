@@ -220,6 +220,8 @@ import com.nexamusic.music.constants.SwipeLyricsKey
 import com.nexamusic.music.constants.ThumbnailCornerRadius
 import com.nexamusic.music.constants.ThumbnailRoundedShape
 import com.nexamusic.music.constants.UseAppleMusicPlayerKey
+import com.nexamusic.music.constants.PlayerStyle
+import com.nexamusic.music.constants.PlayerStyleKey
 import com.nexamusic.music.constants.UseNewPlayerDesignKey
 import com.nexamusic.music.constants.ShowAudioQualityBadgeKey
 import com.nexamusic.music.db.entities.LyricsEntity
@@ -364,6 +366,7 @@ fun BottomSheetPlayer(
 
     // Both player styles use the same sheet and drag gestures.
     val (useAppleMusicPlayer) = rememberPreference(UseAppleMusicPlayerKey, defaultValue = true)
+    val selectedPlayerStyle by rememberEnumPreference(PlayerStyleKey, PlayerStyle.DEFAULT)
     val v2Look by rememberEnumPreference(com.nexamusic.music.constants.PlayerLookKey, com.nexamusic.music.constants.PlayerLook.SQUARED)
 
     // Shared between the background slot (BackgroundVideoView polls into it) and the
@@ -1581,6 +1584,14 @@ fun BottomSheetPlayer(
             }
         },
     ) {
+        if (selectedPlayerStyle == PlayerStyle.NEXAMUSIC && !isPreviewOnly) {
+            NexaMusicPlayer(
+                navController = navController,
+                sheetState = state,
+                modifier = Modifier,
+            )
+            return@BottomSheet
+        }
         if (useAppleMusicPlayer) {
             // Menus/popovers inside the player sample the player's own backdrop, not the
             // app root under the sheet (that showed the Home screen through the glass).
