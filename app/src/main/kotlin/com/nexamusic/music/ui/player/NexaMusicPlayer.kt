@@ -479,7 +479,7 @@ fun NexaMusicPlayer(
                 IconButton(onClick = connection::seekToNext, modifier = Modifier.size(52.dp)) {
                     Icon(Icons.Rounded.SkipNext, contentDescription = "Next", tint = Color.White, modifier = Modifier.size(34.dp))
                 }
-                IconButton(onClick = { connection.requestShowQueue.value = true }) {
+                IconButton(onClick = { showQueue = true }) {
                     Icon(Icons.Rounded.QueueMusic, contentDescription = "Queue", tint = Color.White.copy(alpha = 0.82f))
                 }
             }
