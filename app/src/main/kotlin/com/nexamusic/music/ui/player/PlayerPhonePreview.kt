@@ -101,8 +101,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
 
-/** The five player designs a listener picks between; each maps onto existing preferences. */
-enum class PlayerDesign { CARD, VINYL, CLOVER, APPLE_MUSIC, APPLE_MUSIC_V2, POD }
+/** Player designs available in the visual design picker. */
+enum class PlayerDesign { CARD, VINYL, CLOVER, APPLE_MUSIC, APPLE_MUSIC_V2, POD, NEXAMUSIC }
 
 /** The track a preview shows: the real one playing, or the last one played. */
 data class PreviewTrack(
