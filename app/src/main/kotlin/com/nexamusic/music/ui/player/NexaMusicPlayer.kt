@@ -81,9 +81,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.nexamusic.music.LocalDatabase
 import com.nexamusic.music.LocalPlayerConnection
 import com.nexamusic.music.ui.component.BottomSheetState
 import com.nexamusic.music.lyrics.LyricsUtils
+import com.nexamusic.music.db.entities.LyricsEntity
+import dagger.hilt.android.EntryPointAccessors
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.delay
 import kotlin.math.roundToLong
 
@@ -98,6 +104,30 @@ fun NexaMusicPlayer(
     val playWhenReady by connection.playWhenReady.collectAsStateWithLifecycle()
     val currentLyrics by connection.currentLyrics.collectAsState(initial = null)
     val currentSong by connection.currentSong.collectAsState(initial = null)
+    val context = LocalContext.current
+    val database = LocalDatabase.current.get()
+
+    // Fetch through NexaMusic's existing lyrics provider when the current track
+    // has no cached lyrics. The player UI only observes the result; playback is untouched.
+    LaunchedEffect(metadata?.id, currentLyrics) {
+        val track = metadata ?: return@LaunchedEffect
+        if (currentLyrics != null) return@LaunchedEffect
+        delay(500)
+        withContext(Dispatchers.IO) {
+            runCatching {
+                val entryPoint = EntryPointAccessors.fromApplication(
+                    context.applicationContext,
+                    com.nexamusic.music.di.LyricsHelperEntryPoint::class.java,
+                )
+                val fetched = entryPoint.lyricsHelper().getLyrics(track)
+                database.withTransaction {
+                    if (lyrics(track.id).first() == null) {
+                        upsert(LyricsEntity(track.id, fetched.lyrics, fetched.provider))
+                    }
+                }
+            }
+        }
+    }
 
     var position by remember { mutableLongStateOf(connection.player.currentPosition.coerceAtLeast(0L)) }
     var duration by remember { mutableLongStateOf(0L) }
