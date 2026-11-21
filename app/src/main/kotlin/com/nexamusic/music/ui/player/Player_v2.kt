@@ -749,18 +749,6 @@ private fun PlayerV2Content(
                     mediaMetadata?.artists?.firstOrNull()?.id?.let { navController.navigate("artist/$it") }
                 }
             )
-            PlayerLyricLine(
-                modifier = Modifier.fillMaxWidth().padding(top = 7.dp),
-                positionProvider = { sliderPosition ?: position },
-                onOpenLyrics = { playerState = PlayerInternalState.LYRICS },
-                textStyle = AppTheme.typography.bodyLarge.copy(
-                    fontSize = 17.sp,
-                    lineHeight = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                ),
-                textColor = adaptivePrimary,
-                isVisible = playerState == PlayerInternalState.COVER,
-            )
             DjReadout(
                 modifier = Modifier.padding(top = 2.dp)
                     .flamingoChrome(additiveChrome)
@@ -1336,21 +1324,6 @@ private fun PlayerV2Content(
                                                 boundsTransform = { _, _ -> Motion.artwork() },
                                                 renderInOverlayDuringTransition = false,
                                             ))
-                                        )
-                                        // Keep the synced lyric line in the compact/wide
-                                        // track-info layout too. PodPlayer is routed before
-                                        // this composable and intentionally never reaches here.
-                                        PlayerLyricLine(
-                                            modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
-                                            positionProvider = { sliderPosition ?: position },
-                                            onOpenLyrics = { playerState = PlayerInternalState.LYRICS },
-                                            textStyle = AppTheme.typography.bodyLarge.copy(
-                                                fontSize = 17.sp,
-                                                lineHeight = 20.sp,
-                                                fontWeight = FontWeight.Bold,
-                                            ),
-                                            textColor = adaptivePrimary,
-                                            isVisible = targetState == PlayerInternalState.COVER,
                                         )
                                     }
 
