@@ -8,6 +8,7 @@
  */
 package com.nexamusic.music.ui.player
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.SizeTransform
@@ -100,6 +101,8 @@ fun NexaMusicPlayer(
 
     var position by remember { mutableLongStateOf(connection.player.currentPosition.coerceAtLeast(0L)) }
     var duration by remember { mutableLongStateOf(0L) }
+    var showLyrics by remember { mutableStateOf(false) }
+    BackHandler(enabled = showLyrics) { showLyrics = false }
     var dragging by remember { mutableStateOf(false) }
     var scrubValue by remember { mutableFloatStateOf(0f) }
 
@@ -162,7 +165,23 @@ fun NexaMusicPlayer(
                 ),
             ),
         )
-        Column(
+        if (showLyrics) {
+            Box(Modifier.fillMaxSize()) {
+                InlineLyricsView(
+                    mediaMetadata = metadata,
+                    showLyrics = true,
+                    positionProvider = { position },
+                )
+                IconButton(
+                    onClick = { showLyrics = false },
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(top = 28.dp, start = 18.dp),
+                ) {
+                    Icon(Icons.Rounded.ArrowDownward, contentDescription = "Back to player", tint = Color.White)
+                }
+            }
+        } else Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(WindowInsets.systemBars.asPaddingValues())
@@ -264,7 +283,7 @@ fun NexaMusicPlayer(
                 Modifier
                     .fillMaxWidth()
                     .height(28.dp)
-                    .clickable { connection.requestShowLyrics.value = true }
+                    .clickable { showLyrics = true }
                     .padding(vertical = 4.dp)
                     .graphicsLayer { translationY = 6.dp.toPx() },
                 contentAlignment = Alignment.CenterStart,
@@ -319,7 +338,7 @@ fun NexaMusicPlayer(
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                IconButton(onClick = { connection.requestShowLyrics.value = true }) {
+                IconButton(onClick = { showLyrics = true }) {
                     Icon(Icons.Rounded.MusicNote, contentDescription = "Lyrics", tint = Color.White.copy(alpha = 0.82f))
                 }
                 IconButton(onClick = connection::seekToPrevious, modifier = Modifier.size(52.dp)) {
