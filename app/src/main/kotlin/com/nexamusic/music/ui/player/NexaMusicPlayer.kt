@@ -44,6 +44,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowDownward
+import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material.icons.rounded.Pause
@@ -106,6 +107,7 @@ fun NexaMusicPlayer(
     val metadata by connection.mediaMetadata.collectAsStateWithLifecycle()
     val currentLyrics by connection.currentLyrics.collectAsState(initial = null)
     val currentSong by connection.currentSong.collectAsState(initial = null)
+    val isLiked = currentSong?.song?.takeIf { it.id == metadata?.id }?.liked == true
     val queueWindows by connection.queueWindows.collectAsStateWithLifecycle()
     val currentWindowIndex by connection.currentWindowIndex.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -387,9 +389,9 @@ fun NexaMusicPlayer(
                 }
                 IconButton(onClick = connection::toggleLike) {
                     Icon(
-                        Icons.Rounded.FavoriteBorder,
-                        contentDescription = "Like song",
-                        tint = Color.White,
+                        imageVector = if (isLiked) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+                        contentDescription = if (isLiked) "Unlike song" else "Like song",
+                        tint = if (isLiked) Color(0xFFFF6B81) else Color.White,
                         modifier = Modifier.size(26.dp),
                     )
                 }
