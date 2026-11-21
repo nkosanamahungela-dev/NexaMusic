@@ -112,12 +112,17 @@ fun NexaMusicPlayer(
     val currentWindowIndex by connection.currentWindowIndex.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val database = LocalDatabase.current.get()
+    var lyricsRequestTrackId by remember { mutableStateOf<String?>(null) }
 
     // Fetch through NexaMusic's existing lyrics provider when the current track
-    // has no cached lyrics. The player UI only observes the result; playback is untouched.
+    // has no usable cached lyrics. Retry a cached NOT_FOUND once per track.
     LaunchedEffect(metadata?.id, currentLyrics) {
         val track = metadata ?: return@LaunchedEffect
-        if (currentLyrics != null) return@LaunchedEffect
+        val cachedForTrack = currentLyrics?.takeIf { it.id == track.id }
+        val needsLookup = cachedForTrack == null ||
+            cachedForTrack.lyrics == LyricsEntity.LYRICS_NOT_FOUND
+        if (!needsLookup || lyricsRequestTrackId == track.id) return@LaunchedEffect
+        lyricsRequestTrackId = track.id
         delay(500)
         withContext(Dispatchers.IO) {
             runCatching {
@@ -127,7 +132,8 @@ fun NexaMusicPlayer(
                 )
                 val fetched = entryPoint.lyricsHelper().getLyrics(track)
                 database.withTransaction {
-                    if (lyrics(track.id).first() == null) {
+                    val cached = lyrics(track.id).first()
+                    if (cached == null || cached.lyrics == LyricsEntity.LYRICS_NOT_FOUND) {
                         upsert(LyricsEntity(track.id, fetched.lyrics, fetched.provider))
                     }
                 }
