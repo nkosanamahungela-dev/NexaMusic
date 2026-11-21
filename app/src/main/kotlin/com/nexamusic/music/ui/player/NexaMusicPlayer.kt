@@ -208,7 +208,11 @@ fun NexaMusicPlayer(
     )
     val artwork = metadata?.thumbnailUrl
 
-    Box(modifier.fillMaxSize().background(Color(0xFF101014))) {
+    var volume by remember { mutableFloatStateOf(connection.player.volume.coerceIn(0f, 1f)) }
+
+    Box(modifier.fillMaxSize().background(Color.Black)) {
+        // BitChord's full-bleed artwork treatment: the cover fills the player,
+        // while a separate blurred layer gives the controls readable contrast.
         if (artwork != null) {
             AsyncImage(
                 model = artwork,
@@ -216,17 +220,25 @@ fun NexaMusicPlayer(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxSize()
-                    .graphicsLayer { scaleX = 1.18f; scaleY = 1.18f; alpha = 0.34f }
-                    .blur(64.dp),
+                    .graphicsLayer {
+                        scaleX = 1.16f
+                        scaleY = 1.16f
+                        alpha = 0.92f
+                    }
+                    .blur(34.dp),
             )
         }
         Box(
             Modifier.fillMaxSize().background(
                 Brush.verticalGradient(
-                    listOf(Color(0x66202028), Color(0xE6101014), Color(0xFF101014)),
+                    0f to Color(0x44000000),
+                    0.36f to Color(0x33000000),
+                    0.62f to Color(0xA6000000),
+                    1f to Color(0xF5000000),
                 ),
             ),
         )
+
         if (showLyrics) {
             Box(Modifier.fillMaxSize()) {
                 Lyrics(
@@ -267,7 +279,7 @@ fun NexaMusicPlayer(
                 }
                 if (queueWindows.isEmpty()) {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("Your queue is empty", color = Color.White.copy(alpha = 0.62f))
+                        Text("Your queue is empty", color = Color.White.copy(alpha = 0.72f))
                     }
                 } else {
                     LazyColumn(
@@ -283,8 +295,8 @@ fun NexaMusicPlayer(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(if (selected) Color.White.copy(alpha = 0.12f) else Color.Transparent)
+                                    .clip(RoundedCornerShape(14.dp))
+                                    .background(if (selected) Color.White.copy(alpha = 0.14f) else Color.Transparent)
                                     .clickable {
                                         connection.player.seekTo(index, 0L)
                                         connection.play()
@@ -297,7 +309,7 @@ fun NexaMusicPlayer(
                                     model = itemMetadata.artworkUri,
                                     contentDescription = null,
                                     contentScale = ContentScale.Crop,
-                                    modifier = Modifier.size(48.dp).clip(RoundedCornerShape(8.dp)),
+                                    modifier = Modifier.size(50.dp).clip(RoundedCornerShape(9.dp)),
                                 )
                                 Spacer(Modifier.width(12.dp))
                                 Column(Modifier.weight(1f)) {
@@ -311,7 +323,7 @@ fun NexaMusicPlayer(
                                     )
                                     Text(
                                         itemMetadata.artist?.toString().orEmpty(),
-                                        color = Color.White.copy(alpha = 0.58f),
+                                        color = Color.White.copy(alpha = 0.62f),
                                         fontSize = 12.sp,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis,
@@ -322,192 +334,224 @@ fun NexaMusicPlayer(
                     }
                 }
             }
-        } else Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(WindowInsets.systemBars.asPaddingValues())
-                .padding(horizontal = 28.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Row(
-                Modifier.fillMaxWidth().height(48.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                IconButton(onClick = { sheetState.collapseSoft() }) {
-                    Icon(Icons.Rounded.ArrowDownward, contentDescription = "Collapse player", tint = Color.White)
-                }
-                Text(
-                    "NOW PLAYING",
-                    color = Color.White.copy(alpha = 0.68f),
-                    fontSize = 11.sp,
-                    letterSpacing = 2.sp,
-                    fontWeight = FontWeight.SemiBold,
-                )
-                IconButton(onClick = { showQueue = true }) {
-                    Icon(Icons.Rounded.QueueMusic, contentDescription = "Queue", tint = Color.White)
-                }
-            }
-
-            Spacer(Modifier.weight(0.55f))
-            AsyncImage(
-                model = artwork,
-                contentDescription = metadata?.title,
-                contentScale = ContentScale.Crop,
+        } else {
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(4.7f, fill = false)
-                    .aspectRatio(1f)
-                    .graphicsLayer {
-                        scaleX = artworkScale
-                        scaleY = artworkScale
-                    }
-                    .shadow(28.dp, RoundedCornerShape(22.dp))
-                    .clip(RoundedCornerShape(22.dp)),
-            )
-            Spacer(Modifier.height(30.dp))
-
-            Row(
-                Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
+                    .fillMaxSize()
+                    .padding(WindowInsets.systemBars.asPaddingValues())
+                    .padding(horizontal = 28.dp),
+                horizontalAlignment = Alignment.Start,
             ) {
-                Column(Modifier.weight(1f)) {
-                    Crossfade(
-                        targetState = metadata?.id to metadata?.title,
-                        animationSpec = tween(300),
-                        label = "nexamusicTrackTitle",
-                    ) {
+                // Compact grabber and source label, matching BitChord's immersive player header.
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .clickable { sheetState.collapseSoft() }
+                        .padding(top = 8.dp, bottom = 12.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Box(
+                        Modifier
+                            .width(42.dp)
+                            .height(5.dp)
+                            .clip(CircleShape)
+                            .background(Color.White.copy(alpha = 0.82f)),
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    Text(
+                        "NOW PLAYING",
+                        color = Color.White.copy(alpha = 0.92f),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
+
+                Spacer(Modifier.weight(1f))
+
+                // Track identity and like action stay anchored above the lyric strip.
+                Row(
+                    Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Crossfade(
+                            targetState = metadata?.id to metadata?.title,
+                            animationSpec = tween(260),
+                            label = "nexamusicTrackTitle",
+                        ) { target ->
+                            Text(
+                                text = target.second ?: "Unknown title",
+                                color = Color.White,
+                                fontSize = 23.sp,
+                                lineHeight = 28.sp,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .basicMarquee(iterations = Int.MAX_VALUE)
+                                    .clickable {
+                                        metadata?.album?.id?.let { id -> navController.navigate("album/$id") }
+                                    },
+                            )
+                        }
                         Text(
-                            text = it.second ?: "Unknown title",
-                            color = Color.White,
-                            fontSize = 20.sp,
-                            lineHeight = 25.sp,
-                            fontWeight = FontWeight.SemiBold,
+                            text = metadata?.artists?.joinToString(", ") { it.name }.orEmpty(),
+                            color = Color.White.copy(alpha = 0.72f),
+                            fontSize = 19.sp,
+                            lineHeight = 24.sp,
+                            fontWeight = FontWeight.Medium,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .basicMarquee(iterations = Int.MAX_VALUE)
                                 .clickable {
-                                    metadata?.album?.id?.let { id -> navController.navigate("album/$id") }
+                                    metadata?.artists?.firstOrNull()?.id?.let { id -> navController.navigate("artist/$id") }
                                 },
                         )
                     }
-                    Text(
-                        text = metadata?.artists?.joinToString { it.name }.orEmpty(),
-                        color = Color.White.copy(alpha = 0.62f),
-                        fontSize = 20.sp,
-                        lineHeight = 25.sp,
-                        fontWeight = FontWeight.Medium,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .basicMarquee(iterations = Int.MAX_VALUE)
-                            .clickable {
-                                metadata?.artists?.firstOrNull()?.id?.let { id -> navController.navigate("artist/$id") }
-                            },
-                    )
+                    IconButton(onClick = connection::toggleLike) {
+                        Icon(
+                            imageVector = if (isLiked) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+                            contentDescription = if (isLiked) "Unlike song" else "Like song",
+                            tint = if (isLiked) Color(0xFFFF6B81) else Color.White,
+                            modifier = Modifier.size(29.dp),
+                        )
+                    }
                 }
-                IconButton(onClick = connection::toggleLike) {
-                    Icon(
-                        imageVector = if (isLiked) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
-                        contentDescription = if (isLiked) "Unlike song" else "Like song",
-                        tint = if (isLiked) Color(0xFFFF6B81) else Color.White,
-                        modifier = Modifier.size(26.dp),
-                    )
-                }
-            }
 
-            // BitChord-style single-line synced lyric slot directly under the artist.
-            // Fixed height prevents the artwork and transport from jumping between tracks.
-            Box(
-                Modifier
-                    .fillMaxWidth()
-                    .height(28.dp)
-                    .clickable { showLyrics = true }
-                    .padding(vertical = 4.dp)
-                    .graphicsLayer { translationY = 6.dp.toPx() },
-                contentAlignment = Alignment.CenterStart,
-            ) {
-                AnimatedContent(
-                    targetState = lyricText,
-                    transitionSpec = {
-                        slideInVertically(
-                            animationSpec = tween(340, easing = FastOutSlowInEasing),
-                        ) { height -> (height * 0.35f).toInt() } togetherWith
-                            (fadeOut(animationSpec = tween(340, easing = FastOutSlowInEasing)) +
-                                slideOutVertically(
-                                    animationSpec = tween(340, easing = FastOutSlowInEasing),
-                                ) { height -> -(height * 0.35f).toInt() })
-                    },
-                    label = "nexamusicCurrentLyric",
-                ) { line ->
-                    Text(
-                        text = line,
-                        style = MaterialTheme.typography.titleMedium.copy(lineHeight = 20.sp),
-                        color = Color.White.copy(alpha = 0.78f),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
-            }
-
-            Spacer(Modifier.height(14.dp))
-            Slider(
-                value = scrubValue.coerceIn(0f, duration.coerceAtLeast(1L).toFloat()),
-                onValueChange = {
-                    dragging = true
-                    scrubValue = it
-                },
-                onValueChangeFinished = {
-                    connection.seekTo(scrubValue.roundToLong().coerceAtLeast(0L))
-                    position = scrubValue.roundToLong().coerceAtLeast(0L)
-                    dragging = false
-                },
-                valueRange = 0f..duration.coerceAtLeast(1L).toFloat(),
-                modifier = Modifier.fillMaxWidth(),
-            )
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(formatNexaPlayerTime(if (dragging) scrubValue.roundToLong() else position), color = Color.White.copy(alpha = 0.58f), fontSize = 11.sp)
-                Text(formatNexaPlayerTime((duration - if (dragging) scrubValue.roundToLong() else position).coerceAtLeast(0L)), color = Color.White.copy(alpha = 0.58f), fontSize = 11.sp)
-            }
-
-            Spacer(Modifier.height(12.dp))
-            Row(
-                Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                IconButton(onClick = { showLyrics = true }) {
-                    Icon(Icons.Rounded.MusicNote, contentDescription = "Lyrics", tint = Color.White.copy(alpha = 0.82f))
-                }
-                IconButton(onClick = connection::seekToPrevious, modifier = Modifier.size(52.dp)) {
-                    Icon(Icons.Rounded.SkipPrevious, contentDescription = "Previous", tint = Color.White, modifier = Modifier.size(34.dp))
-                }
-                IconButton(
-                    onClick = connection::togglePlayPause,
-                    modifier = Modifier
-                        .size(68.dp)
-                        .clip(CircleShape)
-                        .background(Color.White),
+                // One-line synced lyric preview. Track-keyed AnimatedContent prevents
+                // stale lines from flashing when the queue advances.
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
+                        .clickable { showLyrics = true }
+                        .padding(top = 12.dp, bottom = 8.dp),
+                    contentAlignment = Alignment.CenterStart,
                 ) {
-                    Icon(
-                        if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
-                        contentDescription = if (isPlaying) "Pause" else "Play",
-                        tint = Color.Black,
-                        modifier = Modifier.size(36.dp),
+                    AnimatedContent(
+                        targetState = metadata?.id to lyricText,
+                        transitionSpec = {
+                            (fadeIn(tween(220, delayMillis = 35)) +
+                                slideInVertically(tween(300, easing = FastOutSlowInEasing)) { it / 3 }) togetherWith
+                                (fadeOut(tween(180)) +
+                                    slideOutVertically(tween(260, easing = FastOutSlowInEasing)) { -it / 3 })
+                        },
+                        label = "bitChordSyncedLyricStrip",
+                    ) { target ->
+                        Text(
+                            text = target.second,
+                            style = MaterialTheme.typography.titleMedium.copy(lineHeight = 23.sp),
+                            color = Color.White.copy(alpha = 0.88f),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+                }
+
+                Slider(
+                    value = scrubValue.coerceIn(0f, duration.coerceAtLeast(1L).toFloat()),
+                    onValueChange = {
+                        dragging = true
+                        scrubValue = it
+                    },
+                    onValueChangeFinished = {
+                        val target = scrubValue.roundToLong().coerceAtLeast(0L)
+                        connection.seekTo(target)
+                        position = target
+                        dragging = false
+                    },
+                    valueRange = 0f..duration.coerceAtLeast(1L).toFloat(),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Row(
+                    Modifier.fillMaxWidth().padding(top = 1.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(
+                        formatNexaPlayerTime(if (dragging) scrubValue.roundToLong() else position),
+                        color = Color.White.copy(alpha = 0.68f),
+                        fontSize = 12.sp,
+                    )
+                    Text(
+                        "-${formatNexaPlayerTime((duration - if (dragging) scrubValue.roundToLong() else position).coerceAtLeast(0L))}",
+                        color = Color.White.copy(alpha = 0.68f),
+                        fontSize = 12.sp,
                     )
                 }
-                IconButton(onClick = connection::seekToNext, modifier = Modifier.size(52.dp)) {
-                    Icon(Icons.Rounded.SkipNext, contentDescription = "Next", tint = Color.White, modifier = Modifier.size(34.dp))
+
+                Spacer(Modifier.height(34.dp))
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    IconButton(onClick = { showLyrics = true }, modifier = Modifier.size(52.dp)) {
+                        Icon(Icons.Rounded.MusicNote, contentDescription = "Lyrics", tint = Color.White.copy(alpha = 0.9f), modifier = Modifier.size(25.dp))
+                    }
+                    IconButton(onClick = connection::seekToPrevious, modifier = Modifier.size(58.dp)) {
+                        Icon(Icons.Rounded.SkipPrevious, contentDescription = "Previous", tint = Color.White, modifier = Modifier.size(43.dp))
+                    }
+                    IconButton(
+                        onClick = connection::togglePlayPause,
+                        modifier = Modifier
+                            .size(76.dp)
+                            .clip(CircleShape)
+                            .background(Color.White),
+                    ) {
+                        Icon(
+                            if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
+                            contentDescription = if (isPlaying) "Pause" else "Play",
+                            tint = Color.Black,
+                            modifier = Modifier.size(43.dp),
+                        )
+                    }
+                    IconButton(onClick = connection::seekToNext, modifier = Modifier.size(58.dp)) {
+                        Icon(Icons.Rounded.SkipNext, contentDescription = "Next", tint = Color.White, modifier = Modifier.size(43.dp))
+                    }
+                    IconButton(onClick = { showQueue = true }, modifier = Modifier.size(52.dp)) {
+                        Icon(Icons.Rounded.QueueMusic, contentDescription = "Queue", tint = Color.White.copy(alpha = 0.9f), modifier = Modifier.size(25.dp))
+                    }
                 }
-                IconButton(onClick = { showQueue = true }) {
-                    Icon(Icons.Rounded.QueueMusic, contentDescription = "Queue", tint = Color.White.copy(alpha = 0.82f))
+
+                Spacer(Modifier.height(30.dp))
+                // Local output volume control. This touches only the existing player
+                // volume; it does not alter track gain or the playback pipeline.
+                Row(
+                    Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text("−", color = Color.White.copy(alpha = 0.72f), fontSize = 20.sp)
+                    Slider(
+                        value = volume,
+                        onValueChange = {
+                            volume = it
+                            connection.player.volume = it
+                        },
+                        valueRange = 0f..1f,
+                        modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
+                    )
+                    Text("+", color = Color.White.copy(alpha = 0.72f), fontSize = 20.sp)
+                }
+
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = 12.dp, bottom = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    IconButton(onClick = { showLyrics = true }) {
+                        Icon(Icons.Rounded.MusicNote, contentDescription = "Open lyrics", tint = Color.White.copy(alpha = 0.88f))
+                    }
+                    IconButton(onClick = { showQueue = true }) {
+                        Icon(Icons.Rounded.QueueMusic, contentDescription = "Open queue", tint = Color.White.copy(alpha = 0.88f))
+                    }
                 }
             }
-            Spacer(Modifier.weight(0.7f))
         }
     }
 }
