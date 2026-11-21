@@ -173,7 +173,7 @@ fun NexaMusicPlayer(
                 position = connection.player.currentPosition.coerceAtLeast(0L)
                 scrubValue = position.toFloat()
             }
-            delay(if (isPlaying) 80L else 350L)
+            delay(if (isPlaying) 120L else 350L)
         }
     }
 
@@ -221,8 +221,8 @@ fun NexaMusicPlayer(
                 modifier = Modifier
                     .fillMaxSize()
                     .graphicsLayer {
-                        scaleX = 1.16f
-                        scaleY = 1.16f
+                        scaleX = 1.16f * artworkScale
+                        scaleY = 1.16f * artworkScale
                         alpha = 0.92f
                     }
                     .blur(34.dp),
