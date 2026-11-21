@@ -22,6 +22,7 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -91,6 +92,7 @@ import com.nexamusic.music.ui.component.Lyrics
 import com.nexamusic.music.lyrics.LyricsUtils
 import com.nexamusic.music.db.entities.LyricsEntity
 import dagger.hilt.android.EntryPointAccessors
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -125,7 +127,7 @@ fun NexaMusicPlayer(
         lyricsRequestTrackId = track.id
         delay(500)
         withContext(Dispatchers.IO) {
-            runCatching {
+            try {
                 val entryPoint = EntryPointAccessors.fromApplication(
                     context.applicationContext,
                     com.nexamusic.music.di.LyricsHelperEntryPoint::class.java,
@@ -137,6 +139,10 @@ fun NexaMusicPlayer(
                         upsert(LyricsEntity(track.id, fetched.lyrics, fetched.provider))
                     }
                 }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                // A lyrics-provider failure must never interrupt playback or the player UI.
             }
         }
     }
@@ -153,7 +159,8 @@ fun NexaMusicPlayer(
     var dragging by remember { mutableStateOf(false) }
     var scrubValue by remember { mutableFloatStateOf(0f) }
 
-    LaunchedEffect(metadata?.id) {
+    LaunchedEffect(metadata?.id, sheetState.isCollapsed) {
+        if (sheetState.isCollapsed) return@LaunchedEffect
         while (true) {
             val playerDuration = connection.player.duration
             duration = if (playerDuration > 0L && playerDuration != androidx.media3.common.C.TIME_UNSET) {
@@ -380,6 +387,7 @@ fun NexaMusicPlayer(
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .basicMarquee(iterations = Int.MAX_VALUE)
                                 .clickable {
                                     metadata?.album?.id?.let { id -> navController.navigate("album/$id") }
                                 },
@@ -395,6 +403,7 @@ fun NexaMusicPlayer(
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier
                             .fillMaxWidth()
+                            .basicMarquee(iterations = Int.MAX_VALUE)
                             .clickable {
                                 metadata?.artists?.firstOrNull()?.id?.let { id -> navController.navigate("artist/$id") }
                             },
