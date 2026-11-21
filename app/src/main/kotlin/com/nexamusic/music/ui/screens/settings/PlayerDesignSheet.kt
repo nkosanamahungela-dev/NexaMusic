@@ -125,6 +125,7 @@ fun ColumnScope.PlayerDesignSheetContent(onMoreOptions: () -> Unit) {
 
     val design = when {
         playerStyle == PlayerStyle.POD -> PlayerDesign.POD
+        playerStyle == PlayerStyle.NEXAMUSIC -> PlayerDesign.NEXAMUSIC
         useV2 -> PlayerDesign.APPLE_MUSIC_V2
         background == PlayerBackgroundStyle.APPLE_MUSIC -> PlayerDesign.APPLE_MUSIC
         artworkStyle == PlayerArtworkStyle.VINYL -> PlayerDesign.VINYL
@@ -152,6 +153,9 @@ fun ColumnScope.PlayerDesignSheetContent(onMoreOptions: () -> Unit) {
         when (d) {
             PlayerDesign.POD -> {
                 setPlayerStyle(PlayerStyle.POD)
+            }
+            PlayerDesign.NEXAMUSIC -> {
+                setPlayerStyle(PlayerStyle.NEXAMUSIC)
             }
             PlayerDesign.CARD, PlayerDesign.VINYL, PlayerDesign.CLOVER -> {
                 setPlayerStyle(PlayerStyle.DEFAULT)
@@ -579,6 +583,7 @@ private fun designName(d: PlayerDesign) = when (d) {
     PlayerDesign.APPLE_MUSIC -> "Apple Music"
     PlayerDesign.APPLE_MUSIC_V2 -> "Apple Music v2"
     PlayerDesign.POD -> "Pod"
+    PlayerDesign.NEXAMUSIC -> "NexaMusic"
 }
 
 private fun backgroundName(style: PlayerBackgroundStyle) = when (style) {
