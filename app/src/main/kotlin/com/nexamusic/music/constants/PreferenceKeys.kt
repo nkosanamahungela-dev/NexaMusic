@@ -117,6 +117,7 @@ enum class PlayerLook {
 enum class PlayerStyle {
     DEFAULT,
     POD,
+    NEXAMUSIC,
 }
 
 val PlayerStyleKey = stringPreferencesKey("playerStyle")
