@@ -86,6 +86,7 @@ import coil3.compose.AsyncImage
 import com.nexamusic.music.LocalDatabase
 import com.nexamusic.music.LocalPlayerConnection
 import com.nexamusic.music.ui.component.BottomSheetState
+import com.nexamusic.music.ui.component.Lyrics
 import com.nexamusic.music.lyrics.LyricsUtils
 import com.nexamusic.music.db.entities.LyricsEntity
 import dagger.hilt.android.EntryPointAccessors
@@ -206,10 +207,10 @@ fun NexaMusicPlayer(
         )
         if (showLyrics) {
             Box(Modifier.fillMaxSize()) {
-                InlineLyricsView(
-                    mediaMetadata = metadata,
+                Lyrics(
+                    sliderPositionProvider = { position },
+                    modifier = Modifier.fillMaxSize(),
                     showLyrics = true,
-                    positionProvider = { position },
                 )
                 IconButton(
                     onClick = { showLyrics = false },
@@ -303,7 +304,7 @@ fun NexaMusicPlayer(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(WindowInsets.systemBars.asPaddingValues())
-                .padding(horizontal = 28.dp)
+                .padding(horizontal = 28.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Row(
