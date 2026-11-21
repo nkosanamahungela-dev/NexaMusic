@@ -13,12 +13,12 @@ package com.nexamusic.music.ui.player
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -36,7 +36,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.PathNode
 import androidx.compose.ui.graphics.vector.VectorPath
 import androidx.compose.ui.graphics.vector.toPath
-import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.runtime.DisposableEffect
@@ -235,30 +234,6 @@ fun PlayerPlayPauseGlyph(
         },
     )
 }
-
-@Composable
-internal fun Modifier.playerPlayPausePressCircle(
-    motion: PlayerPlayPauseMotion,
-    interactionSource: MutableInteractionSource,
-    tint: Color,
-    glyphSize: Dp,
-    diameter: Dp,
-): Modifier = playerPressCircle(
-    interactionSource = interactionSource,
-    trigger = motion.taps,
-    enabled = motion.visible.value,
-    reduceMotion = motion.reduceMotion.value,
-    tint = tint,
-    glyphSize = glyphSize,
-    diameter = diameter,
-    minimumHoldMs = PlayPauseMotionSpec.CircleHoldMs,
-    hasMotion = { false }, // External playback changes never synthesize a press.
-    settled = {
-        val target = if (motion.playing.value) 1f else 0f
-        abs(motion.morph.value - target) <=
-            abs(motion.morphStart - target) * PlayPauseMotionSpec.CircleRemaining
-    },
-)
 
 /**
  * The contours depend only on the two vectors, which every caller passes as the
