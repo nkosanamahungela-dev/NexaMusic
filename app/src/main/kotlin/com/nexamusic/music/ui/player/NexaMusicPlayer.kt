@@ -8,8 +8,16 @@
  */
 package com.nexamusic.music.ui.player
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.snap
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -35,7 +43,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowDownward
 import androidx.compose.material.icons.rounded.FavoriteBorder
-import androidx.compose.material.icons.rounded.Lyrics
+import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.QueueMusic
@@ -52,6 +60,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -72,6 +81,7 @@ import androidx.navigation.NavController
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.nexamusic.music.LocalPlayerConnection
+import com.nexamusic.music.ui.component.BottomSheetState
 import com.nexamusic.music.lyrics.LyricsUtils
 import kotlinx.coroutines.delay
 import kotlin.math.roundToLong
@@ -253,20 +263,29 @@ fun NexaMusicPlayer(
             Box(
                 Modifier
                     .fillMaxWidth()
-                    .height(36.dp)
-                    .padding(top = 4.dp),
+                    .height(28.dp)
+                    .clickable { connection.requestShowLyrics.value = true }
+                    .padding(vertical = 4.dp)
+                    .graphicsLayer { translationY = 6.dp.toPx() },
                 contentAlignment = Alignment.CenterStart,
             ) {
-                Crossfade(
+                AnimatedContent(
                     targetState = lyricText,
-                    animationSpec = tween(260),
+                    transitionSpec = {
+                        slideInVertically(
+                            animationSpec = tween(340, easing = FastOutSlowInEasing),
+                        ) { height -> (height * 0.35f).toInt() } togetherWith
+                            (fadeOut(animationSpec = tween(340, easing = FastOutSlowInEasing)) +
+                                slideOutVertically(
+                                    animationSpec = tween(340, easing = FastOutSlowInEasing),
+                                ) { height -> -(height * 0.35f).toInt() })
+                    },
                     label = "nexamusicCurrentLyric",
                 ) { line ->
                     Text(
                         text = line,
-                        color = Color.White.copy(alpha = 0.72f),
-                        fontSize = 14.sp,
-                        lineHeight = 20.sp,
+                        style = MaterialTheme.typography.titleMedium.copy(lineHeight = 20.sp),
+                        color = Color.White.copy(alpha = 0.78f),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.fillMaxWidth(),
@@ -301,7 +320,7 @@ fun NexaMusicPlayer(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 IconButton(onClick = { connection.requestShowLyrics.value = true }) {
-                    Icon(Icons.Rounded.Lyrics, contentDescription = "Lyrics", tint = Color.White.copy(alpha = 0.82f))
+                    Icon(Icons.Rounded.MusicNote, contentDescription = "Lyrics", tint = Color.White.copy(alpha = 0.82f))
                 }
                 IconButton(onClick = connection::seekToPrevious, modifier = Modifier.size(52.dp)) {
                     Icon(Icons.Rounded.SkipPrevious, contentDescription = "Previous", tint = Color.White, modifier = Modifier.size(34.dp))
