@@ -454,11 +454,11 @@ fun NexaMusicPlayer(
                     }
                 }
 
-                Slider(
-                    value = scrubValue.coerceIn(0f, duration.coerceAtLeast(1L).toFloat()),
+                BitChordThinSlider(
+                    value = (scrubValue / duration.coerceAtLeast(1L).toFloat()).coerceIn(0f, 1f),
                     onValueChange = {
                         dragging = true
-                        scrubValue = it
+                        scrubValue = it * duration.coerceAtLeast(1L).toFloat()
                     },
                     onValueChangeFinished = {
                         val target = scrubValue.roundToLong().coerceAtLeast(0L)
@@ -466,7 +466,6 @@ fun NexaMusicPlayer(
                         position = target
                         dragging = false
                     },
-                    valueRange = 0f..duration.coerceAtLeast(1L).toFloat(),
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Row(
