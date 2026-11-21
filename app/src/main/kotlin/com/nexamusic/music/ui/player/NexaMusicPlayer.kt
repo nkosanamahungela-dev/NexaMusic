@@ -8,6 +8,11 @@
  */
 package com.nexamusic.music.ui.player
 
+import android.content.Intent
+import android.provider.Settings
+import androidx.compose.material.icons.rounded.Cast
+import androidx.compose.material.icons.rounded.VolumeDown
+import androidx.compose.material.icons.rounded.VolumeUp
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.Crossfade
@@ -55,7 +60,6 @@ import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -484,17 +488,16 @@ fun NexaMusicPlayer(
                     )
                 }
 
-                Spacer(Modifier.height(34.dp))
+                Spacer(Modifier.height(30.dp))
+                // BitChord's three-control transport: skip, oversized morphing
+                // play/pause, skip. The NexaMusic playback engine remains in charge.
                 Row(
                     Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    horizontalArrangement = Arrangement.SpaceAround,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    IconButton(onClick = { showLyrics = true }, modifier = Modifier.size(52.dp)) {
-                        Icon(Icons.Rounded.MusicNote, contentDescription = "Lyrics", tint = Color.White.copy(alpha = 0.9f), modifier = Modifier.size(25.dp))
-                    }
-                    IconButton(onClick = connection::seekToPrevious, modifier = Modifier.size(58.dp)) {
-                        Icon(Icons.Rounded.SkipPrevious, contentDescription = "Previous", tint = Color.White, modifier = Modifier.size(43.dp))
+                    IconButton(onClick = connection::seekToPrevious, modifier = Modifier.size(72.dp)) {
+                        Icon(Icons.Rounded.SkipPrevious, contentDescription = "Previous", tint = Color.White, modifier = Modifier.size(48.dp))
                     }
                     IconButton(
                         onClick = {
@@ -502,7 +505,7 @@ fun NexaMusicPlayer(
                             connection.togglePlayPause()
                         },
                         modifier = Modifier
-                            .size(76.dp)
+                            .size(82.dp)
                             .clip(CircleShape)
                             .background(Color.White),
                     ) {
@@ -514,49 +517,77 @@ fun NexaMusicPlayer(
                             pausePainter = rememberVectorPainter(Icons.Rounded.Pause),
                             contentDescription = if (isPlaying) "Pause" else "Play",
                             tint = Color.Black,
-                            modifier = Modifier.size(43.dp),
+                            modifier = Modifier.size(48.dp),
                         )
                     }
-                    IconButton(onClick = connection::seekToNext, modifier = Modifier.size(58.dp)) {
-                        Icon(Icons.Rounded.SkipNext, contentDescription = "Next", tint = Color.White, modifier = Modifier.size(43.dp))
-                    }
-                    IconButton(onClick = { showQueue = true }, modifier = Modifier.size(52.dp)) {
-                        Icon(Icons.Rounded.QueueMusic, contentDescription = "Queue", tint = Color.White.copy(alpha = 0.9f), modifier = Modifier.size(25.dp))
+                    IconButton(onClick = connection::seekToNext, modifier = Modifier.size(72.dp)) {
+                        Icon(Icons.Rounded.SkipNext, contentDescription = "Next", tint = Color.White, modifier = Modifier.size(48.dp))
                     }
                 }
 
-                Spacer(Modifier.height(30.dp))
-                // Local output volume control. This touches only the existing player
-                // volume; it does not alter track gain or the playback pipeline.
+                Spacer(Modifier.height(38.dp))
+                // BitChord-style speaker / thin capsule volume row, wired directly
+                // to Media3's existing local output volume.
                 Row(
                     Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text("−", color = Color.White.copy(alpha = 0.72f), fontSize = 20.sp)
-                    Slider(
+                    Icon(
+                        Icons.Rounded.VolumeDown,
+                        contentDescription = "Lower volume",
+                        tint = Color.White.copy(alpha = 0.58f),
+                        modifier = Modifier.size(20.dp).clickable {
+                            volume = (volume - 0.05f).coerceAtLeast(0f)
+                            connection.player.volume = volume
+                        },
+                    )
+                    Spacer(Modifier.width(12.dp))
+                    BitChordThinSlider(
                         value = volume,
                         onValueChange = {
                             volume = it
                             connection.player.volume = it
                         },
-                        valueRange = 0f..1f,
-                        modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
+                        modifier = Modifier.weight(1f),
+                        activeColor = Color.White.copy(alpha = 0.94f),
+                        inactiveColor = Color.White.copy(alpha = 0.28f),
                     )
-                    Text("+", color = Color.White.copy(alpha = 0.72f), fontSize = 20.sp)
+                    Spacer(Modifier.width(12.dp))
+                    Icon(
+                        Icons.Rounded.VolumeUp,
+                        contentDescription = "Raise volume",
+                        tint = Color.White.copy(alpha = 0.58f),
+                        modifier = Modifier.size(20.dp).clickable {
+                            volume = (volume + 0.05f).coerceAtMost(1f)
+                            connection.player.volume = volume
+                        },
+                    )
                 }
 
+                // The bottom action rail mirrors BitChord's lyrics / output /
+                // queue placement. Cast opens Android's output picker settings.
                 Row(
                     Modifier
                         .fillMaxWidth()
-                        .padding(top = 12.dp, bottom = 4.dp),
+                        .padding(top = 24.dp, bottom = 8.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    IconButton(onClick = { showLyrics = true }) {
-                        Icon(Icons.Rounded.MusicNote, contentDescription = "Open lyrics", tint = Color.White.copy(alpha = 0.88f))
+                    IconButton(onClick = { showLyrics = true }, modifier = Modifier.size(48.dp)) {
+                        Icon(Icons.Rounded.MusicNote, contentDescription = "Open lyrics", tint = Color.White.copy(alpha = 0.9f), modifier = Modifier.size(27.dp))
                     }
-                    IconButton(onClick = { showQueue = true }) {
-                        Icon(Icons.Rounded.QueueMusic, contentDescription = "Open queue", tint = Color.White.copy(alpha = 0.88f))
+                    IconButton(
+                        onClick = {
+                            runCatching {
+                                context.startActivity(Intent(Settings.ACTION_CAST_SETTINGS))
+                            }
+                        },
+                        modifier = Modifier.size(48.dp),
+                    ) {
+                        Icon(Icons.Rounded.Cast, contentDescription = "Audio output settings", tint = Color.White.copy(alpha = 0.72f), modifier = Modifier.size(27.dp))
+                    }
+                    IconButton(onClick = { showQueue = true }, modifier = Modifier.size(48.dp)) {
+                        Icon(Icons.Rounded.QueueMusic, contentDescription = "Open queue", tint = Color.White.copy(alpha = 0.9f), modifier = Modifier.size(27.dp))
                     }
                 }
             }
