@@ -80,6 +80,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import androidx.room.withTransaction
@@ -149,6 +150,7 @@ fun NexaMusicPlayer(
 
     var position by remember { mutableLongStateOf(connection.player.currentPosition.coerceAtLeast(0L)) }
     var isPlaying by remember { mutableStateOf(connection.player.isPlaying) }
+    val playPauseMotion = rememberPlayerPlayPauseMotion(isPlaying = isPlaying, active = true, reduceMotion = false)
     var duration by remember { mutableLongStateOf(0L) }
     var showLyrics by remember { mutableStateOf(false) }
     var showQueue by remember { mutableStateOf(false) }
@@ -496,14 +498,21 @@ fun NexaMusicPlayer(
                         Icon(Icons.Rounded.SkipPrevious, contentDescription = "Previous", tint = Color.White, modifier = Modifier.size(43.dp))
                     }
                     IconButton(
-                        onClick = connection::togglePlayPause,
+                        onClick = {
+                            playPauseMotion.onTap()
+                            connection.togglePlayPause()
+                        },
                         modifier = Modifier
                             .size(76.dp)
                             .clip(CircleShape)
                             .background(Color.White),
                     ) {
-                        Icon(
-                            if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
+                        PlayerPlayPauseGlyph(
+                            motion = playPauseMotion,
+                            play = Icons.Rounded.PlayArrow,
+                            pause = Icons.Rounded.Pause,
+                            playPainter = rememberVectorPainter(Icons.Rounded.PlayArrow),
+                            pausePainter = rememberVectorPainter(Icons.Rounded.Pause),
                             contentDescription = if (isPlaying) "Pause" else "Play",
                             tint = Color.Black,
                             modifier = Modifier.size(43.dp),
