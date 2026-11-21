@@ -218,10 +218,11 @@ private fun PlayerScreen(
         return
     }
     val v2 = spec.design == PlayerDesign.APPLE_MUSIC_V2
-    val hero = spec.design == PlayerDesign.APPLE_MUSIC || (v2 && spec.look == PlayerLook.HERO)
-    // The V2 player paints its own artwork-edge gradient for these two, exactly as Player.kt does.
-    // Full bleed ignores the background choice; the square layout takes it, except the two it paints itself.
-    val v2OwnBackground = v2 && (hero || spec.background in setOf(PlayerBackgroundStyle.APPLE_MUSIC, PlayerBackgroundStyle.GRADIENT))
+    val nexamusic = spec.design == PlayerDesign.NEXAMUSIC
+    val hero = nexamusic || spec.design == PlayerDesign.APPLE_MUSIC || (v2 && spec.look == PlayerLook.HERO)
+    // NexaMusic uses BitChord's full-bleed artwork backdrop rather than the classic square sleeve.
+    // The V2 player paints its own artwork-edge gradient for its hero and gradient layouts.
+    val v2OwnBackground = nexamusic || (v2 && (hero || spec.background in setOf(PlayerBackgroundStyle.APPLE_MUSIC, PlayerBackgroundStyle.GRADIENT)))
     val appleChrome = v2 || spec.design == PlayerDesign.APPLE_MUSIC
     val background = if (spec.design == PlayerDesign.APPLE_MUSIC) PlayerBackgroundStyle.APPLE_MUSIC else spec.background
     val content = if (background == PlayerBackgroundStyle.DEFAULT && !v2) AppTheme.colorScheme.onSurface else Color.White
