@@ -32,7 +32,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
@@ -40,7 +39,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.calculateBottomPadding
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -104,7 +103,6 @@ fun NexaMusicPlayer(
 ) {
     val connection = LocalPlayerConnection.current ?: return
     val metadata by connection.mediaMetadata.collectAsStateWithLifecycle()
-    val playWhenReady by connection.playWhenReady.collectAsStateWithLifecycle()
     val currentLyrics by connection.currentLyrics.collectAsState(initial = null)
     val currentSong by connection.currentSong.collectAsState(initial = null)
     val queueWindows by connection.queueWindows.collectAsStateWithLifecycle()
@@ -135,6 +133,7 @@ fun NexaMusicPlayer(
     }
 
     var position by remember { mutableLongStateOf(connection.player.currentPosition.coerceAtLeast(0L)) }
+    var isPlaying by remember { mutableStateOf(connection.player.isPlaying) }
     var duration by remember { mutableLongStateOf(0L) }
     var showLyrics by remember { mutableStateOf(false) }
     var showQueue by remember { mutableStateOf(false) }
@@ -145,7 +144,7 @@ fun NexaMusicPlayer(
     var dragging by remember { mutableStateOf(false) }
     var scrubValue by remember { mutableFloatStateOf(0f) }
 
-    LaunchedEffect(metadata?.id, playWhenReady) {
+    LaunchedEffect(metadata?.id) {
         while (true) {
             val playerDuration = connection.player.duration
             duration = if (playerDuration > 0L && playerDuration != androidx.media3.common.C.TIME_UNSET) {
@@ -153,11 +152,12 @@ fun NexaMusicPlayer(
             } else {
                 (metadata?.duration?.coerceAtLeast(0)?.toLong() ?: 0L) * 1000L
             }
+            isPlaying = connection.player.isPlaying
             if (!dragging) {
                 position = connection.player.currentPosition.coerceAtLeast(0L)
                 scrubValue = position.toFloat()
             }
-            delay(if (playWhenReady) 80L else 350L)
+            delay(if (isPlaying) 80L else 350L)
         }
     }
 
@@ -179,7 +179,7 @@ fun NexaMusicPlayer(
         ?: if (lyricsText.isBlank()) "Lyrics will appear here" else "♪"
 
     val artworkScale by animateFloatAsState(
-        targetValue = if (playWhenReady) 1f else 0.965f,
+        targetValue = if (isPlaying) 1f else 0.965f,
         animationSpec = tween(520, easing = FastOutSlowInEasing),
         label = "nexamusicArtworkScale",
     )
@@ -304,7 +304,6 @@ fun NexaMusicPlayer(
                 .fillMaxSize()
                 .padding(WindowInsets.systemBars.asPaddingValues())
                 .padding(horizontal = 28.dp)
-                .padding(bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Row(
@@ -470,8 +469,8 @@ fun NexaMusicPlayer(
                         .background(Color.White),
                 ) {
                     Icon(
-                        if (playWhenReady) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
-                        contentDescription = if (playWhenReady) "Pause" else "Play",
+                        if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
+                        contentDescription = if (isPlaying) "Pause" else "Play",
                         tint = Color.Black,
                         modifier = Modifier.size(36.dp),
                     )
