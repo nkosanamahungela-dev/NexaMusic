@@ -1,0 +1,22 @@
+{
+  "category:music": [
+    {
+      "id": "nexamusic",
+      "name": "NexaMusic",
+      "author": "NexaMusic",
+      "version": "0.1.0",
+      "code": 1,
+      "type": "MODULE",
+      "description": "NexaMusic source adapter with strict FLAC CD-quality metadata checks.",
+      "tags": ["LOSSLESS", "FLAC", "CD QUALITY"],
+      "size": 0,
+      "sizeLabel": "JavaScript module",
+      "download": "nexamusic.js",
+      "lastUpdated": "2026-11-22",
+      "trusted": false,
+      "featured": false,
+      "nsfw": false,
+      "sources": []
+    }
+  ]
+}
