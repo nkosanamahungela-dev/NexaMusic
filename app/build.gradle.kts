@@ -10,7 +10,8 @@ if (localPropertiesFile.exists()) {
 // TIDAL credentials are local-development inputs only. The client secret is
 // compiled into debug builds for SDK testing and is deliberately blank in release builds.
 val tidalClientId = localProperties.getProperty("tidal.clientid").orEmpty()
-val tidalClientSecret = localProperties.getProperty("tidal.clientsecret").orEmpty()
+val tidalRedirectUri = localProperties.getProperty("tidal.clientredirecturi").orEmpty()
+val tidalClientScopes = localProperties.getProperty("tidal.clientscopes").orEmpty()
 fun buildConfigString(value: String): String =
     "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
 
@@ -158,8 +159,6 @@ android {
             buildConfigField("String", "ARCHITECTURE", "\"release\"")
         }
         debug {
-            // The TIDAL client secret is debug-only; release APKs inherit an empty value.
-            buildConfigField("String", "TIDAL_CLIENT_SECRET", buildConfigString(tidalClientSecret))
             applicationIdSuffix = ".debug"
             isDebuggable = true
             signingConfig = signingConfigs.getByName("debug")
