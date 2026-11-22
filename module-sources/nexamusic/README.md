@@ -10,16 +10,18 @@ https://nexamusic-module-source.onrender.com/index.json
 
 ## Playback
 
-- Search uses Jamendo GET /v3.0/tracks/ with audioformat=flac.
-- Stream resolution requests the selected format from the same tracks endpoint and uses its returned audio field.
-- The module validates the format query parameter in the returned audio URL. A missing or mismatched format throws an error rather than reporting a successful stream.
-- Track IDs are namespaced as jamendo:<id> to avoid collisions with other modules and stale cross-provider cache entries.
-- LOSSLESS requests flac; HIGH requests mp32; LOW requests mp31.
-- Jamendo does not provide verified bit-depth/sample-rate metadata in the response, so the module does not claim CD-quality from the API request alone.
+- Search uses Jamendo GET /v3.0/tracks/ and requests FLAC metadata.
+- Playback resolves the selected track ID again through /v3.0/tracks/ and uses the returned `audio` stream URL.
+- Quality is exposed through an 8SPINE selector: FLAC (LOSSLESS), MP3 VBR (HIGH), and MP3 96 kbps (LOW).
+- The resolver accepts the 8SPINE quality argument and its third context argument, including `ctx.settings.quality.value`.
+- The module sets `noStreamCache: true` so the host does not persist potentially stale provider stream URLs.
+- The stream result includes `mimeType`, `streamType`, and playback track metadata.
+- Track IDs are namespaced as `jamendo:<id>` to avoid collisions.
+- Jamendo documents FLAC as an available `audioformat`. Its API response does not provide verified bit depth/sample rate, so this module does not claim 16-bit / 44.1 kHz CD quality.
 
 ## 8SPINE contract
 
-- id, name, version, labels
-- searchTracks(query, limit)
-- getArtistTracks(artistId, limit)
-- getTrackStreamUrl(id, quality)
+- `searchTracks(query, limit)`
+- `getArtistTracks(artistId, limit)`
+- `getTrackStreamUrl(id, quality, ctx)`
+- `settings.quality` selector with LOSSLESS, HIGH, LOW values
