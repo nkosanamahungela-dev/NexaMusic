@@ -59,6 +59,8 @@ function mapTrack(item) {
     albumCover: item.album_image || item.image || null,
     source: "Jamendo",
     license: item.license_ccurl || null,
+    trackPageUrl: item.shareurl || item.shorturl || null,
+    audiodownloadAllowed: item.audiodownload_allowed === true || item.audiodownload_allowed === "true",
     audioFormat: "FLAC",
     // Jamendo's API supplies a requested format but does not expose
     // verified bit-depth/sample-rate metadata in this response.
@@ -79,6 +81,7 @@ async function searchTracks(query, limit) {
     type: "single albumtrack",
     audioformat: "flac",
     include: "licenses",
+    fullcount: true,
     imagesize: 300
   }));
 
@@ -89,6 +92,39 @@ async function searchTracks(query, limit) {
 
   return {
     tracks: tracks,
+    total: Number(payload.headers.results_fullcount) ||
+      Number(payload.headers.results_count) || tracks.length
+  };
+}
+
+async function getArtistTracks(artistId, limit) {
+  assertConfigured();
+  const id = String(artistId || "").trim();
+  if (!id) throw new Error("[NexaMusic] An artist ID is required.");
+
+  const safeLimit = Math.max(1, Math.min(Number(limit) || 30, 50));
+  const payload = await requestJson(apiUrl("/artists/tracks/", {
+    id: id,
+    limit: safeLimit,
+    track_type: "single albumtrack",
+    audioformat: "flac",
+    include: "licenses",
+    imagesize: 300
+  }));
+
+  const artists = Array.isArray(payload.results) ? payload.results : [];
+  const artist = artists[0];
+  const tracks = artist && Array.isArray(artist.tracks) ? artist.tracks : [];
+  return {
+    artist: artist ? {
+      id: String(artist.id),
+      name: String(artist.name || "Unknown artist"),
+      image: artist.image || null,
+      pageUrl: artist.shareurl || artist.shorturl || null
+    } : null,
+    tracks: tracks
+      .filter(function (item) { return item && item.id !== undefined && item.id !== null; })
+      .map(mapTrack),
     total: Number(payload.headers.results_count) || tracks.length
   };
 }
@@ -129,7 +165,9 @@ async function getTrackStreamUrl(trackId, quality) {
         (audioFormat === "mp32" ? "HIGH" : "LOW"),
       codec: codec,
       provider: "Jamendo",
-      license: item.license_ccurl || null
+      license: item.license_ccurl || null,
+      trackPageUrl: item.shareurl || item.shorturl || null,
+      audiodownloadAllowed: item.audiodownload_allowed === true || item.audiodownload_allowed === "true"
     }
   };
 }
@@ -140,5 +178,6 @@ return {
   version: "0.2.0",
   labels: ["JAMENDO", "FLAC", "INDEPENDENT MUSIC"],
   searchTracks: searchTracks,
+  getArtistTracks: getArtistTracks,
   getTrackStreamUrl: getTrackStreamUrl
 };
