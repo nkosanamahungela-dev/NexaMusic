@@ -4,8 +4,8 @@
       "id": "nexamusic",
       "name": "NexaMusic",
       "author": "NexaMusic",
-      "version": "0.2.0",
-      "description": "NexaMusic music source powered by Jamendo's independent music catalogue, with FLAC stream requests.",
+      "version": "0.3.0",
+      "description": "NexaMusic music source powered by Jamendo, with track search, artist tracks and FLAC stream requests.",
       "labels": [
         "JAMENDO",
         "FLAC",
