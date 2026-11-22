@@ -7,6 +7,13 @@ if (localPropertiesFile.exists()) {
     localProperties.load(localPropertiesFile.inputStream())
 }
 
+// TIDAL credentials are local-development inputs only. The client secret is
+// compiled into debug builds for SDK testing and is deliberately blank in release builds.
+val tidalClientId = localProperties.getProperty("tidal.clientid").orEmpty()
+val tidalClientSecret = localProperties.getProperty("tidal.clientsecret").orEmpty()
+fun buildConfigString(value: String): String =
+    "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+
 // Derive versionCode from version.properties so it stays in sync with versionName.
 val versionProps = Properties().apply {
     load(rootProject.file("version.properties").inputStream())
@@ -149,6 +156,8 @@ android {
             buildConfigField("String", "ARCHITECTURE", "\"release\"")
         }
         debug {
+            // The TIDAL client secret is debug-only; release APKs inherit an empty value.
+            buildConfigField("String", "TIDAL_CLIENT_SECRET", buildConfigString(tidalClientSecret))
             applicationIdSuffix = ".debug"
             isDebuggable = true
             signingConfig = signingConfigs.getByName("debug")
@@ -318,6 +327,8 @@ dependencies {
     implementation(libs.accompanist.lyrics.core)
 
     implementation(libs.media3)
+    // Official TIDAL player SDK; full-length playback still requires TIDAL approval.
+    implementation(libs.tidal.sdk.player)
     implementation(libs.media3.session)
     implementation(libs.media3.hls)
     implementation(libs.media3.ui)
