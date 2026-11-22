@@ -1,7 +1,8 @@
 # NexaMusic — 8SPINE Module
 
-Version: 0.1.1  
-Engine target: 8SPINE Module Engine v2.4.0-alpha
+Version: 0.2.0  
+Engine target: 8SPINE Module Engine v2.4.0-alpha  
+Provider: Jamendo
 
 ## Public source
 
@@ -9,27 +10,34 @@ Add this URL in **Module Sources → Add Source**:
 
 `https://nexamusic-module-source.onrender.com/index.json`
 
-The index uses the `category:music` catalogue format and its `download` field points to the hosted JavaScript module.
+## Provider setup required
 
-## Required provider integration
+This module uses Jamendo's official public catalogue API for track search and stream URL resolution.
 
-This repository does not include a music catalogue or an audio-stream provider. Before this module can search or play tracks, set `API_BASE_URL` near the top of `nexamusic.js` to an HTTPS API that you own or are authorized to use.
+Before publishing for general use:
 
-The module expects:
+1. Create an application in the Jamendo Developer Portal: https://devportal.jamendo.com/
+2. Copy its **Client ID**.
+3. Replace `YOUR_JAMENDO_CLIENT_ID` in `nexamusic.js` with that Client ID.
+4. Keep any Client Secret private. This read-only module does not need a Client Secret or OAuth flow.
 
-- `GET /search?q={query}&limit={limit}` → `{ tracks: [...], total: number }`
-- `GET /stream/{trackId}?quality=LOSSLESS|HIGH|LOW` → `{ streamUrl, track }`
+Jamendo documents a shared Client ID for read-API testing only. Do not use that testing ID in a public release.
 
-Each search track should provide `id`, `title`, and `artist`. Optional fields include `album`, `duration`, `albumCover`, and `isrc`.
+## Search and playback
 
-For LOSSLESS, the stream response must explicitly identify FLAC and report at least 16-bit / 44,100 Hz. Otherwise the module rejects it. Metadata checks are a guard against false labels, not cryptographic proof of the audio bytes; the actual stream should also be inspected by the playback pipeline.
+- Search uses Jamendo `GET /v3.0/tracks/`.
+- Results include title, artist, album, duration, artwork and available licence metadata.
+- Playback resolves the selected track through Jamendo's track endpoint and requests the FLAC audio format by default.
+- HIGH requests MP3 VBR; LOW requests MP3 96 kbps.
+
+The module does not claim CD-quality (16-bit / 44.1 kHz). Jamendo's track response documents the requested FLAC format but does not provide verified bit-depth and sample-rate metadata in the fields used here. FLAC format alone is not proof of CD-quality source audio.
+
+Respect each track's licence and Jamendo's API terms when using, caching, displaying, or distributing music.
 
 ## 8SPINE contract
 
-The script returns the module object directly, as required by the 8SPINE loader:
+The module returns the standard object directly:
 
 - `id`, `name`, `version`, `labels`
 - `searchTracks(query, limit)`
 - `getTrackStreamUrl(id, quality)`
-
-No CommonJS `module.exports` wrapper is used.
