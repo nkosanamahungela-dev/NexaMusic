@@ -175,7 +175,7 @@ async function getTrackStreamUrl(trackId, quality) {
 return {
   id: "nexamusic",
   name: "NexaMusic",
-  version: "0.2.0",
+  version: "0.3.0",
   labels: ["JAMENDO", "FLAC", "INDEPENDENT MUSIC"],
   searchTracks: searchTracks,
   getArtistTracks: getArtistTracks,
