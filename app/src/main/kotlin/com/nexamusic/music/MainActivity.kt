@@ -9,6 +9,8 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.net.Uri
+import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
@@ -143,6 +145,32 @@ class MainActivity : ComponentActivity() {
         super.onNewIntent(intent)
         // Retain the intent until Compose's listener is ready to handle it.
         pendingIntent = intent
+        handleTidalAuthRedirect(intent)
+    }
+
+    private fun handleTidalAuthRedirect(intent: Intent?) {
+        val uri = intent?.data ?: return
+        if (uri.scheme != "nexamusic" || uri.host != "tidal-auth" || uri.path != "/callback") return
+
+        lifecycleScope.launch {
+            val manager = (application as App).awaitTidalSdkManager()
+            if (manager == null) {
+                Log.w("TidalSDK", "Login callback received, but TIDAL SDK is not configured")
+                return@launch
+            }
+            val query = uri.encodedQuery ?: uri.query
+            if (query.isNullOrBlank()) {
+                Log.w("TidalSDK", "TIDAL login callback did not contain an authorization query")
+                return@launch
+            }
+            val result = runCatching { manager.completeLogin(query) }
+            result.onSuccess {
+                if (it.isSuccess) Log.i("TidalSDK", "TIDAL Authorization Code login completed")
+                else Log.w("TidalSDK", "TIDAL Authorization Code login was rejected: $it")
+            }.onFailure { error ->
+                Log.w("TidalSDK", "TIDAL Authorization Code login failed", error)
+            }
+        }
     }
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -158,6 +186,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
+        handleTidalAuthRedirect(intent)
         window.decorView.layoutDirection = View.LAYOUT_DIRECTION_LTR
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
