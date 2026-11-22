@@ -2,10 +2,10 @@
   "category:music": [
     {
       "id": "tidal-official-hifi",
-      "name": "TIDAL (Official Native Player)",
+      "name": "TIDAL (8SPINE Connector)",
       "author": "NexaMusic",
       "version": "0.1.0",
-      "description": "Testing compatibility entry. Authenticated TIDAL playback and quality selection use the official native Android Player SDK; this JavaScript module does not fabricate signed stream URLs.",
+      "description": "8SPINE TIDAL catalog and stream URL adapter. Requires a NexaMusic-controlled resolver authorised by TIDAL. Includes quality selection, ISRC metadata, caching and Atmos safeguards.",
       "labels": [
         "TIDAL",
         "LOSSLESS",
