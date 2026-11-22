@@ -1,8 +1,8 @@
 {
-  "name": "nexamusic-stream-backend",
+  "name": "nexamusic-legacy-stream-backend",
   "version": "0.1.0",
   "private": true,
-  "description": "NexaMusic 8SPINE stream resolver and Jamendo audio proxy",
+  "description": "Retired legacy stream backend; native TIDAL playback is in the Android app",
   "type": "commonjs",
   "scripts": {
     "start": "node server.js"
