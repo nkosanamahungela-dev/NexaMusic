@@ -55,7 +55,7 @@ jetpackSfSymbols = "1.1.1"
 # Apple-Music-style karaoke lyrics renderer (per-syllable timing, duet alignment).
 accompanist-lyrics-ui = "1.0.19"
 accompanist-lyrics-core = "0.4.7"
-tidalSdkPlayer = "0.0.74"
+tidalSdkPlayer = "0.0.39"
 
 
 [libraries]
