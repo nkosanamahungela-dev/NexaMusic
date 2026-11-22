@@ -29,19 +29,14 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import com.nexamusic.music.R
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.drawscope.scale
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.scale
-import androidx.compose.ui.graphics.drawscope.translate
-import androidx.compose.ui.graphics.vector.PathNode
-import androidx.compose.ui.graphics.vector.VectorPath
-import androidx.compose.ui.graphics.vector.toPath
 import kotlinx.coroutines.flow.first
 
 /**
@@ -185,56 +180,26 @@ fun PlayerSkipGlyph(
     previous: Boolean = false,
 ) {
     val resource = if (previous) R.drawable.ic_player_previous else R.drawable.ic_player_next
-    val vector = vectorResource(resource)
-    // Compose resources can return an empty vector while their asynchronous
-    // resource state loads. Keep the original painter, rather than index root[0].
-    if (vector.root.size == 0) {
-        Icon(
-            painter = painterResource(resource),
-            contentDescription = contentDescription,
-            tint = tint,
-            modifier = modifier,
-        )
-        return
-    }
-    val nodes = (vector.root[0] as VectorPath).pathData
-    // Built once per drawable and kept across recompositions. A drawWithCache
-    // block would be rebuilt every time this recomposes (its lambda is new).
-    val arrows = remember(nodes) { SkipArrows(nodes) }
+    val progress = motion.cycles.value % 1f
+    val settled = !motion.active.value || motion.reduceMotion.value ||
+        progress == 0f || progress >= SkipMotion.Settled
     Icon(
         painter = painterResource(resource),
         contentDescription = contentDescription,
         tint = tint,
-        modifier = modifier.drawWithContent {
-            val p = motion.cycles.value % 1f
-            if (!motion.active.value || motion.reduceMotion.value || p == 0f || p >= SkipMotion.Settled) {
-                drawContent()
-            } else {
-                val pose = playerSkipPose(p)
-                // Nothing here allocates or rebuilds a Path: every frame is three
-                // draws of two cached paths under canvas transforms.
-                scale(size.width / vector.viewportWidth, size.height / vector.viewportHeight,
-                    pivot = Offset.Zero) {
-                    if (pose.frontAlpha > 0f && pose.frontScale > 0f) {
-                        scale(pose.frontScale, pivot = arrows.frontCenter) {
-                            drawPath(arrows.front, tint, alpha = pose.frontAlpha)
-                        }
-                    }
-                    // The two arrowheads are the same contour 419.25 (next) /
-                    // -415.95 (previous) viewport units apart, within 0.1 of
-                    // 960 units: far below a pixel, so the trailing one is
-                    // translated rather than re-interpolated node by node.
-                    translate(arrows.shiftX * pose.survivorTravel, arrows.shiftY * pose.survivorTravel) {
-                        drawPath(arrows.back, tint)
-                    }
-                    if (pose.newAlpha > 0f && pose.newScale > 0f) {
-                        scale(pose.newScale, pivot = arrows.backCenter) {
-                            drawPath(arrows.back, tint, alpha = pose.newAlpha)
-                        }
-                    }
+        modifier = modifier.then(
+            if (settled) Modifier else Modifier.drawWithContent {
+                // Android uses its native vector painter here. Preserve the
+                // upstream conveyor timing/retargeting while animating the
+                // complete glyph without Compose Multiplatform Res resources.
+                val pose = playerSkipPose(progress)
+                val scaleFactor = (0.88f + pose.newScale * 0.12f)
+                    .coerceIn(0.88f, 1f)
+                scale(scaleFactor, pivot = center) {
+                    drawContent()
                 }
-            }
-        },
+            },
+        ),
     )
 }
 
