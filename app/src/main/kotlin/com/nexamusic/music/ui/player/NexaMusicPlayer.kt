@@ -73,7 +73,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
@@ -227,11 +226,10 @@ fun NexaMusicPlayer(
                 modifier = Modifier
                     .fillMaxSize()
                     .graphicsLayer {
-                        scaleX = 1.16f * artworkScale
-                        scaleY = 1.16f * artworkScale
-                        alpha = 0.92f
-                    }
-                    .blur(34.dp),
+                        scaleX = 1.06f * artworkScale
+                        scaleY = 1.06f * artworkScale
+                        alpha = 1f
+                    },
             )
         }
         Box(
@@ -365,7 +363,7 @@ fun NexaMusicPlayer(
                     )
                     Spacer(Modifier.height(12.dp))
                     Text(
-                        "NOW PLAYING",
+                        "Playing from NexaMusic",
                         color = Color.White.copy(alpha = 0.92f),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold,
@@ -504,10 +502,7 @@ fun NexaMusicPlayer(
                             playPauseMotion.onTap()
                             connection.togglePlayPause()
                         },
-                        modifier = Modifier
-                            .size(82.dp)
-                            .clip(CircleShape)
-                            .background(Color.White),
+                        modifier = Modifier.size(82.dp),
                     ) {
                         PlayerPlayPauseGlyph(
                             motion = playPauseMotion,
@@ -516,8 +511,8 @@ fun NexaMusicPlayer(
                             playPainter = rememberVectorPainter(Icons.Rounded.PlayArrow),
                             pausePainter = rememberVectorPainter(Icons.Rounded.Pause),
                             contentDescription = if (isPlaying) "Pause" else "Play",
-                            tint = Color.Black,
-                            modifier = Modifier.size(48.dp),
+                            tint = Color.White,
+                            modifier = Modifier.size(62.dp),
                         )
                     }
                     IconButton(onClick = connection::seekToNext, modifier = Modifier.size(72.dp)) {
@@ -574,7 +569,12 @@ fun NexaMusicPlayer(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     IconButton(onClick = { showLyrics = true }, modifier = Modifier.size(48.dp)) {
-                        Icon(Icons.Rounded.MusicNote, contentDescription = "Open lyrics", tint = Color.White.copy(alpha = 0.9f), modifier = Modifier.size(27.dp))
+                        Icon(
+                            Icons.Rounded.MusicNote,
+                            contentDescription = "Open lyrics",
+                            tint = if (lyricLines.isNotEmpty()) Color(0xFFFFA05A) else Color.White.copy(alpha = 0.9f),
+                            modifier = Modifier.size(27.dp),
+                        )
                     }
                     IconButton(
                         onClick = {
@@ -590,6 +590,15 @@ fun NexaMusicPlayer(
                         Icon(Icons.Rounded.QueueMusic, contentDescription = "Open queue", tint = Color.White.copy(alpha = 0.9f), modifier = Modifier.size(27.dp))
                     }
                 }
+                Text(
+                    "This phone",
+                    color = Color.White.copy(alpha = 0.46f),
+                    fontSize = 12.sp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 2.dp, bottom = 2.dp),
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                )
             }
         }
     }
