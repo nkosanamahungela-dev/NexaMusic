@@ -1,9 +1,17 @@
+/*
+ * Adapted from BitChord PlayerSkipMotion.kt
+ * Copyright (C) BitChord contributors.
+ * Original: https://github.com/kushagrasinghx/BitChord
+ * Licensed under GPL-3.0-or-later; see LICENSE.
+ *
+ * The conveyor motion, retargeting, contour splitting and draw geometry are
+ * retained from upstream. Lifecycle visibility is adapted to Android.
+ */
 package com.nexamusic.music.ui.player
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationState
 import androidx.compose.animation.core.Easing
-import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateTo
 import androidx.compose.animation.core.isFinished
 import androidx.compose.animation.core.tween
