@@ -151,12 +151,16 @@ async function getTrackStreamUrl(trackId, quality) {
     throw new Error("[NexaMusic] Unsupported quality: " + requested);
   }
 
-  // Fetch metadata independently from the audio URL. Jamendo's /tracks/file/
-  // endpoint performs an HTTP redirect to the requested encoded audio file.
+  // Jamendo's /tracks/ method returns the playable URL in results[].audio.
+  // Request the chosen format here rather than constructing /tracks/file/,
+  // which is a download/redirect endpoint and can reject tracks whose
+  // download permission is disabled.
   const payload = await requestJson(apiUrl("/tracks/", {
     id: id,
     limit: 1,
-    include: "licenses"
+    audioformat: audioFormat,
+    include: "licenses",
+    imagesize: 300
   }));
 
   const item = payload.results && payload.results[0];
@@ -164,11 +168,10 @@ async function getTrackStreamUrl(trackId, quality) {
     throw new Error("[NexaMusic] Jamendo did not return metadata for track " + id + ".");
   }
 
-  const streamUrl = apiUrl("/tracks/file/", {
-    id: id,
-    audioformat: audioFormat,
-    action: "stream"
-  });
+  const streamUrl = typeof item.audio === "string" ? item.audio.trim() : "";
+  if (!streamUrl || !/^https:\/\//i.test(streamUrl)) {
+    throw new Error("[NexaMusic] Jamendo did not provide a playable " + audioFormat.toUpperCase() + " stream for track " + id + ".");
+  }
 
   return {
     streamUrl: streamUrl,
@@ -192,7 +195,7 @@ async function getTrackStreamUrl(trackId, quality) {
 return {
   id: "nexamusic",
   name: "NexaMusic",
-  version: "0.4.0",
+  version: "0.5.0",
   labels: ["JAMENDO", "FLAC", "INDEPENDENT MUSIC"],
   searchTracks: searchTracks,
   getArtistTracks: getArtistTracks,
