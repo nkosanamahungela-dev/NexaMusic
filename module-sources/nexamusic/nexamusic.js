@@ -2,10 +2,7 @@
  * NexaMusic — 8SPINE Module Engine v2.4.0-alpha
  * Provider: Jamendo public catalogue API
  *
- * IMPORTANT:
- * Replace JAMENDO_CLIENT_ID with a Client ID from your Jamendo developer
- * application before publishing this module for general use.
- * The public test Client ID is not for production use.
+ * Jamendo Client ID is configured for the NexaMusic application.
  *
  * Search: GET /v3.0/tracks/
  * Playback: GET /v3.0/tracks/?id=...&audioformat=flac
@@ -15,7 +12,7 @@ const JAMENDO_CLIENT_ID = "2f3829f8";
 const JAMENDO_API = "https://api.jamendo.com/v3.0";
 
 function assertConfigured() {
-  if (!JAMENDO_CLIENT_ID || JAMENDO_CLIENT_ID === "2f3829f8") {
+  if (!JAMENDO_CLIENT_ID || JAMENDO_CLIENT_ID === "YOUR_JAMENDO_CLIENT_ID") {
     throw new Error("[NexaMusic] Jamendo is not configured. Add your Jamendo developer Client ID to the module.");
   }
 }
