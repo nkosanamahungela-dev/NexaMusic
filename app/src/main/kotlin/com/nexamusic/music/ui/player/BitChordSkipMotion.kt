@@ -19,6 +19,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import com.nexamusic.music.R
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.lifecycle.Lifecycle
@@ -34,8 +35,6 @@ import androidx.compose.ui.graphics.vector.PathNode
 import androidx.compose.ui.graphics.vector.VectorPath
 import androidx.compose.ui.graphics.vector.toPath
 import kotlinx.coroutines.flow.first
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.vectorResource
 
 /**
  * Tuned to the requested conveyor choreography, not published Apple constants.
