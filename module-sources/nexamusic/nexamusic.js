@@ -124,37 +124,43 @@ async function getArtistTracks(artistId, limit) {
   };
 }
 
-async function getTrackStreamUrl(trackId, quality) {
+function normalizeQuality(quality, ctx) {
+  function unwrap(value) {
+    for (let i = 0; i < 3 && value && typeof value === "object"; i++) {
+      if (Object.prototype.hasOwnProperty.call(value, "value")) value = value.value;
+      else break;
+    }
+    return String(value || "").trim().toUpperCase();
+  }
+
+  let selected = unwrap(quality);
+  if (!selected && ctx && ctx.settings) selected = unwrap(ctx.settings.quality);
+  if (!selected && ctx) selected = unwrap(ctx.quality);
+
+  if (selected === "CD" || selected === "FLAC" || selected === "HI_RES") return "LOSSLESS";
+  if (selected === "LOSSLESS" || selected === "HIGH" || selected === "LOW") return selected;
+  // 8SPINE's standard quality argument is LOSSLESS/HIGH/LOW. Default to
+  // LOSSLESS only when the host did not provide a selection.
+  if (!selected) return "LOSSLESS";
+  throw new Error("[NexaMusic] Unsupported quality selection: " + selected);
+}
+
+async function getTrackStreamUrl(trackId, quality, ctx) {
   assertConfigured();
 
   const suppliedId = String(trackId || "").trim();
   if (!suppliedId) throw new Error("[NexaMusic] A Jamendo track ID is required.");
-  // Namespace IDs so 8SPINE cannot reuse a stale stream cached for another
-  // provider or for an earlier NexaMusic module implementation.
   const id = suppliedId.indexOf("jamendo:") === 0
     ? suppliedId.slice("jamendo:".length)
     : suppliedId;
 
-  const requested = String(quality || "LOSSLESS").toUpperCase();
-  let audioFormat;
-  let reportedQuality;
-  if (requested === "LOSSLESS") {
-    audioFormat = "flac";
-    reportedQuality = "LOSSLESS";
-  } else if (requested === "HIGH") {
-    audioFormat = "mp32";
-    reportedQuality = "HIGH";
-  } else if (requested === "LOW") {
-    audioFormat = "mp31";
-    reportedQuality = "LOW";
-  } else {
-    throw new Error("[NexaMusic] Unsupported quality: " + requested);
-  }
+  const requested = normalizeQuality(quality, ctx);
+  const audioFormat = requested === "LOSSLESS" ? "flac" :
+    (requested === "HIGH" ? "mp32" : "mp31");
 
-  // Jamendo's /tracks/ method returns the playable URL in results[].audio.
-  // Request the chosen format here rather than constructing /tracks/file/,
-  // which is a download/redirect endpoint and can reject tracks whose
-  // download permission is disabled.
+  // Jamendo documents results[].audio as the stream URL and audioformat
+  // selects its encoding. Do not require a particular query-string shape:
+  // Jamendo may change the URL representation while honoring audioformat.
   const payload = await requestJson(apiUrl("/tracks/", {
     id: id,
     limit: 1,
@@ -165,26 +171,24 @@ async function getTrackStreamUrl(trackId, quality) {
 
   const item = payload.results && payload.results[0];
   if (!item || String(item.id) !== id) {
-    throw new Error("[NexaMusic] Jamendo did not return metadata for track " + id + ".");
+    throw new Error("[NexaMusic] Jamendo returned no matching track for ID " + id + ".");
   }
 
   const streamUrl = typeof item.audio === "string" ? item.audio.trim() : "";
   if (!streamUrl || !/^https:\/\//i.test(streamUrl)) {
-    throw new Error("[NexaMusic] Jamendo did not provide a playable " + audioFormat.toUpperCase() + " stream for track " + id + ".");
+    throw new Error("[NexaMusic] Jamendo did not return a playable " + audioFormat.toUpperCase() + " stream.");
   }
 
-  // Jamendo's documented audio URL carries the actual requested format in
-  // its query string (format=flac/mp32/mp31). Reject mismatches so 8SPINE
-  // can try another candidate instead of silently playing a lossy stream.
-  const formatMatch = streamUrl.match(/[?&]format=([^&]+)/i);
-  const returnedFormat = formatMatch ? decodeURIComponent(formatMatch[1]).toLowerCase() : "";
-  if (returnedFormat.toLowerCase() !== audioFormat) {
-    throw new Error("[NexaMusic] Jamendo returned " + (returnedFormat || "an unknown format") +
-      " when " + audioFormat + " was requested for track " + id + ".");
-  }
+  const mimeType = audioFormat === "flac" ? "audio/flac" : "audio/mpeg";
+  const qualityLabel = audioFormat === "flac" ? "FLAC" :
+    (audioFormat === "mp32" ? "MP3 VBR" : "MP3 96 kbps");
 
   return {
     streamUrl: streamUrl,
+    // Jamendo's audio field is the stream URL. Downloads are not exposed
+    // separately here because download permission is track-dependent.
+    mimeType: mimeType,
+    streamType: "direct",
     track: {
       id: suppliedId,
       title: String(item.name || ""),
@@ -192,8 +196,11 @@ async function getTrackStreamUrl(trackId, quality) {
       album: String(item.album_name || ""),
       duration: Number(item.duration) || 0,
       albumCover: item.album_image || item.image || null,
-      audioQuality: reportedQuality,
+      audioQuality: qualityLabel,
+      quality: qualityLabel,
+      format: audioFormat === "flac" ? "flac" : "mp3",
       codec: audioFormat === "flac" ? "FLAC" : "MP3",
+      mimeType: mimeType,
       provider: "Jamendo",
       license: item.license_ccurl || null,
       trackPageUrl: item.shareurl || item.shorturl || null,
@@ -207,6 +214,22 @@ return {
   name: "NexaMusic",
   version: "0.1.0",
   labels: ["JAMENDO", "FLAC", "INDEPENDENT MUSIC"],
+  // Jamendo stream URLs may be temporary/provider-managed. Resolve each
+  // playback request afresh rather than persisting a stale stream URL.
+  noStreamCache: true,
+  settings: {
+    quality: {
+      type: "selector",
+      label: "Audio Quality",
+      description: "FLAC lossless format where available. Jamendo does not expose verified bit depth or sample rate, so CD-quality specifications are not claimed.",
+      options: [
+        { label: "FLAC (Lossless format)", value: "LOSSLESS" },
+        { label: "High Quality (MP3 VBR)", value: "HIGH" },
+        { label: "Low Quality (MP3 96 kbps)", value: "LOW" }
+      ],
+      defaultValue: "LOSSLESS"
+    }
+  },
   searchTracks: searchTracks,
   getArtistTracks: getArtistTracks,
   getTrackStreamUrl: getTrackStreamUrl
