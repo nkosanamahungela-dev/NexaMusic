@@ -5,7 +5,7 @@
       "name": "NexaMusic",
       "author": "NexaMusic",
       "version": "0.1.0",
-      "description": "NexaMusic test source powered by Jamendo with strict FLAC/MP3 stream format checks.",
+      "description": "NexaMusic testing source powered by Jamendo, with 8SPINE quality settings and fresh FLAC/MP3 stream resolution.",
       "labels": [
         "JAMENDO",
         "FLAC",
