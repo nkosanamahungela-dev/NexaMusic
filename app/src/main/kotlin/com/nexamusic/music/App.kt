@@ -80,6 +80,10 @@ class App : Application(), SingletonImageLoader.Factory {
     var tidalSdkManager: TidalSdkManager? = null
         private set
 
+    private val tidalSdkReady = CompletableDeferred<TidalSdkManager?>()
+
+    suspend fun awaitTidalSdkManager(): TidalSdkManager? = tidalSdkReady.await()
+
     private val startupPreferencesReady = CompletableDeferred<Unit>()
 
     suspend fun awaitStartupPreferences() = startupPreferencesReady.await()
@@ -97,19 +101,24 @@ class App : Application(), SingletonImageLoader.Factory {
         }
         if (processName == "$packageName:crash") return
 
-        // Initialize TIDAL's official player only for local debug builds with
-        // developer credentials. Public Client Credentials access is preview-only.
-        if (BuildConfig.DEBUG && BuildConfig.TIDAL_CLIENT_ID.isNotBlank() && BuildConfig.TIDAL_CLIENT_SECRET.isNotBlank()) {
+        // Initialize the official TIDAL SDK when a public client ID and registered
+        // redirect URI are configured. Authorization Code uses PKCE; no client secret
+        // is embedded in the Android application.
+        if (BuildConfig.TIDAL_CLIENT_ID.isNotBlank() && BuildConfig.TIDAL_REDIRECT_URI.isNotBlank()) {
             applicationScope.launch(Dispatchers.IO) {
                 runCatching { TidalSdkManager.create(this@App) }
                     .onSuccess { manager ->
                         tidalSdkManager = manager
-                        Timber.tag("TidalSDK").i("Official TIDAL Player SDK initialized")
+                        tidalSdkReady.complete(manager)
+                        Timber.tag("TidalSDK").i("Official TIDAL SDK initialized")
                     }
                     .onFailure { error ->
-                        Timber.tag("TidalSDK").w(error, "Official TIDAL Player SDK initialization failed")
+                        tidalSdkReady.complete(null)
+                        Timber.tag("TidalSDK").w(error, "Official TIDAL SDK initialization failed")
                     }
             }
+        } else {
+            tidalSdkReady.complete(null)
         }
         com.nexamusic.music.canvas.AppleMusicCatalog.cacheDir = filesDir.resolve("apple_catalog")
         com.nexamusic.music.core.UpdateNotificationHelper.cancelUpdateNotification(this)
