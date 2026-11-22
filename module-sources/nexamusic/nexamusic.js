@@ -1,125 +1,138 @@
 /*
  * NexaMusic — 8SPINE Module Engine v2.4.0-alpha
+ * Provider: Jamendo public catalogue API
  *
  * IMPORTANT:
- * Set API_BASE_URL to an API you own or are authorized to use.
- * Expected API:
- *   GET /search?q=<query>&limit=<limit>
- *   GET /stream/<trackId>?quality=LOSSLESS|HIGH|LOW
+ * Replace JAMENDO_CLIENT_ID with a Client ID from your Jamendo developer
+ * application before publishing this module for general use.
+ * The public test Client ID is not for production use.
  *
- * Search response: { tracks: [{ id, title, artist, album, duration, albumCover }] }
- * Stream response: {
- *   streamUrl: "https://...",
- *   track: { codec:"FLAC", bitDepth:16, sampleRate:44100, audioQuality:"LOSSLESS" }
- * }
- *
- * The module intentionally has no fake/demo catalogue or fabricated audio URLs.
+ * Search: GET /v3.0/tracks/
+ * Playback: GET /v3.0/tracks/?id=...&audioformat=flac
  */
 
-const API_BASE_URL = "https://YOUR-NEXAMUSIC-API-HOST";
+const JAMENDO_CLIENT_ID = "YOUR_JAMENDO_CLIENT_ID";
+const JAMENDO_API = "https://api.jamendo.com/v3.0";
 
-function assertConfiguredApi() {
-  if (!/^https:\/\//i.test(API_BASE_URL) ||
-      API_BASE_URL.indexOf("YOUR-NEXAMUSIC-API-HOST") !== -1) {
-    throw new Error("[NexaMusic] Provider API is not configured. Set API_BASE_URL to your HTTPS API.");
+function assertConfigured() {
+  if (!JAMENDO_CLIENT_ID || JAMENDO_CLIENT_ID === "YOUR_JAMENDO_CLIENT_ID") {
+    throw new Error("[NexaMusic] Jamendo is not configured. Add your Jamendo developer Client ID to the module.");
   }
 }
 
-async function fetchJson(url) {
+async function requestJson(url) {
   const response = await fetch(url, {
+    method: "GET",
     headers: { Accept: "application/json" }
   });
+
   if (!response || !response.ok) {
-    throw new Error("[NexaMusic] API request failed: HTTP " +
-      (response ? response.status : "unknown"));
+    throw new Error("[NexaMusic] Jamendo request failed (HTTP " +
+      (response ? response.status : "unknown") + ").");
   }
-  return await response.json();
+
+  const payload = await response.json();
+  if (!payload || !payload.headers || payload.headers.status !== "success") {
+    const message = payload && payload.headers && payload.headers.error_message;
+    throw new Error("[NexaMusic] Jamendo API error: " + (message || "Unknown response"));
+  }
+  return payload;
 }
 
-function pick(object, keys, fallback) {
-  for (const key of keys) {
-    if (object && object[key] !== undefined && object[key] !== null && object[key] !== "") {
-      return object[key];
+function apiUrl(path, params) {
+  const pairs = [];
+  pairs.push("client_id=" + encodeURIComponent(JAMENDO_CLIENT_ID));
+  pairs.push("format=json");
+  for (const key in params) {
+    if (Object.prototype.hasOwnProperty.call(params, key) &&
+        params[key] !== undefined && params[key] !== null && params[key] !== "") {
+      pairs.push(encodeURIComponent(key) + "=" + encodeURIComponent(String(params[key])));
     }
   }
-  return fallback;
+  return JAMENDO_API + path + "?" + pairs.join("&");
 }
 
-function normalizeTrack(item) {
+function mapTrack(item) {
   return {
-    id: String(pick(item, ["id", "trackId", "track_id"], "")),
-    title: String(pick(item, ["title", "name"], "Unknown title")),
-    artist: String(pick(item, ["artist", "artistName", "artist_name"], "Unknown artist")),
-    album: String(pick(item, ["album", "albumName", "album_name"], "")),
-    duration: Number(pick(item, ["duration", "durationSeconds"], 0)) || 0,
-    albumCover: pick(item, ["albumCover", "coverUrl", "artwork"], null),
-    isrc: pick(item, ["isrc", "ISRC"], null)
+    id: String(item.id),
+    title: String(item.name || "Unknown title"),
+    artist: String(item.artist_name || "Unknown artist"),
+    album: String(item.album_name || ""),
+    duration: Number(item.duration) || 0,
+    albumCover: item.album_image || item.image || null,
+    source: "Jamendo",
+    license: item.license_ccurl || null,
+    audioFormat: "FLAC",
+    // Jamendo's API supplies a requested format but does not expose
+    // verified bit-depth/sample-rate metadata in this response.
+    // Do not claim CD-quality (16-bit/44.1 kHz) from format alone.
+    audioQuality: "HIGH"
   };
 }
 
-async function searchTracks(query, limit = 30) {
-  assertConfiguredApi();
-  const safeLimit = Math.max(1, Math.min(Number(limit) || 30, 100));
-  const url = API_BASE_URL.replace(/\/+$/, "") +
-    "/search?q=" + encodeURIComponent(String(query || "")) +
-    "&limit=" + safeLimit;
-  const payload = await fetchJson(url);
-  const items = Array.isArray(payload) ? payload :
-    pick(payload, ["tracks", "results", "items"], []);
-  if (!Array.isArray(items)) {
-    throw new Error("[NexaMusic] Search API returned an invalid tracks list.");
-  }
-  const tracks = items.map(normalizeTrack).filter(track => track.id);
+async function searchTracks(query, limit) {
+  assertConfigured();
+  const search = String(query || "").trim();
+  if (!search) return { tracks: [], total: 0 };
+
+  const safeLimit = Math.max(1, Math.min(Number(limit) || 30, 50));
+  const payload = await requestJson(apiUrl("/tracks/", {
+    search: search,
+    limit: safeLimit,
+    type: "single albumtrack",
+    audioformat: "flac",
+    include: "licenses",
+    imagesize: 300
+  }));
+
+  const results = Array.isArray(payload.results) ? payload.results : [];
+  const tracks = results
+    .filter(function (item) { return item && item.id !== undefined && item.id !== null; })
+    .map(mapTrack);
+
   return {
     tracks: tracks,
-    total: Number(pick(payload, ["total", "count"], tracks.length)) || tracks.length
+    total: Number(payload.headers.results_count) || tracks.length
   };
 }
 
-async function getTrackStreamUrl(trackId, quality = "LOSSLESS") {
-  assertConfiguredApi();
+async function getTrackStreamUrl(trackId, quality) {
+  assertConfigured();
+
   const requested = String(quality || "LOSSLESS").toUpperCase();
-  if (!["LOSSLESS", "HIGH", "LOW"].includes(requested)) {
-    throw new Error("[NexaMusic] Unsupported requested quality: " + requested);
+  let audioFormat = "flac";
+  if (requested === "LOW") audioFormat = "mp31";
+  else if (requested === "HIGH") audioFormat = "mp32";
+  else if (requested !== "LOSSLESS") {
+    throw new Error("[NexaMusic] Unsupported quality: " + requested);
   }
 
-  const url = API_BASE_URL.replace(/\/+$/, "") +
-    "/stream/" + encodeURIComponent(String(trackId)) +
-    "?quality=" + encodeURIComponent(requested);
-  const payload = await fetchJson(url);
-  const metadata = pick(payload, ["track", "metadata"], payload);
-  const streamUrl = pick(payload, ["streamUrl", "url", "directUrl"], null);
+  const payload = await requestJson(apiUrl("/tracks/", {
+    id: String(trackId),
+    limit: 1,
+    audioformat: audioFormat,
+    include: "licenses"
+  }));
 
-  if (typeof streamUrl !== "string" || !/^https:\/\//i.test(streamUrl)) {
-    throw new Error("[NexaMusic] Provider did not return a direct HTTPS audio URL.");
+  const item = payload.results && payload.results[0];
+  if (!item || !item.audio || !/^https:\/\//i.test(item.audio)) {
+    throw new Error("[NexaMusic] Jamendo did not return a playable audio stream for this track.");
   }
 
-  const codec = String(pick(metadata, ["codec", "format", "audioCodec"], "")).toUpperCase();
-  const mimeType = String(pick(metadata, ["mimeType", "contentType"], "")).toLowerCase();
-  const bitDepth = Number(pick(metadata, ["bitDepth", "bitsPerSample"], 0)) || 0;
-  const sampleRate = Number(pick(metadata, ["sampleRate", "samplingRate"], 0)) || 0;
-  const isFlac = codec === "FLAC" || mimeType === "audio/flac" || mimeType === "audio/x-flac";
-
-  if (requested === "LOSSLESS") {
-    if (!isFlac) {
-      throw new Error("[NexaMusic] LOSSLESS rejected: provider did not identify the stream as FLAC.");
-    }
-    if (bitDepth < 16 || sampleRate < 44100) {
-      throw new Error("[NexaMusic] LOSSLESS rejected: stream does not meet CD quality (16-bit / 44.1 kHz minimum).");
-    }
-  }
+  const codec = audioFormat === "flac" ? "FLAC" :
+    (audioFormat === "ogg" ? "OGG" : "MP3");
 
   return {
-    streamUrl: streamUrl,
+    streamUrl: item.audio,
     track: {
-      id: String(trackId),
-      audioQuality: requested === "LOSSLESS" ? "LOSSLESS" :
-        String(pick(metadata, ["audioQuality", "quality"], requested)),
-      codec: codec || null,
-      mimeType: mimeType || null,
-      bitDepth: bitDepth || null,
-      sampleRate: sampleRate || null,
-      bitrate: Number(pick(metadata, ["bitrate"], 0)) || null
+      id: String(item.id),
+      title: String(item.name || ""),
+      artist: String(item.artist_name || ""),
+      audioQuality: audioFormat === "flac" ? "HIGH" :
+        (audioFormat === "mp32" ? "HIGH" : "LOW"),
+      codec: codec,
+      provider: "Jamendo",
+      license: item.license_ccurl || null
     }
   };
 }
@@ -127,8 +140,8 @@ async function getTrackStreamUrl(trackId, quality = "LOSSLESS") {
 return {
   id: "nexamusic",
   name: "NexaMusic",
-  version: "0.1.1",
-  labels: ["FLAC", "LOSSLESS", "CD QUALITY"],
+  version: "0.2.0",
+  labels: ["JAMENDO", "FLAC", "INDEPENDENT MUSIC"],
   searchTracks: searchTracks,
   getTrackStreamUrl: getTrackStreamUrl
 };
