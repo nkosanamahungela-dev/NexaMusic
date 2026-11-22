@@ -1,51 +1,35 @@
-# NexaMusic 8SPINE Module
+# NexaMusic — 8SPINE Module
 
-This directory contains the distributable NexaMusic module and its source index.
+Version: 0.1.1  
+Engine target: 8SPINE Module Engine v2.4.0-alpha
 
-## Add the source
+## Public source
 
-Publish this directory on an HTTPS static host. In NexaMusic, open **Module Sources → Add Source** and paste the public URL to `index.json`.
+Add this URL in **Module Sources → Add Source**:
 
-The index follows the category-based format consumed by this repository's `spine` module loader. The module download path is relative to the index URL.
+`https://nexamusic-module-source.onrender.com/index.json`
 
-## Configure the provider API
+The index uses the `category:music` catalogue format and its `download` field points to the hosted JavaScript module.
 
-The module is an adapter, not a music catalogue or audio host. Configure the API base URL and endpoint paths in the module settings after installation.
+## Required provider integration
 
-Expected search endpoint:
+This repository does not include a music catalogue or an audio-stream provider. Before this module can search or play tracks, set `API_BASE_URL` near the top of `nexamusic.js` to an HTTPS API that you own or are authorized to use.
 
-`GET /search?q={query}&limit={limit}`
+The module expects:
 
-It may return an array or an object containing `tracks`, `results`, `items`, or `data`. Each item should include an ID, title, artist, and optional album/artwork/duration fields.
+- `GET /search?q={query}&limit={limit}` → `{ tracks: [...], total: number }`
+- `GET /stream/{trackId}?quality=LOSSLESS|HIGH|LOW` → `{ streamUrl, track }`
 
-Expected stream endpoint:
+Each search track should provide `id`, `title`, and `artist`. Optional fields include `album`, `duration`, `albumCover`, and `isrc`.
 
-`GET /stream/{trackId}?quality=LOSSLESS`
+For LOSSLESS, the stream response must explicitly identify FLAC and report at least 16-bit / 44,100 Hz. Otherwise the module rejects it. Metadata checks are a guard against false labels, not cryptographic proof of the audio bytes; the actual stream should also be inspected by the playback pipeline.
 
-It must return JSON containing a direct HTTPS audio URL in `streamUrl`, `url`, `directUrl`, or `audioUrl`, plus audio metadata. For a LOSSLESS request, metadata must explicitly identify FLAC and report at least 16-bit and 44,100 Hz.
+## 8SPINE contract
 
-Example stream response:
+The script returns the module object directly, as required by the 8SPINE loader:
 
-```json
-{
-  "streamUrl": "https://media.example.org/audio/track.flac",
-  "track": {
-    "codec": "FLAC",
-    "mimeType": "audio/flac",
-    "bitDepth": 16,
-    "sampleRate": 44100
-  }
-}
-```
+- `id`, `name`, `version`, `labels`
+- `searchTracks(query, limit)`
+- `getTrackStreamUrl(id, quality)`
 
-The example URL is illustrative only. No provider is bundled or implied.
-
-## Lossless integrity
-
-The module rejects a LOSSLESS response when the provider does not report FLAC, at least 16-bit depth, and at least 44.1 kHz. This prevents the module from *claiming* CD lossless based only on a quality label.
-
-The module cannot independently prove the bytes behind a remote URL are lossless; the provider's metadata must be trustworthy, and the playback pipeline should inspect the actual media format when it opens the stream. A provider that transcodes or mislabels audio can still supply false metadata.
-
-## Runtime compatibility
-
-The JavaScript exports `searchTracks` and `getTrackStreamUrl` through `module.exports`, which is what the current NexaMusic QuickJS-based `spine` runtime loads. The public 8SPINE docs describe the same method contract, while the app's runtime-specific export wrapper is CommonJS-style.
+No CommonJS `module.exports` wrapper is used.
