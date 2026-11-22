@@ -77,6 +77,7 @@ import com.nexamusic.music.ui.screens.settings.PlayerThemeScreen
 import com.nexamusic.music.ui.screens.settings.BackupAndRestore
 import com.nexamusic.music.ui.screens.settings.CrashLogsSettingsScreen
 import com.nexamusic.music.ui.screens.settings.SpotifyScreen
+import com.nexamusic.music.ui.screens.settings.TidalScreen
 import com.nexamusic.music.viewmodels.SpotifyImportViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.nexamusic.music.ui.screens.settings.ContentSettings
@@ -617,6 +618,10 @@ fun NavGraphBuilder.navigationBuilder(
 
     sharedComposable("settings/spotify") {
         SpotifyScreen(navController, scrollBehavior)
+    }
+
+    sharedComposable("settings/tidal") {
+        TidalScreen(navController)
     }
 
     sharedComposable(
