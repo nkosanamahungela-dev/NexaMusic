@@ -154,6 +154,8 @@ fun NexaMusicPlayer(
     var position by remember { mutableLongStateOf(connection.player.currentPosition.coerceAtLeast(0L)) }
     var isPlaying by remember { mutableStateOf(connection.player.isPlaying) }
     val playPauseMotion = rememberPlayerPlayPauseMotion(isPlaying = isPlaying, active = true, reduceMotion = false)
+    val previousSkipMotion = rememberPlayerSkipMotion(active = true, reduceMotion = false)
+    val nextSkipMotion = rememberPlayerSkipMotion(active = true, reduceMotion = false)
     var duration by remember { mutableLongStateOf(0L) }
     var showLyrics by remember { mutableStateOf(false) }
     var showQueue by remember { mutableStateOf(false) }
@@ -494,8 +496,8 @@ fun NexaMusicPlayer(
                     horizontalArrangement = Arrangement.SpaceAround,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    IconButton(onClick = connection::seekToPrevious, modifier = Modifier.size(72.dp)) {
-                        Icon(Icons.Rounded.SkipPrevious, contentDescription = "Previous", tint = Color.White, modifier = Modifier.size(48.dp))
+                    IconButton(onClick = { previousSkipMotion.onTap(); connection.seekToPrevious() }, modifier = Modifier.size(72.dp)) {
+                        PlayerSkipGlyph(motion = previousSkipMotion, contentDescription = "Previous", tint = Color.White, modifier = Modifier.size(48.dp), previous = true)
                     }
                     IconButton(
                         onClick = {
@@ -515,8 +517,8 @@ fun NexaMusicPlayer(
                             modifier = Modifier.size(62.dp),
                         )
                     }
-                    IconButton(onClick = connection::seekToNext, modifier = Modifier.size(72.dp)) {
-                        Icon(Icons.Rounded.SkipNext, contentDescription = "Next", tint = Color.White, modifier = Modifier.size(48.dp))
+                    IconButton(onClick = { nextSkipMotion.onTap(); connection.seekToNext() }, modifier = Modifier.size(72.dp)) {
+                        PlayerSkipGlyph(motion = nextSkipMotion, contentDescription = "Next", tint = Color.White, modifier = Modifier.size(48.dp))
                     }
                 }
 
