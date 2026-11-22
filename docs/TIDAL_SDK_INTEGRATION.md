@@ -1,35 +1,66 @@
-# TIDAL SDK integration (development)
+# NexaMusic TIDAL integration — development
 
-NexaMusic now has a development integration point for TIDAL's official Android Player SDK.
+NexaMusic is integrating TIDAL using its official Android Player SDK, following
+the native SDK lifecycle. This is intentionally separate from the 8SPINE
+JavaScript URL-module contract used by the friend's private backend.
 
-## Credentials
+## Local configuration
 
-For local debug builds only, add these entries to the ignored root `local.properties` file:
+Add the following to the ignored root `local.properties` file:
 
 ```properties
 tidal.clientid=YOUR_TIDAL_CLIENT_ID
-tidal.clientsecret=YOUR_TIDAL_CLIENT_SECRET
+tidal.clientredirecturi=nexamusic://tidal-auth/callback
+tidal.clientscopes=YOUR_APPROVED_SCOPES
 ```
 
-Do not commit `local.properties`, publish the client secret, or include it in a release APK. NexaMusic's Gradle configuration injects the client secret into debug builds only; release builds receive an empty value.
+Register the exact redirect URI in the TIDAL Developer Dashboard. Only use
+scopes that TIDAL has approved for the NexaMusic application. No client secret
+is embedded in the Android APK; the SDK's Authorization Code flow uses PKCE.
 
 ## Current implementation
 
-- Uses the official `com.tidal.sdk:player:0.0.74` Android SDK.
-- Uses the SDK's Auth and EventProducer dependencies.
-- Creates the SDK player from the application process when debug credentials are present.
-- Exposes playback actions and SDK playback events through `TidalSdkManager`.
-- Requests TIDAL's `LOSSLESS` quality by default and supports the SDK's `HI_RES_LOSSLESS` option.
-- Does not extract, proxy, or manufacture TIDAL stream URLs.
+- Official `com.tidal.sdk:player:0.0.74` dependency.
+- Official Auth and EventProducer modules supplied transitively by Player.
+- `TidalSdkManager` initializes Auth and Player, starts Authorization Code
+  + PKCE login, completes the redirect callback, logs out, and exposes player
+  controls/events.
+- MainActivity receives `nexamusic://tidal-auth/callback` and passes the
+  untouched query component to TIDAL Auth's `finalizeLogin`.
+- Playback quality requests include `LOSSLESS` (up to 1411 kbps FLAC) and
+  `HI_RES_LOSSLESS`, as defined by TIDAL's SDK.
 
-## Access limitation
+## Friend-style 8SPINE compatibility
 
-TIDAL's published Android SDK documentation states that the publicly supported Client Credentials flow provides 30-second previews. Full-length playback through Authorization Code or Device Login is currently restricted to internally developed TIDAL applications. This code does not bypass that restriction.
+The friend's module contract is a JavaScript URL-provider interface:
+`searchTracks`, `getTrackStreamUrl`, `getTrackDownloadUrl`, `getAlbum`,
+and `getArtist`. Its backend returns signed stream URLs and stream metadata.
 
-NexaMusic must receive explicit TIDAL approval for an eligible full-length playback flow before CD-quality or Hi-Res full-track playback can be enabled. Setting the requested SDK quality to `LOSSLESS` does not itself grant that entitlement.
+TIDAL's official Android SDK owns stream resolution and playback internally.
+It does not expose signed audio URLs for an 8SPINE JavaScript resolver. A
+JavaScript module cannot call the native Player without an explicitly supported
+native bridge in the 8SPINE runtime. NexaMusic must not fake a `streamUrl` or
+claim that a native SDK request is an 8SPINE URL module.
 
-## Integration status
+The native SDK integration is therefore the authorised playback path. We can
+preserve the friend-style module metadata, quality labels, search/album/artist
+metadata conventions where supported, but actual playback must stay native.
 
-This is the native SDK bootstrap and playback-controller foundation. The existing NexaMusic Media3 session and Now Playing UI have not yet been switched to the TIDAL SDK engine. That requires a deliberate playback-session/UI adapter; the TIDAL SDK does not expose a raw stream URL for the existing 8SPINE resolver.
+## Access and verification
 
-Keep the old 8SPINE Jamendo stream source disabled. TIDAL native playback and 8SPINE URL modules are separate integration paths.
+The public SDK README documents Client Credentials as the publicly supported
+flow for 30-second previews. Its Auth module documents Authorization Code
+login, while Device Login is marked for TIDAL internal apps only. Whether
+NexaMusic's registered app is permitted full-length playback is controlled by
+TIDAL's developer approval and the account's entitlement.
+
+Selecting `LOSSLESS` requests that quality; it does not prove a full track was
+delivered losslessly. Before claiming CD quality, verify successful full-track
+playback and the actual stream quality reported by TIDAL's SDK.
+
+## Remaining work
+
+- Connect `TidalSdkManager` to NexaMusic's existing MediaSession and Now Playing
+  controls, without replacing the current player for other providers.
+- Add the TIDAL login entry point in app settings.
+- Run a complete Android Gradle build and device playback test.
