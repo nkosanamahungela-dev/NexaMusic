@@ -20,11 +20,12 @@ is embedded in the Android APK; the SDK's Authorization Code flow uses PKCE.
 
 ## Current implementation
 
-- Official `com.tidal.sdk:player:0.0.74` dependency.
+- Official `com.tidal.sdk:player:0.0.39` dependency.
 - Official Auth and EventProducer modules supplied transitively by Player.
 - `TidalSdkManager` initializes Auth and Player, starts Authorization Code
-  + PKCE login, completes the redirect callback, logs out, and exposes player
-  controls/events.
+  + PKCE login, completes the redirect callback, logs out, exposes player
+  controls/events, and maps the friend's `HI_RES`, `HI_RES_DOLBY`, `CD`,
+  `HIGH`, and `LOW` quality choices to official SDK options.
 - MainActivity receives `nexamusic://tidal-auth/callback` and passes the
   untouched query component to TIDAL Auth's `finalizeLogin`.
 - Playback quality requests include `LOSSLESS` (up to 1411 kbps FLAC) and
