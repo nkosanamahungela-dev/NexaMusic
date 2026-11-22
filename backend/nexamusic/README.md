@@ -1,26 +1,20 @@
-# NexaMusic Stream Backend
+# NexaMusic legacy stream backend
 
-Version 0.1.0 — testing.
+Version 0.1.0 — retired.
 
-Node.js 20+ service for the NexaMusic 8SPINE module. It keeps Jamendo API calls
-and audio stream resolution behind a dedicated backend and proxies byte-range
-requests so compatible players can seek through audio.
+The previous Jamendo catalogue adapter and audio proxy have been removed.
+This service remains temporarily available only to return a health response
+and an HTTP 410 response for legacy stream routes.
 
-## Routes
+NexaMusic is moving to TIDAL's official native Android Player SDK. The SDK
+handles authentication, entitlement checks, stream resolution, playback, and
+session reporting inside the Android application. The native SDK does not
+supply public stream URLs for an 8SPINE URL module.
 
-- `GET /health` — service health and capabilities.
-- `GET /v1/search?q=...` — search Jamendo tracks.
-- `GET /v1/artists/:id/tracks` — artist tracks.
-- `GET /v1/resolve/:trackId?quality=LOSSLESS` — fresh stream resolution.
-- `GET|HEAD /v1/stream/:trackId?quality=LOSSLESS` — audio proxy with Range support.
+See the TIDAL SDK integration document in docs/.
 
-Quality values: `LOSSLESS` / `FLAC`, `HIGH`, `LOW`.
+Routes:
+- GET /health — confirms that the legacy service is retired.
+- All previous /v1 streaming routes return 410 Gone.
 
-## Environment
-
-- `PORT` — supplied by Render.
-- `JAMENDO_CLIENT_ID` — optional; defaults to the public NexaMusic app Client ID.
-- `PUBLIC_BASE_URL` — optional; set to the Render service URL if reverse-proxy host detection is unsuitable.
-
-Jamendo's FLAC option does not establish verified bit depth or sample rate.
-This service does not provide Tidal access or claim CD-quality master metadata.
+No provider credentials are required.
