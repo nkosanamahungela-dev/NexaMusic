@@ -55,6 +55,7 @@ jetpackSfSymbols = "1.1.1"
 # Apple-Music-style karaoke lyrics renderer (per-syllable timing, duet alignment).
 accompanist-lyrics-ui = "1.0.19"
 accompanist-lyrics-core = "0.4.7"
+tidalSdkPlayer = "0.0.74"
 
 
 [libraries]
@@ -167,6 +168,8 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 kotlinx-atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version = "0.33.0" }
 jetpackSfSymbols = { module = "com.github.cosmictaserdev-creator.Jetpack_SF_Symbols:sfsymbols", version.ref = "jetpackSfSymbols" }
 
+
+tidal-sdk-player = { module = "com.tidal.sdk:player", version.ref = "tidalSdkPlayer" }
 
 [plugins]
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
