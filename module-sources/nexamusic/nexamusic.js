@@ -132,38 +132,55 @@ async function getArtistTracks(artistId, limit) {
 async function getTrackStreamUrl(trackId, quality) {
   assertConfigured();
 
+  const id = String(trackId || "").trim();
+  if (!id) throw new Error("[NexaMusic] A Jamendo track ID is required.");
+
   const requested = String(quality || "LOSSLESS").toUpperCase();
-  let audioFormat = "flac";
-  if (requested === "LOW") audioFormat = "mp31";
-  else if (requested === "HIGH") audioFormat = "mp32";
-  else if (requested !== "LOSSLESS") {
+  let audioFormat;
+  let reportedQuality;
+  if (requested === "LOSSLESS") {
+    audioFormat = "flac";
+    reportedQuality = "LOSSLESS";
+  } else if (requested === "HIGH") {
+    audioFormat = "mp32";
+    reportedQuality = "HIGH";
+  } else if (requested === "LOW") {
+    audioFormat = "mp31";
+    reportedQuality = "LOW";
+  } else {
     throw new Error("[NexaMusic] Unsupported quality: " + requested);
   }
 
+  // Fetch metadata independently from the audio URL. Jamendo's /tracks/file/
+  // endpoint performs an HTTP redirect to the requested encoded audio file.
   const payload = await requestJson(apiUrl("/tracks/", {
-    id: String(trackId),
+    id: id,
     limit: 1,
-    audioformat: audioFormat,
     include: "licenses"
   }));
 
   const item = payload.results && payload.results[0];
-  if (!item || !item.audio || !/^https:\/\//i.test(item.audio)) {
-    throw new Error("[NexaMusic] Jamendo did not return a playable audio stream for this track.");
+  if (!item || String(item.id) !== id) {
+    throw new Error("[NexaMusic] Jamendo did not return metadata for track " + id + ".");
   }
 
-  const codec = audioFormat === "flac" ? "FLAC" :
-    (audioFormat === "ogg" ? "OGG" : "MP3");
+  const streamUrl = apiUrl("/tracks/file/", {
+    id: id,
+    audioformat: audioFormat,
+    action: "stream"
+  });
 
   return {
-    streamUrl: item.audio,
+    streamUrl: streamUrl,
     track: {
       id: String(item.id),
       title: String(item.name || ""),
       artist: String(item.artist_name || ""),
-      audioQuality: audioFormat === "flac" ? "HIGH" :
-        (audioFormat === "mp32" ? "HIGH" : "LOW"),
-      codec: codec,
+      album: String(item.album_name || ""),
+      duration: Number(item.duration) || 0,
+      albumCover: item.album_image || item.image || null,
+      audioQuality: reportedQuality,
+      codec: audioFormat === "flac" ? "FLAC" : "AAC",
       provider: "Jamendo",
       license: item.license_ccurl || null,
       trackPageUrl: item.shareurl || item.shorturl || null,
@@ -175,7 +192,7 @@ async function getTrackStreamUrl(trackId, quality) {
 return {
   id: "nexamusic",
   name: "NexaMusic",
-  version: "0.3.0",
+  version: "0.4.0",
   labels: ["JAMENDO", "FLAC", "INDEPENDENT MUSIC"],
   searchTracks: searchTracks,
   getArtistTracks: getArtistTracks,
