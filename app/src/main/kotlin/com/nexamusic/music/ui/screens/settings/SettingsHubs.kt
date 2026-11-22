@@ -220,6 +220,7 @@ object SettingsHubs {
                 listOf(
                     SettingsLink("YouTube Music", R.drawable.account, { systemRed }, route("settings/account"), "Sign-in, sync and ListenBrainz", "login youtube sync listenbrainz"),
                     SettingsLink("Spotify", R.drawable.spotify, { systemGreen }, route("settings/spotify"), "Connect and import playlists", "import"),
+                    SettingsLink("TIDAL", R.drawable.music_note, { systemBlue }, route("settings/tidal"), "Connect TIDAL and choose streaming quality", "tidal lossless flac hi-res dolby cd hifi"),
                     SettingsLink("Apple Music import", R.drawable.playlist_add, { systemRed }, SettingsAction.AppleMusicImport, "Import playlists from a link or export", "apple music playlist import export"),
                     SettingsLink("Discord", R.drawable.discord, { systemIndigo }, route("settings/integrations/discord"), "Listening status", "rich presence"),
                     SettingsLink("Last.fm", R.drawable.music_note, { systemRed }, route("settings/integrations/lastfm"), "Scrobbling", "scrobble"),
