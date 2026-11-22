@@ -1,6 +1,6 @@
 # NexaMusic — 8SPINE Module
 
-Version: 0.3.0  
+Version: 0.4.0  
 Engine target: 8SPINE Module Engine v2.4.0-alpha  
 Provider: Jamendo
 
@@ -14,7 +14,7 @@ NexaMusic reads the source index and loads the module from its published HTTPS d
 
 ## Provider configuration
 
-The NexaMusic Jamendo Client ID is configured in `nexamusic.js`. The module uses Jamendo's read-only public API and does not require a Client Secret or OAuth flow.
+The NexaMusic Jamendo Client ID is configured in `nexamusic.js`. The module uses Jamendo's read-only public API.
 
 ## Search and artist browsing
 
@@ -23,20 +23,16 @@ The NexaMusic Jamendo Client ID is configured in `nexamusic.js`. The module uses
 - Search returns title, artist, album, duration, artwork, licence metadata, track-page URL when supplied, and the API's download-allowed flag.
 - Search requests include `fullcount=true` and prefer `headers.results_fullcount` when returned, falling back to `headers.results_count`.
 
-## Playback
+## Playback quality
 
-- Playback resolves a selected track through `GET /v3.0/tracks/?id=...`.
-- LOSSLESS requests Jamendo's `flac` format.
-- HIGH requests `mp32` (MP3 VBR).
-- LOW requests `mp31` (MP3 96 kbps).
-- The module does not claim verified CD-quality (16-bit / 44.1 kHz), because the response fields used here do not verify bit depth and sample rate.
+- LOSSLESS requests the Jamendo `/v3.0/tracks/file/` redirect endpoint with `audioformat=flac` and `action=stream`.
+- HIGH requests `audioformat=mp32` (MP3 VBR).
+- LOW requests `audioformat=mp31` (MP3 96 kbps).
+- Playback metadata reports LOSSLESS only when that quality was requested; the player must still confirm the actual decoded stream format. The module does not invent sample-rate or bit-depth values.
 
 ## 8SPINE contract
-
-The module returns the standard object directly:
 
 - `id`, `name`, `version`, `labels`
 - `searchTracks(query, limit)`
 - `getArtistTracks(artistId, limit)`
 - `getTrackStreamUrl(id, quality)`
-
