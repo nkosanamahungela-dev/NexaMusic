@@ -51,7 +51,7 @@ function apiUrl(path, params) {
 
 function mapTrack(item) {
   return {
-    id: String(item.id),
+    id: "jamendo:" + String(item.id),
     title: String(item.name || "Unknown title"),
     artist: String(item.artist_name || "Unknown artist"),
     album: String(item.album_name || ""),
@@ -132,8 +132,13 @@ async function getArtistTracks(artistId, limit) {
 async function getTrackStreamUrl(trackId, quality) {
   assertConfigured();
 
-  const id = String(trackId || "").trim();
-  if (!id) throw new Error("[NexaMusic] A Jamendo track ID is required.");
+  const suppliedId = String(trackId || "").trim();
+  if (!suppliedId) throw new Error("[NexaMusic] A Jamendo track ID is required.");
+  // Namespace IDs so 8SPINE cannot reuse a stale stream cached for another
+  // provider or for an earlier NexaMusic module implementation.
+  const id = suppliedId.indexOf("jamendo:") === 0
+    ? suppliedId.slice("jamendo:".length)
+    : suppliedId;
 
   const requested = String(quality || "LOSSLESS").toUpperCase();
   let audioFormat;
@@ -173,6 +178,20 @@ async function getTrackStreamUrl(trackId, quality) {
     throw new Error("[NexaMusic] Jamendo did not provide a playable " + audioFormat.toUpperCase() + " stream for track " + id + ".");
   }
 
+  // Jamendo's documented audio URL carries the actual requested format in
+  // its query string (format=flac/mp32/mp31). Reject mismatches so 8SPINE
+  // can try another candidate instead of silently playing a lossy stream.
+  let returnedFormat = "";
+  try {
+    returnedFormat = new URL(streamUrl).searchParams.get("format") || "";
+  } catch (_) {
+    throw new Error("[NexaMusic] Jamendo returned an unreadable audio URL for track " + id + ".");
+  }
+  if (returnedFormat.toLowerCase() !== audioFormat) {
+    throw new Error("[NexaMusic] Jamendo returned " + (returnedFormat || "an unknown format") +
+      " when " + audioFormat + " was requested for track " + id + ".");
+  }
+
   return {
     streamUrl: streamUrl,
     track: {
@@ -195,7 +214,7 @@ async function getTrackStreamUrl(trackId, quality) {
 return {
   id: "nexamusic",
   name: "NexaMusic",
-  version: "0.5.0",
+  version: "0.1.0",
   labels: ["JAMENDO", "FLAC", "INDEPENDENT MUSIC"],
   searchTracks: searchTracks,
   getArtistTracks: getArtistTracks,
