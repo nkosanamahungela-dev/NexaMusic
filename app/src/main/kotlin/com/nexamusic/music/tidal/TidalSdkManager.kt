@@ -128,6 +128,41 @@ class TidalSdkManager private constructor(
     fun requestHighQuality() {
         player.playbackEngine.streamingWifiAudioQuality = AudioQuality.HIGH
         player.playbackEngine.streamingCellularAudioQuality = AudioQuality.HIGH
+        player.playbackEngine.immersiveAudio = false
+    }
+
+    /**
+     * Mirrors the friend's quality selector while using only quality modes
+     * actually exposed by the official Android SDK.
+     *
+     * HI_RES_DOLBY requests Hi-Res lossless and enables immersive audio;
+     * availability still depends on TIDAL's track and account entitlements.
+     */
+    fun setQuality(option: String) {
+        when (option.trim().uppercase()) {
+            "HI_RES" -> {
+                player.playbackEngine.streamingWifiAudioQuality = AudioQuality.HI_RES_LOSSLESS
+                player.playbackEngine.streamingCellularAudioQuality = AudioQuality.HI_RES_LOSSLESS
+                player.playbackEngine.immersiveAudio = false
+            }
+            "HI_RES_DOLBY" -> {
+                player.playbackEngine.streamingWifiAudioQuality = AudioQuality.HI_RES_LOSSLESS
+                player.playbackEngine.streamingCellularAudioQuality = AudioQuality.HI_RES_LOSSLESS
+                player.playbackEngine.immersiveAudio = true
+            }
+            "CD", "LOSSLESS" -> {
+                player.playbackEngine.streamingWifiAudioQuality = AudioQuality.LOSSLESS
+                player.playbackEngine.streamingCellularAudioQuality = AudioQuality.LOSSLESS
+                player.playbackEngine.immersiveAudio = false
+            }
+            "HIGH" -> requestHighQuality()
+            "LOW" -> {
+                player.playbackEngine.streamingWifiAudioQuality = AudioQuality.LOW
+                player.playbackEngine.streamingCellularAudioQuality = AudioQuality.LOW
+                player.playbackEngine.immersiveAudio = false
+            }
+            else -> throw IllegalArgumentException("Unsupported TIDAL quality option: $option")
+        }
     }
 
     fun release() {
@@ -140,13 +175,13 @@ class TidalSdkManager private constructor(
         /**
          * Creates the official TIDAL SDK player.
          *
-         * Add the following to the ignored local.properties file for local
-         * debug testing only:
+         * Add the following to the ignored local.properties file:
          * tidal.clientid=YOUR_CLIENT_ID
-         * tidal.clientsecret=YOUR_CLIENT_SECRET
+         * tidal.clientredirecturi=nexamusic://tidal-auth/callback
+         * tidal.clientscopes=YOUR_APPROVED_SCOPES
          *
-         * The secret is included in debug builds only. Release builds receive
-         * an empty secret and cannot accidentally ship this development value.
+         * Authorization Code login uses PKCE. No client secret is packaged in
+         * the Android app.
          */
         fun create(application: Application): TidalSdkManager {
             val clientId = BuildConfig.TIDAL_CLIENT_ID
