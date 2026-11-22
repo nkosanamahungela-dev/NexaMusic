@@ -1,18 +1,3 @@
 {
-  "category:music": [
-    {
-      "id": "nexamusic",
-      "name": "NexaMusic",
-      "author": "NexaMusic",
-      "version": "0.1.0",
-      "description": "NexaMusic testing source with a dedicated stream backend, Jamendo catalogue search, and fresh FLAC/MP3 stream resolution.",
-      "labels": [
-        "NEXAMUSIC",
-        "JAMENDO",
-        "FLAC",
-        "INDEPENDENT MUSIC"
-      ],
-      "download": "https://nexamusic-module-source.onrender.com/nexamusic.js"
-    }
-  ]
+  "category:music": []
 }
