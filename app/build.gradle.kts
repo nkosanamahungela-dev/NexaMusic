@@ -61,7 +61,6 @@ android {
         buildConfigField("String", "LASTFM_API_KEY", "\"$lastFmKey\"")
         buildConfigField("String", "LASTFM_SECRET", "\"$lastFmSecret\"")
         buildConfigField("String", "TIDAL_CLIENT_ID", buildConfigString(tidalClientId))
-        buildConfigField("String", "TIDAL_CLIENT_SECRET", "\"\"")
 
         val isNightly = project.hasProperty("nightly") && project.property("nightly") == "true"
         buildConfigField("Boolean", "IS_NIGHTLY", isNightly.toString())
