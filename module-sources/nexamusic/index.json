@@ -1,3 +1,19 @@
 {
-  "category:music": []
+  "category:music": [
+    {
+      "id": "tidal-official-hifi",
+      "name": "TIDAL (Official Native Player)",
+      "author": "NexaMusic",
+      "version": "0.1.0",
+      "description": "Testing compatibility entry. Authenticated TIDAL playback and quality selection use the official native Android Player SDK; this JavaScript module does not fabricate signed stream URLs.",
+      "labels": [
+        "TIDAL",
+        "LOSSLESS",
+        "HI-RES",
+        "ATMOS",
+        "ISRC"
+      ],
+      "download": "https://raw.githubusercontent.com/nkosanamahungela-dev/NexaMusic/tidal-native-sdk-integration/module-sources/nexamusic/nexamusic.js"
+    }
+  ]
 }
