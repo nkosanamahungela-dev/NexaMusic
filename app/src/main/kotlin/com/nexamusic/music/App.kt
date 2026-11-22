@@ -38,6 +38,7 @@ import com.nexamusic.music.constants.*
 import com.nexamusic.music.di.ApplicationScope
 import com.nexamusic.music.extensions.toEnum
 import com.nexamusic.music.extensions.toInetSocketAddress
+import com.nexamusic.music.tidal.TidalSdkManager
 import com.nexamusic.music.utils.CrashHandler
 import com.nexamusic.music.utils.DebugLogs
 import com.nexamusic.music.utils.cipher.CipherDeobfuscator
@@ -75,6 +76,10 @@ class App : Application(), SingletonImageLoader.Factory {
     @Inject
     lateinit var networkRepository: dagger.Lazy<com.nexamusic.storage.data.NetworkMusicRepository>
 
+    @Volatile
+    var tidalSdkManager: TidalSdkManager? = null
+        private set
+
     private val startupPreferencesReady = CompletableDeferred<Unit>()
 
     suspend fun awaitStartupPreferences() = startupPreferencesReady.await()
@@ -91,6 +96,21 @@ class App : Application(), SingletonImageLoader.Factory {
                 .runningAppProcesses?.firstOrNull { it.pid == android.os.Process.myPid() }?.processName
         }
         if (processName == "$packageName:crash") return
+
+        // Initialize TIDAL's official player only for local debug builds with
+        // developer credentials. Public Client Credentials access is preview-only.
+        if (BuildConfig.DEBUG && BuildConfig.TIDAL_CLIENT_ID.isNotBlank() && BuildConfig.TIDAL_CLIENT_SECRET.isNotBlank()) {
+            applicationScope.launch(Dispatchers.IO) {
+                runCatching { TidalSdkManager.create(this@App) }
+                    .onSuccess { manager ->
+                        tidalSdkManager = manager
+                        Timber.tag("TidalSDK").i("Official TIDAL Player SDK initialized")
+                    }
+                    .onFailure { error ->
+                        Timber.tag("TidalSDK").w(error, "Official TIDAL Player SDK initialization failed")
+                    }
+            }
+        }
         com.nexamusic.music.canvas.AppleMusicCatalog.cacheDir = filesDir.resolve("apple_catalog")
         com.nexamusic.music.core.UpdateNotificationHelper.cancelUpdateNotification(this)
         // Eclipse addons identify clients by UA; they require "NexaMusic/<app-version>".
