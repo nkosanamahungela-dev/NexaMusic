@@ -2,26 +2,28 @@
 
 Version: 0.1.0 (testing)
 Engine target: 8SPINE Module Engine v2.4.0-alpha
-Provider: Jamendo
+Provider adapter: Jamendo
+Backend: https://nexamusic-stream-backend.onrender.com
 
-## Public source
+## Architecture
 
-https://nexamusic-module-source.onrender.com/index.json
+The 8SPINE module calls the NexaMusic backend for search, artist tracks, and
+fresh stream resolution. The backend calls Jamendo and proxies audio with
+HTTP Range support. The module no longer calls Jamendo directly.
 
-## Playback
+## Backend routes
 
-- Search uses Jamendo GET /v3.0/tracks/ and requests FLAC metadata.
-- Playback resolves the selected track ID again through /v3.0/tracks/ and uses the returned `audio` stream URL.
-- Quality is exposed through an 8SPINE selector: FLAC (LOSSLESS), MP3 VBR (HIGH), and MP3 96 kbps (LOW).
-- The resolver accepts the 8SPINE quality argument and its third context argument, including `ctx.settings.quality.value`.
-- The module sets `noStreamCache: true` so the host does not persist potentially stale provider stream URLs.
-- The stream result includes `mimeType`, `streamType`, and playback track metadata.
-- Track IDs are namespaced as `jamendo:<id>` to avoid collisions.
-- Jamendo documents FLAC as an available `audioformat`. Its API response does not provide verified bit depth/sample rate, so this module does not claim 16-bit / 44.1 kHz CD quality.
+- `GET /health`
+- `GET /v1/search?q=...`
+- `GET /v1/artists/:id/tracks`
+- `GET /v1/resolve/:trackId?quality=LOSSLESS|HIGH|LOW`
+- `GET|HEAD /v1/stream/:trackId?quality=LOSSLESS|HIGH|LOW`
 
-## 8SPINE contract
+## Public module source
 
-- `searchTracks(query, limit)`
-- `getArtistTracks(artistId, limit)`
-- `getTrackStreamUrl(id, quality, ctx)`
-- `settings.quality` selector with LOSSLESS, HIGH, LOW values
+- JSON: https://nexamusic-module-source.onrender.com/index.json
+- JS: https://nexamusic-module-source.onrender.com/nexamusic.js
+
+Jamendo's FLAC option does not establish verified bit depth or sample rate.
+Tidal integration is not enabled because NexaMusic does not have authorized
+Tidal API access. The module version remains 0.1.0 while testing.
