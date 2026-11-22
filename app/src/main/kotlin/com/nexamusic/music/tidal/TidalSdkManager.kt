@@ -13,8 +13,13 @@ package com.nexamusic.music.tidal
 
 import android.app.Application
 import com.nexamusic.music.BuildConfig
+import android.net.Uri
+import com.tidal.sdk.auth.Auth
 import com.tidal.sdk.auth.TidalAuth
 import com.tidal.sdk.auth.model.AuthConfig
+import com.tidal.sdk.auth.model.AuthResult
+import com.tidal.sdk.auth.model.LoginConfig
+import com.tidal.sdk.auth.model.QueryParameter
 import com.tidal.sdk.auth.network.NetworkLogLevel
 import com.tidal.sdk.eventproducer.EventProducer
 import com.tidal.sdk.eventproducer.model.ConsentCategory
@@ -37,6 +42,7 @@ import com.tidal.sdk.player.playbackengine.model.Event as TidalPlaybackEvent
  */
 class TidalSdkManager private constructor(
     private val player: TidalPlayer,
+    private val auth: Auth,
     private val credentialsProvider: com.tidal.sdk.auth.CredentialsProvider,
 ) {
     val events: Flow<TidalPlaybackEvent>
@@ -48,10 +54,30 @@ class TidalSdkManager private constructor(
     val assetPositionSeconds: Float
         get() = player.playbackEngine.assetPosition
 
+    val isUserLoggedIn: Boolean
+        get() = credentialsProvider.isUserLoggedIn()
+
+    /** Starts TIDAL's Authorization Code + PKCE login flow. */
+    fun createLoginUri(redirectUri: String): Uri {
+        require(redirectUri.isNotBlank()) { "A registered TIDAL redirect URI is required." }
+        return auth.initializeLogin(
+            redirectUri,
+            LoginConfig(customParams = setOf(QueryParameter(key = "appMode", value = "android"))),
+        )
+    }
+
+    /** Completes the OAuth redirect using the untouched query component. */
+    suspend fun completeLogin(redirectQuery: String): AuthResult<Nothing> {
+        require(redirectQuery.isNotBlank()) { "The TIDAL login redirect query is missing." }
+        return auth.finalizeLogin(redirectQuery)
+    }
+
+    suspend fun logout() = auth.logout()
+
     /**
-     * Authenticates using the public Client Credentials flow and starts the
-     * requested TIDAL catalog track. Public credentials are limited to
-     * previews unless TIDAL has separately authorised the application.
+     * Loads a catalog track through the official SDK. Public Client Credentials
+     * access is preview-only; full-length playback depends on TIDAL approving
+     * this app's Authorization Code client and the user's account entitlement.
      */
     suspend fun playTrack(trackId: String) {
         require(trackId.isNotBlank()) { "A TIDAL track ID is required." }
@@ -124,20 +150,22 @@ class TidalSdkManager private constructor(
          */
         fun create(application: Application): TidalSdkManager {
             val clientId = BuildConfig.TIDAL_CLIENT_ID
-            val clientSecret = BuildConfig.TIDAL_CLIENT_SECRET
+            val redirectUri = BuildConfig.TIDAL_REDIRECT_URI
+            val scopes = BuildConfig.TIDAL_CLIENT_SCOPES.split(' ').filter { it.isNotBlank() }.toSet()
 
             require(clientId.isNotBlank()) {
                 "TIDAL is not configured. Add tidal.clientid to local.properties."
             }
-            require(clientSecret.isNotBlank()) {
-                "TIDAL debug credentials are missing. Add tidal.clientsecret to local.properties."
+            require(redirectUri.isNotBlank()) {
+                "TIDAL redirect URI is missing. Add tidal.clientredirecturi to local.properties."
             }
 
             val auth = TidalAuth.getInstance(
                 AuthConfig(
                     clientId = clientId,
-                    clientSecret = clientSecret,
+                    clientSecret = null,
                     credentialsKey = "nexamusic-tidal-auth",
+                    scopes = scopes,
                     enableCertificatePinning = true,
                     logLevel = NetworkLogLevel.NONE,
                 ),
@@ -171,6 +199,7 @@ class TidalSdkManager private constructor(
 
             return TidalSdkManager(
                 player = tidalPlayer,
+                auth = auth.auth,
                 credentialsProvider = auth.credentialsProvider,
             )
         }
