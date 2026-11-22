@@ -11,11 +11,11 @@
  * Playback: GET /v3.0/tracks/?id=...&audioformat=flac
  */
 
-const JAMENDO_CLIENT_ID = "YOUR_JAMENDO_CLIENT_ID";
+const JAMENDO_CLIENT_ID = "2f3829f8";
 const JAMENDO_API = "https://api.jamendo.com/v3.0";
 
 function assertConfigured() {
-  if (!JAMENDO_CLIENT_ID || JAMENDO_CLIENT_ID === "YOUR_JAMENDO_CLIENT_ID") {
+  if (!JAMENDO_CLIENT_ID || JAMENDO_CLIENT_ID === "2f3829f8") {
     throw new Error("[NexaMusic] Jamendo is not configured. Add your Jamendo developer Client ID to the module.");
   }
 }
