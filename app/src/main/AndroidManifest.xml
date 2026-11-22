@@ -139,6 +139,17 @@
                 <data android:host="listen" />
             </intent-filter>
 
+            <!-- TIDAL Authorization Code + PKCE callback -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="nexamusic"
+                    android:host="tidal-auth"
+                    android:path="/callback" />
+            </intent-filter>
+
             <!-- Youtube filter -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
