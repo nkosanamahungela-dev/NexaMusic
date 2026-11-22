@@ -180,7 +180,7 @@ async function getTrackStreamUrl(trackId, quality) {
       duration: Number(item.duration) || 0,
       albumCover: item.album_image || item.image || null,
       audioQuality: reportedQuality,
-      codec: audioFormat === "flac" ? "FLAC" : "AAC",
+      codec: audioFormat === "flac" ? "FLAC" : "MP3",
       provider: "Jamendo",
       license: item.license_ccurl || null,
       trackPageUrl: item.shareurl || item.shorturl || null,
