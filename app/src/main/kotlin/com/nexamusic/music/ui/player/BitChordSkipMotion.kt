@@ -196,10 +196,28 @@ fun PlayerSkipGlyph(
                 val scaleFactor = (0.88f + pose.newScale * 0.12f)
                     .coerceIn(0.88f, 1f)
                 scale(scaleFactor, pivot = center) {
-                    drawContent()
+                    this@drawWithContent.drawContent()
                 }
             },
         ),
     )
 }
 
+
+
+/** Lifecycle-aware foreground gate shared with the player motion system. */
+@Composable
+private fun rememberNexaPlayerForeground(): Boolean {
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    var foreground by remember(lifecycle) {
+        mutableStateOf(lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED))
+    }
+    DisposableEffect(lifecycle) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, _ ->
+            foreground = lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)
+        }
+        lifecycle.addObserver(observer)
+        onDispose { lifecycle.removeObserver(observer) }
+    }
+    return foreground
+}
