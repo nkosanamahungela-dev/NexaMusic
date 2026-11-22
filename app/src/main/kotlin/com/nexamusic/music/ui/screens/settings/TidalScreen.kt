@@ -162,7 +162,7 @@ fun TidalScreen(navController: NavController) {
 
         Spacer(Modifier.height(14.dp))
         Text(
-            text = "Quality options mirror the NexaMusic 8SPINE module style. Actual track quality and full-length playback depend on TIDAL approval, account entitlement and track availability. Choosing CD Lossless does not guarantee that every track is delivered in CD quality.",
+            text = "Quality options mirror the NexaMusic 8SPINE module style. Hi-Res Dolby enables the SDK's immersive-audio setting; it does not guarantee a Dolby Atmos mix. Actual track quality and full-length playback depend on TIDAL approval, account entitlement and track availability. Choosing CD Lossless does not guarantee that every track is delivered in CD quality.",
             style = IosTheme.typography.footnote,
             color = IosTheme.colors.secondaryLabel,
             modifier = Modifier.padding(horizontal = 8.dp),
