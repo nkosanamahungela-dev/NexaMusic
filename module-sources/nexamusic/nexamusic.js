@@ -61,11 +61,6 @@ function mapTrack(item) {
     license: item.license_ccurl || null,
     trackPageUrl: item.shareurl || item.shorturl || null,
     audiodownloadAllowed: item.audiodownload_allowed === true || item.audiodownload_allowed === "true",
-    audioFormat: "FLAC",
-    // Jamendo's API supplies a requested format but does not expose
-    // verified bit-depth/sample-rate metadata in this response.
-    // Do not claim CD-quality (16-bit/44.1 kHz) from format alone.
-    audioQuality: "HIGH"
   };
 }
 
@@ -181,12 +176,8 @@ async function getTrackStreamUrl(trackId, quality) {
   // Jamendo's documented audio URL carries the actual requested format in
   // its query string (format=flac/mp32/mp31). Reject mismatches so 8SPINE
   // can try another candidate instead of silently playing a lossy stream.
-  let returnedFormat = "";
-  try {
-    returnedFormat = new URL(streamUrl).searchParams.get("format") || "";
-  } catch (_) {
-    throw new Error("[NexaMusic] Jamendo returned an unreadable audio URL for track " + id + ".");
-  }
+  const formatMatch = streamUrl.match(/[?&]format=([^&]+)/i);
+  const returnedFormat = formatMatch ? decodeURIComponent(formatMatch[1]).toLowerCase() : "";
   if (returnedFormat.toLowerCase() !== audioFormat) {
     throw new Error("[NexaMusic] Jamendo returned " + (returnedFormat || "an unknown format") +
       " when " + audioFormat + " was requested for track " + id + ".");
@@ -195,7 +186,7 @@ async function getTrackStreamUrl(trackId, quality) {
   return {
     streamUrl: streamUrl,
     track: {
-      id: String(item.id),
+      id: suppliedId,
       title: String(item.name || ""),
       artist: String(item.artist_name || ""),
       album: String(item.album_name || ""),
