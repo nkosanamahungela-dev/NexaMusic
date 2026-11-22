@@ -4,12 +4,12 @@
       "id": "nexamusic",
       "name": "NexaMusic",
       "author": "NexaMusic",
-      "version": "0.1.1",
-      "description": "NexaMusic music source with strict CD-quality FLAC stream validation.",
+      "version": "0.2.0",
+      "description": "NexaMusic music source powered by Jamendo's independent music catalogue, with FLAC stream requests.",
       "labels": [
+        "JAMENDO",
         "FLAC",
-        "LOSSLESS",
-        "CD QUALITY",
+        "INDEPENDENT MUSIC",
         "NEXAMUSIC"
       ],
       "download": "https://nexamusic-module-source.onrender.com/nexamusic.js"
