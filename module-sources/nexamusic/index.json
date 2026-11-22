@@ -5,12 +5,12 @@
       "name": "NexaMusic",
       "author": "NexaMusic",
       "version": "0.1.0",
-      "description": "NexaMusic testing source powered by Jamendo, with 8SPINE quality settings and fresh FLAC/MP3 stream resolution.",
+      "description": "NexaMusic testing source with a dedicated stream backend, Jamendo catalogue search, and fresh FLAC/MP3 stream resolution.",
       "labels": [
+        "NEXAMUSIC",
         "JAMENDO",
         "FLAC",
-        "INDEPENDENT MUSIC",
-        "NEXAMUSIC"
+        "INDEPENDENT MUSIC"
       ],
       "download": "https://nexamusic-module-source.onrender.com/nexamusic.js"
     }
